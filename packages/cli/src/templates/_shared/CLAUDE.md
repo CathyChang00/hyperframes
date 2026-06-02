@@ -4,20 +4,21 @@
 
 **Always invoke the relevant skill before writing or modifying compositions.** Skills encode framework-specific patterns (e.g., `window.__timelines` registration, `data-*` attribute semantics, shader-compatible CSS rules) that are NOT in generic web docs. Skipping them produces broken compositions.
 
-| Skill                      | Command                   | When to use                                                                                       |
-| -------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| **hyperframes**            | `/hyperframes`            | Creating or editing HTML compositions, captions, TTS, audio-reactive animation, marker highlights |
-| **hyperframes-cli**        | `/hyperframes-cli`        | Dev-loop CLI: init, lint, inspect, preview, render, doctor                                        |
-| **hyperframes-media**      | `/hyperframes-media`      | Asset preprocessing: tts (Kokoro), transcribe (Whisper), remove-background (u2net)                |
-| **hyperframes-registry**   | `/hyperframes-registry`   | Installing blocks and components via `hyperframes add`                                            |
-| **website-to-hyperframes** | `/website-to-hyperframes` | Capturing a URL and turning it into a video — full website-to-video pipeline                      |
-| **tailwind**               | `/tailwind`               | Tailwind v4 browser-runtime styles for projects created with `hyperframes init --tailwind`        |
-| **gsap**                   | `/gsap`                   | GSAP animations for HyperFrames — tweens, timelines, easing, performance                          |
-| **animejs**                | `/animejs`                | Anime.js animations registered on `window.__hfAnime`                                              |
-| **css-animations**         | `/css-animations`         | CSS keyframes that HyperFrames can pause and seek                                                 |
-| **lottie**                 | `/lottie`                 | `lottie-web` and dotLottie players registered on `window.__hfLottie`                              |
-| **three**                  | `/three`                  | Three.js scenes rendered from HyperFrames `hf-seek` events                                        |
-| **waapi**                  | `/waapi`                  | Web Animations API motion driven through `document.getAnimations()`                               |
+**Making a video?** Start at the router (`/video-workflows`) — it maps your request to the right workflow before you invoke a specific one.
+
+| Skill                        | Command                  | When to use                                                                                                                                   |
+| ---------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **video-workflows** (router) | `/video-workflows`       | **FIRST** stop for any "make me a video" intent — routes to the right workflow                                                                |
+| **product-launch-video**     | `/product-launch-video`  | URL or product brief / script → 60-90s product launch / SaaS / promo video                                                                    |
+| **faceless-explainer**       | `/faceless-explainer`    | Arbitrary text (topic / article / notes), **no URL, no website capture** → 60-90s faceless explainer                                          |
+| **hyperframes-core**         | `/hyperframes-core`      | HTML composition contract: data attributes, clips, tracks, sub-compositions, variables, media, deterministic rules                            |
+| **hyperframes-creative**     | `/hyperframes-creative`  | Creative direction: `design.md`, palettes, typography, narration, beat planning, audio-reactive, composition patterns                         |
+| **hyperframes-animation**    | `/hyperframes-animation` | All motion: atomic rules, scene blueprints, transitions, and runtime adapters (GSAP default; Lottie, Three.js, Anime.js, CSS, WAAPI, TypeGPU) |
+| **hyperframes-cli**          | `/hyperframes-cli`       | Dev-loop CLI: init, lint, validate, inspect, preview, render, doctor                                                                          |
+| **hyperframes-media**        | `/hyperframes-media`     | Asset preprocessing: TTS, BGM, transcribe, remove-background, and caption authoring                                                           |
+| **hyperframes-registry**     | `/hyperframes-registry`  | Installing registry blocks and components via `hyperframes add`                                                                               |
+
+> **Tailwind v4 projects** (`hyperframes init --tailwind`): see `/hyperframes-core` → `references/tailwind.md`.
 
 > **Skills not available?** Ask the user to run `npx hyperframes skills` and restart their
 > agent session, or install manually: `npx skills add heygen-com/hyperframes`.

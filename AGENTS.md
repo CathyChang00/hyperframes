@@ -10,6 +10,11 @@ This repo ships AI agent skills via [vercel-labs/skills](https://github.com/verc
 npx skills add heygen-com/hyperframes
 ```
 
+**Video-creation workflows** route through one entry skill — `/video-workflows` maps "make me a video" intent to a concrete workflow. Consult it before invoking a specific workflow:
+
+- `/product-launch-video` — URL (or a pre-written script / text brief in no-capture mode) → 60-90s product launch / promo video.
+- `/faceless-explainer` — arbitrary text, **no URL and no website capture** → 60-90s faceless explainer; every visual is LLM-invented (typography / abstract graphics / diagram / data-viz).
+
 ## Build & Test
 
 ```bash

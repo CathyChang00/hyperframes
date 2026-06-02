@@ -10,6 +10,13 @@ npx skills add heygen-com/hyperframes
 
 Skills encode patterns like `window.__timelines` registration, `data-*` attribute semantics, Tailwind v4 browser-runtime styling for `--tailwind` projects, and shader-compatible CSS rules that are not in generic web docs. Using them produces correct compositions from the start.
 
+**Making a video?** Start at `/video-workflows` (the router) — it maps "make me a video" intent to a workflow before you invoke a specific one:
+
+- `/product-launch-video` — URL or product brief / script → 60-90s product launch / promo video.
+- `/faceless-explainer` — arbitrary text (topic / article / notes), **no URL and no website capture** → 60-90s faceless explainer.
+
+Composition work itself is guided by `/hyperframes-core` (composition contract), `/hyperframes-creative` (creative direction), `/hyperframes-animation` (all motion + runtime adapters), `/hyperframes-cli` (dev-loop CLI), `/hyperframes-media` (TTS / BGM / transcribe / captions), and `/hyperframes-registry` (blocks & components).
+
 ## Commands
 
 ```bash
