@@ -1,82 +1,86 @@
-# Hyperframes
+# HyperFrames Composition Project
 
-Open-source video rendering framework: write HTML, render video.
+## Skills — USE THESE FIRST
 
-```
-packages/
-  cli/       → hyperframes CLI (create, preview, lint, render)
-  core/      → Types, parsers, generators, linter, runtime, frame adapters
-  engine/    → Seekable page-to-video capture engine (Puppeteer + FFmpeg)
-  player/    → Embeddable <hyperframes-player> web component
-  producer/  → Full rendering pipeline (capture + encode + audio mix)
-  studio/    → Browser-based composition editor UI
-```
+**Always invoke the relevant skill before writing or modifying compositions.** Skills encode framework-specific patterns (e.g., `window.__timelines` registration, `data-*` attribute semantics, shader-compatible CSS rules) that are NOT in generic web docs. Skipping them produces broken compositions.
 
-## Development
+**Making a video?** Start at the router (`/video-workflows`) — it maps your request to the right workflow before you invoke a specific one.
 
-```bash
-bun install     # Install dependencies
-bun run build   # Build all packages
-bun run test    # Run tests
-```
+| Skill                        | Command                  | When to use                                                                                                                                   |
+| ---------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **video-workflows** (router) | `/video-workflows`       | **FIRST** stop for any "make me a video" intent — routes to the right workflow                                                                |
+| **product-launch-video**     | `/product-launch-video`  | URL or product brief / script → 60-90s product launch / SaaS / promo video                                                                    |
+| **faceless-explainer**       | `/faceless-explainer`    | Arbitrary text (topic / article / notes), **no URL, no website capture** → 60-90s faceless explainer                                          |
+| **hyperframes-core**         | `/hyperframes-core`      | HTML composition contract: data attributes, clips, tracks, sub-compositions, variables, media, deterministic rules                            |
+| **hyperframes-creative**     | `/hyperframes-creative`  | Creative direction: `design.md`, palettes, typography, narration, beat planning, audio-reactive, composition patterns                         |
+| **hyperframes-animation**    | `/hyperframes-animation` | All motion: atomic rules, scene blueprints, transitions, and runtime adapters (GSAP default; Lottie, Three.js, Anime.js, CSS, WAAPI, TypeGPU) |
+| **hyperframes-cli**          | `/hyperframes-cli`       | Dev-loop CLI: init, lint, validate, inspect, preview, render, doctor                                                                          |
+| **hyperframes-media**        | `/hyperframes-media`     | Asset preprocessing: TTS, BGM, transcribe, remove-background, and caption authoring                                                           |
+| **hyperframes-registry**     | `/hyperframes-registry`  | Installing registry blocks and components via `hyperframes add`                                                                               |
 
-**This repo uses bun**, not pnpm. Do NOT run `pnpm install` — it creates a `pnpm-lock.yaml` that should not exist. Workspace linking relies on bun's resolution from `"workspaces"` in root `package.json`.
+> **Tailwind v4 projects** (`hyperframes init --tailwind`): see `/hyperframes-core` → `references/tailwind.md`.
 
-### Linting & Formatting
+> **Skills not available?** Ask the user to run `npx hyperframes skills` and restart their
+> agent session, or install manually: `npx skills add heygen-com/hyperframes`.
 
-This project uses **oxlint** and **oxfmt** (not biome, not eslint, not prettier).
-
-```bash
-bunx oxlint <files>        # Lint
-bunx oxfmt <files>         # Format (write)
-bunx oxfmt --check <files> # Format (check only, used by pre-commit hook)
-```
-
-Always run both on changed files before committing. The lefthook pre-commit hook runs `bunx oxlint` and `bunx oxfmt --check` automatically.
-
-### Adding CLI Commands
-
-When adding a new CLI command:
-
-1. Define the command in `packages/cli/src/commands/<name>.ts` using `defineCommand` from citty
-2. **Export `examples`** in the same file — `export const examples: Example[] = [...]` (import `Example` from `./_examples.js`). These are displayed by `--help`.
-3. Register it in `packages/cli/src/cli.ts` under `subCommands` (lazy-loaded)
-4. **Add to help groups** in `packages/cli/src/help.ts` — add the command name and description to the appropriate `GROUPS` entry. Without this, the command won't appear in `hyperframes --help` even though it works.
-5. **Document it** in `docs/packages/cli.mdx` — add a section with usage examples and flags.
-6. Validate by running `npx tsx packages/cli/src/cli.ts --help` (command appears in the list) and `npx tsx packages/cli/src/cli.ts <name> --help` (examples appear).
-
-### Regression Test Golden Baselines (producer)
-
-`packages/producer/tests/<name>/output/output.mp4` baselines MUST be generated
-inside `Dockerfile.test`, not on your host. CI renders inside that Docker image
-with a specific Chrome + ffmpeg build; pixel-level output drifts across
-different host Chrome/ffmpeg versions and will fail PSNR at dozens of
-checkpoints even when the code is correct.
+## Commands
 
 ```bash
-# Build the test image once:
-docker build -t hyperframes-producer:test -f Dockerfile.test .
-
-# Generate or update a baseline (runs the harness with --update inside Docker):
-bun run --cwd packages/producer docker:test:update <test-name>
+npm run dev          # start the preview server (long-running — keep it alive in background)
+npm run check        # lint + validate + inspect
+npm run render       # render to MP4
+npm run publish      # publish and get a shareable link
+npx hyperframes lint --verbose  # include info-level findings
+npx hyperframes lint --json     # machine-readable output for CI
+npx hyperframes docs <topic> # reference docs in terminal
 ```
 
-Never run `bun run --cwd packages/producer test:update` directly from the
-host to capture a baseline that will be committed — the resulting output.mp4
-will not match CI. Use it only for local-only experimentation.
+> **`npm run dev` is a long-running server, not a one-shot command.** It blocks until stopped.
+> In Claude Code, always run it with `run_in_background: true`. Never run it as a foreground
+> command — it will time out and the server will die, breaking the browser preview.
 
-## Skills
+## Documentation
 
-Composition authoring (not repo development) is guided by skills installed via `npx skills add heygen-com/hyperframes`. See `skills/` for source. The active skills are:
+**For quick reference**, use the local CLI docs command (no network required):
 
-- `/video-workflows` (router) — First stop for any video-creation intent ("make me a video", "promo for X", "launch video", "explainer", "tutorial", etc.). Maps the request to the right workflow via an INPUT × OUTPUT-length decision table, asks clarifying questions when intent is under-specified, and refuses to fake-route when no matching workflow exists. **Use BEFORE invoking a specific workflow.**
-- `/hyperframes-core` — HTML composition contract: data attributes, clips, tracks, sub-compositions, variables, media playback, deterministic render rules, and validation of minimal renderable projects.
-- `/hyperframes-creative` — Non-animation creative direction: `design.md` handling, palettes, typography, narration, beat planning, audio-reactive, composition patterns. For atomic motion patterns and scene blueprints use `/hyperframes-animation`.
-- `/hyperframes-animation` — All motion knowledge in one skill: atomic rules (`rules-index.md`), multi-phase scene blueprints (`blueprints-index.md`), scene transitions (`transitions/`), broader motion-design techniques (`techniques.md`), runtime adapters (`adapters/{gsap,lottie,three,animejs,css-animations,waapi,typegpu}.md`), and animation-map analysis (`scripts/animation-map.mjs`). GSAP is the default; other runtimes loaded on demand from `adapters/`.
-- `/product-launch-video` — End-to-end orchestrator: URL → 60-90s product launch / SaaS explainer / promo video (also accepts a pre-written script / text brief in no-capture mode). Routed to by `/video-workflows`. For pure-text explainers with no product URL or real screenshots, use `/faceless-explainer` instead.
-- `/faceless-explainer` — End-to-end orchestrator: arbitrary text (article / notes / topic / brief — **no URL, no website capture**) → 60-90s faceless explainer video. Every visual is LLM-invented (typography / abstract graphics / diagram / data-viz), chosen per scene by content; ships the `pin-and-paper` style preset. Forked from `/product-launch-video`; routed to by `/video-workflows`.
-- `/hyperframes-cli` — CLI dev loop: `init`, `lint`, `validate`, `inspect`, `preview`, `render`, `doctor`, `browser`, `info`, `upgrade`, `compositions`, `docs`, `benchmark`, and environment troubleshooting.
-- `/hyperframes-registry` — Installing registry blocks and components via `hyperframes add`, wiring them into `index.html`, and working with `hyperframes.json`.
-- `/hyperframes-media` — Asset preprocessing (`tts` / `transcribe` / `remove-background`) plus caption authoring — subtitles, lyrics, karaoke, per-word styling, transcript JSON/SRT/VTT import, timing from audio. Captions live with the asset they consume.
+```bash
+npx hyperframes docs <topic>
+```
 
-Tailwind v4 projects (`hyperframes init --tailwind`): see `/hyperframes-core` → `references/tailwind.md`.
+Topics: `data-attributes`, `gsap`, `compositions`, `rendering`, `examples`, `troubleshooting`
+
+**For full documentation**, discover pages via the machine-readable index — do NOT guess URLs:
+
+```
+https://hyperframes.heygen.com/llms.txt
+```
+
+## Project Structure
+
+- `index.html` — main composition (root timeline)
+- `compositions/` — sub-compositions referenced via `data-composition-src`
+- `meta.json` — project metadata (id, name)
+- `transcript.json` — whisper word-level transcript (if generated)
+
+## Linting — ALWAYS RUN AFTER CHANGES
+
+After creating or editing any `.html` composition, **always** run the full check before considering the task complete:
+
+```bash
+npm run check
+```
+
+Fix all errors before presenting the result. Inspect warnings should be reviewed before rendering.
+
+## Key Rules
+
+1. Every timed element needs `data-start`, `data-duration`, and `data-track-index`
+2. Elements with timing **MUST** have `class="clip"` — the framework uses this for visibility control
+3. Timelines must be paused and registered on `window.__timelines`:
+   ```js
+   window.__timelines = window.__timelines || {};
+   window.__timelines["composition-id"] = gsap.timeline({ paused: true });
+   ```
+4. Videos use `muted` with a separate `<audio>` element for the audio track
+5. Sub-compositions use `data-composition-src="compositions/file.html"` to reference other HTML files
+6. Only deterministic logic — no `Date.now()`, no `Math.random()`, no network fetches

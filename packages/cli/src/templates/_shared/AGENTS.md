@@ -1,69 +1,80 @@
-# HyperFrames Composition Project
+# Hyperframes
+
+Open-source video rendering framework: write HTML, render video.
 
 ## Skills
 
-This project uses AI agent skills for framework-specific patterns. Install them if not already present:
+This repo ships AI agent skills via [vercel-labs/skills](https://github.com/vercel-labs/skills). Install them before writing compositions — they encode framework-specific patterns that generic docs don't cover.
 
 ```bash
 npx skills add heygen-com/hyperframes
 ```
 
-Skills encode patterns like `window.__timelines` registration, `data-*` attribute semantics, Tailwind v4 browser-runtime styling for `--tailwind` projects, and shader-compatible CSS rules that are not in generic web docs. Using them produces correct compositions from the start.
+**Video-creation workflows** route through one entry skill — `/video-workflows` maps "make me a video" intent to a concrete workflow. Consult it before invoking a specific workflow:
 
-**Making a video?** Start at `/video-workflows` (the router) — it maps "make me a video" intent to a workflow before you invoke a specific one:
+- `/product-launch-video` — URL (or a pre-written script / text brief in no-capture mode) → 60-90s product launch / promo video.
+- `/faceless-explainer` — arbitrary text, **no URL and no website capture** → 60-90s faceless explainer; every visual is LLM-invented (typography / abstract graphics / diagram / data-viz).
 
-- `/product-launch-video` — URL or product brief / script → 60-90s product launch / promo video.
-- `/faceless-explainer` — arbitrary text (topic / article / notes), **no URL and no website capture** → 60-90s faceless explainer.
-
-Composition work itself is guided by `/hyperframes-core` (composition contract), `/hyperframes-creative` (creative direction), `/hyperframes-animation` (all motion + runtime adapters), `/hyperframes-cli` (dev-loop CLI), `/hyperframes-media` (TTS / BGM / transcribe / captions), and `/hyperframes-registry` (blocks & components).
-
-## Commands
+## Build & Test
 
 ```bash
-npm run dev          # start the preview server (long-running — keep it alive in background)
-npm run check        # lint + validate + inspect
-npm run render       # render to MP4
-npm run publish      # publish and get a shareable link
-npx hyperframes docs <topic> # reference docs in terminal
+bun install     # Install dependencies (NOT pnpm — do not create pnpm-lock.yaml)
+bun run build   # Build all packages
+bun run test    # Run all tests
 ```
 
-> **`npm run dev` is a long-running server, not a one-shot command.** It blocks until stopped.
-> Always run it as a background process so it stays alive while you edit compositions.
-> Running it in the foreground will time out and kill the server, breaking the browser preview.
+### Linting & Formatting
+
+Uses **oxlint** and **oxfmt** (not eslint, not prettier, not biome).
+
+```bash
+bunx oxlint <files>        # Lint
+bunx oxfmt <files>         # Format
+bunx oxfmt --check <files> # Check formatting (CI / pre-commit)
+```
+
+Always lint and format changed files before committing. Lefthook pre-commit hooks enforce this automatically.
+
+### Composition Validation
+
+After creating or editing any `.html` composition:
+
+```bash
+npx hyperframes lint       # Static HTML structure check
+npx hyperframes validate   # Runtime check (headless Chrome — catches JS errors, missing assets)
+```
+
+Both must pass before previewing or considering work complete.
 
 ## Project Structure
 
-- `index.html` — main composition (root timeline)
-- `compositions/` — sub-compositions referenced via `data-composition-src`
-- `assets/` — media files (video, audio, images)
-- `meta.json` — project metadata (id, name)
-- `transcript.json` — whisper word-level transcript (if generated)
-
-## Linting — Always Run After Changes
-
-After creating or editing any `.html` composition, run the full check before considering the task complete:
-
-```bash
-npm run check
+```
+packages/
+  cli/                  → hyperframes CLI (create, preview, lint, render)
+  core/                 → Types, parsers, generators, linter, runtime, frame adapters
+  engine/               → Seekable page-to-video capture engine (Puppeteer + FFmpeg)
+  player/               → Embeddable <hyperframes-player> web component
+  producer/             → Full rendering pipeline (capture + encode + audio mix)
+  shader-transitions/   → WebGL shader transitions for compositions
+  studio/               → Browser-based composition editor UI
+registry/
+  blocks/               → Installable sub-composition scenes (50+)
+  components/           → Installable effects and snippets
+  examples/             → Starter project templates
+docs/                   → Mintlify documentation site (hyperframes.heygen.com)
+skills/                 → AI agent skill definitions
 ```
 
-Fix all errors before presenting the result.
+## Key Conventions
 
-## Key Rules
-
-1. Every timed element needs `data-start`, `data-duration`, and `data-track-index`
-2. Visible timed elements **must** have `class="clip"` — the framework uses this for visibility control
-3. GSAP timelines must be paused and registered on `window.__timelines`:
-   ```js
-   window.__timelines = window.__timelines || {};
-   window.__timelines["composition-id"] = gsap.timeline({ paused: true });
-   ```
-4. Videos use `muted` with a separate `<audio>` element for the audio track
-5. Sub-compositions use `data-composition-src="compositions/file.html"`
-6. Only deterministic logic — no `Date.now()`, no `Math.random()`, no network fetches
+- **Package manager**: bun (not pnpm, not npm for workspace operations)
+- **Commit format**: Conventional commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`)
+- **TypeScript**: Avoid `any` and `as T` assertions. Prefer type guards and narrowing.
+- **Compositions**: HTML files with `data-*` attributes. Clips need `class="clip"`. GSAP timelines must be paused and registered on `window.__timelines`.
+- **Frame Adapters**: Animation runtimes plug in via the seek-by-frame adapter pattern. GSAP is the primary adapter.
+- **Deterministic rendering**: No `Date.now()`, no unseeded `Math.random()`, no render-time network fetches.
 
 ## Documentation
 
-Full docs: https://hyperframes.heygen.com/introduction
-
-Machine-readable index for AI tools: https://hyperframes.heygen.com/llms.txt
+- Docs: https://hyperframes.heygen.com/introduction
+- Catalog (50+ blocks): https://hyperframes.heygen.com/catalog/blocks/data-chart
