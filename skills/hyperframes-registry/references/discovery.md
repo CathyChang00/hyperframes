@@ -38,7 +38,7 @@ Where `<type-dir>` is `examples`, `blocks`, or `components`.
 
 ### Blocks
 
-For an always-current list run `npx hyperframes catalog --type block`. The tables below group the 64 blocks shipping today (as of 2026-05-25) by category. **Block name ≠ shader name**: shader-transition blocks (e.g. `domain-warp-dissolve`) wrap a HyperShader runtime whose internal name omits the `-dissolve`/`-warp` suffix — see the showcase HTML installed alongside the block for the canonical name.
+For an always-current list run `npx hyperframes catalog --type block`. The tables below group the 88 blocks shipping today (as of 2026-06-03) by category. **Block name ≠ shader name**: shader-transition blocks (e.g. `domain-warp-dissolve`) wrap a HyperShader runtime whose internal name omits the `-dissolve`/`-warp` suffix — see the showcase HTML installed alongside the block for the canonical name.
 
 #### Shader transitions (14)
 
@@ -156,6 +156,29 @@ Platform-recognizable UI overlays. Stamp on top of a beat or use as a beat close
 | -------------- | ------------------------------------------------------------------- |
 | `logo-outro`   | Piece-by-piece logo assembly, glow bloom, tagline fade-in, URL pill |
 | `ui-3d-reveal` | Perspective 3D reveal for UI elements                               |
+
+#### Code snippets (24)
+
+A code/terminal window that **types a code or shell session per-character**. Theme = visual chrome only; structure, wiring, and install are identical across all 24 — pick one by name, wire it like any block (`data-composition-id` + `data-start` + `data-track-index`, see `wiring-blocks.md`). Two chrome families:
+
+**VS Code workbench (12)** — full editor chrome (activity bar, sidebar, tabs, integrated terminal, status bar). Theme variants: `code-snippet-dark-2026`, `code-snippet-dark-modern`, `code-snippet-dark-plus`, `code-snippet-light-2026`, `code-snippet-light-modern`, `code-snippet-light-plus`, `code-snippet-high-contrast`, `code-snippet-high-contrast-light`, `code-snippet-monokai`, `code-snippet-solarized-light`, `code-snippet-visual-studio-dark`, `code-snippet-visual-studio-light`.
+
+**Apple Terminal (12)** — macOS Terminal.app window typing a shell session. Profile = window colors:
+
+| Name                                         | Look                                  |
+| -------------------------------------------- | ------------------------------------- |
+| `code-snippet-apple-terminal-basic`          | White bg, black text                  |
+| `code-snippet-apple-terminal-clear-dark`     | Semi-transparent dark bg              |
+| `code-snippet-apple-terminal-clear-light`    | Semi-transparent light bg             |
+| `code-snippet-apple-terminal-grass`          | Black bg, green text                  |
+| `code-snippet-apple-terminal-homebrew`       | Black bg, bright green text, lime cursor |
+| `code-snippet-apple-terminal-man-page`       | Pale yellow bg, black text            |
+| `code-snippet-apple-terminal-novel`          | Warm parchment bg, dark brown text    |
+| `code-snippet-apple-terminal-ocean`          | Deep blue bg, white text              |
+| `code-snippet-apple-terminal-pro`            | Black bg, grey text, lime cursor      |
+| `code-snippet-apple-terminal-red-sands`      | Deep red bg, sandy text               |
+| `code-snippet-apple-terminal-silver-aerogel` | Dark grey bg, white text              |
+| `code-snippet-apple-terminal-solid-colors`   | Deep purple bg, white text            |
 
 ### Components
 
