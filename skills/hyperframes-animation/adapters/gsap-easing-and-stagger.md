@@ -18,6 +18,25 @@ Each has `.in`, `.out`, `.inOut` variants.
 
 Pick `.out` for entrances, `.in` for exits, `.inOut` for symmetric moves and continuous motion.
 
+## Easing Vocabulary (character & mood)
+
+Easings are tone of voice: a video that only whispers is boring; one that varies between whisper, normal, and punch is engaging. Every composition should use at least 3 different easings — `power2.out` for everything produces flat, monotonous motion.
+
+The full palette by character (each family has `.in`, `.out`, `.inOut` variants):
+
+| Family               | Character                                                                    | Typical use                                                                                        |
+| -------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `power1`–`power4`    | Gentle (1) to aggressive (4) acceleration curves                             | General purpose. power2 is the workhorse, power4 for dramatic snaps                                |
+| `back(N)`            | Overshoot then settle. N controls how far past the target (1=subtle, 4=wild) | Logo reveals, badge pops, card entrances. `back.out(2.5)` for playful, `back.out(1.2)` for elegant |
+| `elastic(amp, freq)` | Spring bounce. amp=magnitude, freq=oscillation speed                         | Panel scatter, energetic drops, fun reveals                                                        |
+| `bounce`             | Ball-drop bouncing                                                           | Physical interactions, icons landing, score counters                                               |
+| `expo`               | Extreme acceleration curve (much steeper than power4)                        | Premium/luxury reveals, dramatic entrances                                                         |
+| `sine`               | Smooth, organic, no hard edges                                               | Ambient float, breathing, Ken Burns, anything that loops. `.inOut` for yoyo motion                 |
+| `circ`               | Circular acceleration (starts very fast, ends very gentle or vice versa)     | Camera moves, scene transitions, orbital motion                                                    |
+| `steps(N)`           | Discrete N-step jumps, no interpolation                                      | Typing effects, cursor blink, counter ticks, retro/digital aesthetics                              |
+
+**Mood mapping:** Match easing character to the beat's emotional content. Smooth/organic easings (`sine`, `power1`) feel contemplative and drifting. Aggressive deceleration (`power4.out`, `expo.out`) feels snappy and confident. Spring overshoot (`back.out`) feels bouncy and physical. The storyboard's mood description should guide which character fits — not a formula.
+
 ## Defaults
 
 ```javascript

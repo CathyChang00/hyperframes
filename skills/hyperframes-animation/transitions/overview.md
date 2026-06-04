@@ -104,7 +104,22 @@ CSS transitions animate scene containers with opacity, transforms, clip-path, an
 
 **Both are first-class options.** Shaders are provided by the `@hyperframes/shader-transitions` package — import from the package instead of writing raw GLSL. CSS transitions are simpler to set up. Choose based on the effect you want, not based on which is easier.
 
-When a composition uses shader transitions, ALL transitions in that composition should be shader-based (the WebGL canvas replaces DOM-based scene switching). Don't mix CSS and shader transitions in the same composition.
+**Mixing is supported.** You can have some transitions use WebGL shaders and others use a CSS crossfade in the same composition. Omit the `shader` field on any `TransitionConfig` entry to get a smooth opacity crossfade instead of a WebGL effect:
+
+```js
+var tl = HyperShader.init({
+  bgColor: "#000",
+  accentColor: "#6366f1",
+  scenes: ["s1", "s2", "s3", "s4"],
+  transitions: [
+    { time: 4.0, shader: "sdf-iris", duration: 0.7 }, // WebGL shader
+    { time: 8.5, duration: 0.8 }, // no shader → CSS crossfade
+    { time: 13.0, shader: "domain-warp", duration: 0.6 }, // WebGL shader
+  ],
+});
+```
+
+HyperShader manages all scene visibility regardless of transition type. Let it create the timeline (don't pass `timeline:` into `init()`) and add your beat animations to the returned `tl` after the call.
 
 ## Shader-Compatible CSS Rules
 

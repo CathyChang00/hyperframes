@@ -1,6 +1,6 @@
 # Visual Techniques Reference
 
-10 proven techniques from production HyperFrames videos. Use these in your storyboard and compositions to create visually rich, professional output. Each technique includes a minimal code pattern you can adapt.
+13 proven techniques from production HyperFrames videos. Use these in your storyboard and compositions to create visually rich, professional output. Each technique includes a minimal code pattern you can adapt.
 
 These are NOT advanced — they're standard motion design patterns that every composition should use at least 2-3 of.
 
@@ -17,7 +17,15 @@ These are NOT advanced — they're standard motion design patterns that every co
 - GSAP MotionPathPlugin
 - Velocity-matched transitions
 - Audio-reactive animation
+- Clip-path reveal masks
+- WebGL fragment shader art
 - When to use what
+
+> **Capturing live HTML/CSS as a GPU texture** (3D rotation + bloom, magnetic warp, shatter, liquid surface, portal, plus GLSL post-processing) is a separate, heavier capability — see `adapters/html-in-canvas-patterns.md`. Use it for 1–3 hero beats per video, not every beat.
+>
+> **Easing vocabulary** — the full ease-family palette (character + mood mapping) lives in `adapters/gsap-easing-and-stagger.md`. Every composition should use at least 3 different easings.
+>
+> **Named text-animation effects** (24 IDs like `typewriter`, `kinetic-center-build`, `soft-blur-in`) come from the external `animate-text` skill — see `adapters/animate-text.md` for the vocabulary and how to load it.
 
 ---
 
@@ -381,6 +389,110 @@ python3 skills/hyperframes-creative/scripts/extract-audio-data.py narration.wav 
 Keep text/logo intensity subtle (≤5% scale, ≤30% glow) — audio-reactive motion on tiny elements reads as jitter. Bigger backgrounds can push to 10–30%.
 
 **Never do:** equalizer bars, spectrum analyzers, waveform displays, strobing, rainbow color cycling. The audio provides _timing and intensity_; the visual vocabulary still comes from the brand. See `skills/hyperframes-creative/references/audio-reactive.md` for the full API and anti-patterns.
+
+---
+
+## 12. Clip-Path Reveal Masks
+
+A fixed window that content slides through — text or images enter from one side and are clipped by an invisible boundary. Different from SVG path drawing: the mask is static, the content moves.
+
+```html
+<div id="reveal-mask">
+  <div id="reveal-content">Your headline text here</div>
+</div>
+<style>
+  #reveal-mask {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 200px 0 0); /* clips 200px from right */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #reveal-content {
+    font-size: 108px;
+    white-space: nowrap;
+  }
+</style>
+<script>
+  // Content starts offscreen right, slides left through the mask window
+  gsap.set("#reveal-content", { x: 400, opacity: 0 });
+  tl.to("#reveal-content", { x: 0, opacity: 1, duration: 1, ease: "power2.out" }, 0);
+</script>
+```
+
+Variations: `clip-path: circle(0% at 50% 50%)` → `circle(100%)` for iris reveals. `clip-path: polygon(...)` for custom shapes.
+
+---
+
+## 13. WebGL Fragment Shader Art
+
+Full GPU generative backgrounds — domain-warped FBM noise, cosine palette coloring, iridescent organic patterns. Far richer than Canvas 2D.
+
+```html
+<canvas id="shader-bg" width="1920" height="1080"></canvas>
+<script>
+  var canvas = document.getElementById("shader-bg");
+  var gl = canvas.getContext("webgl");
+  if (!gl) {
+    /* fallback to gradient */
+  }
+
+  var fsrc = `
+    precision mediump float;
+    varying vec2 v_uv;
+    uniform float u_time;
+    uniform vec2 u_res;
+
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p) {
+      vec2 i = floor(p), f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i+vec2(1,0)), f.x),
+                 mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);
+    }
+    float fbm(vec2 p) {
+      float v = 0.0, a = 0.5;
+      mat2 R = mat2(0.8, 0.6, -0.6, 0.8);
+      for (int i = 0; i < 5; i++) { v += a*noise(p); p = R*p*2.02; a *= 0.5; }
+      return v;
+    }
+    vec3 palette(float t) {
+      return vec3(0.5)+vec3(0.5)*cos(6.28318*(vec3(1)*t+vec3(0.0,0.33,0.67)));
+    }
+    void main() {
+      vec2 uv = v_uv; uv.x *= u_res.x/u_res.y;
+      float t = u_time * 0.4;
+      vec2 q = vec2(fbm(uv*3.0+t*0.3), fbm(uv*3.0+vec2(5.2,1.3)+t*0.2));
+      vec2 r = vec2(fbm(uv*3.0+q*4.0+vec2(1.7,9.2)+t*0.15), fbm(uv*3.0+q*4.0+vec2(8.3,2.8)+t*0.1));
+      float n = fbm(uv*3.0+r*2.0);
+      vec3 col = palette(n*2.0+t*0.2);
+      col = mix(col, palette(length(q)*3.0+t*0.1), 0.4);
+      col *= 0.7+0.3*n;
+      float vig = 1.0-0.4*length(v_uv-0.5);
+      gl_FragColor = vec4(col*vig, 1.0);
+    }
+  `;
+
+  // Compile, link, set up fullscreen quad, then render via GSAP proxy:
+  var proxy = { time: 0.5 };
+  tl.to(
+    proxy,
+    {
+      time: 5,
+      duration: BEAT_DUR,
+      ease: "none",
+      onUpdate: function () {
+        gl.uniform1f(uTime, proxy.time);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      },
+    },
+    0,
+  );
+</script>
+```
+
+Always include a Canvas 2D gradient fallback for environments without WebGL.
 
 ---
 

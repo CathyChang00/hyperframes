@@ -111,6 +111,39 @@ GROUPS.forEach(function (group, gi) {
 tl.seek(0);
 ```
 
+## Pre-Built Caption Components
+
+Before building caption styles from scratch, check the registry — 15 ready-to-use caption components cover the most common styles. Install with `npx hyperframes add <name>` and wire as a sub-composition via `data-composition-src` (see `hyperframes-registry`).
+
+```bash
+npx hyperframes catalog --tag caption-style   # list all caption components
+npx hyperframes add caption-highlight         # install a specific one
+```
+
+| Style                     | Component                    | Best for                     |
+| ------------------------- | ---------------------------- | ---------------------------- |
+| TikTok-style highlight    | `caption-highlight`          | Social, high-energy          |
+| Karaoke pill              | `caption-pill-karaoke`       | Music, lyric videos          |
+| Cinematic editorial       | `caption-editorial-emphasis` | Documentary, storytelling    |
+| Glitch / cyber            | `caption-glitch-rgb`         | Tech, gaming                 |
+| Full-screen slam          | `caption-kinetic-slam`       | Hype, announcements          |
+| Neon glow                 | `caption-neon-glow`          | Night, club, neon aesthetics |
+| Neon accent (multi-color) | `caption-neon-accent`        | Colorful, playful            |
+| Wipe reveal               | `caption-clip-wipe`          | Clean, modern                |
+| Gradient fill             | `caption-gradient-fill`      | Vibrant, eye-catching        |
+| Matrix decode             | `caption-matrix-decode`      | Sci-fi, tech reveals         |
+| Emoji pop                 | `caption-emoji-pop`          | Social, casual               |
+| Parallax layers           | `caption-parallax-layers`    | Depth, cinematic             |
+| Particle burst            | `caption-particle-burst`     | Celebration, impact keywords |
+| Lava texture              | `caption-texture`            | Bold, dramatic               |
+| Weight shift              | `caption-weight-shift`       | Elegant, typographic         |
+
+Related: `caption-blend-difference` (tagged `text` / `blend-mode`, not `caption-style`, so it won't appear under the filter above) auto-inverts text against any background via `mix-blend-mode: difference` — useful when the background is busy or unpredictable.
+
+Browse all with previews: [hyperframes.heygen.com/catalog](https://hyperframes.heygen.com/catalog)
+
+Caption components ship with transparent backgrounds — they're pure overlays. If the underlying video is bright or busy, add a contrast layer (e.g. a semi-transparent dark div) in the host composition beneath the caption sub-composition, not inside the component itself.
+
 ## Further References
 
 - [`motion.md`](motion.md) — karaoke, marker effects, audio-reactive modulation, scatter exits.

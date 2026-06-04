@@ -97,7 +97,7 @@ WebGPU + html-in-canvas frosted-glass surfaces. **Require Brave / Chrome canary*
 
 #### VFX (6)
 
-HTML-in-canvas + WebGL composition blocks. See `/hyperframes-animation` → `adapters/three.md` and `html-in-canvas-patterns` reference for the underlying APIs.
+HTML-in-canvas + WebGL composition blocks. See `/hyperframes-animation` → `adapters/three.md` and `adapters/html-in-canvas-patterns.md` for the underlying APIs.
 
 | Name                    | Description                                                                                             |
 | ----------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -165,20 +165,20 @@ A code/terminal window that **types a code or shell session per-character**. The
 
 **Apple Terminal (12)** — macOS Terminal.app window typing a shell session. Profile = window colors:
 
-| Name                                         | Look                                  |
-| -------------------------------------------- | ------------------------------------- |
-| `code-snippet-apple-terminal-basic`          | White bg, black text                  |
-| `code-snippet-apple-terminal-clear-dark`     | Semi-transparent dark bg              |
-| `code-snippet-apple-terminal-clear-light`    | Semi-transparent light bg             |
-| `code-snippet-apple-terminal-grass`          | Black bg, green text                  |
+| Name                                         | Look                                     |
+| -------------------------------------------- | ---------------------------------------- |
+| `code-snippet-apple-terminal-basic`          | White bg, black text                     |
+| `code-snippet-apple-terminal-clear-dark`     | Semi-transparent dark bg                 |
+| `code-snippet-apple-terminal-clear-light`    | Semi-transparent light bg                |
+| `code-snippet-apple-terminal-grass`          | Black bg, green text                     |
 | `code-snippet-apple-terminal-homebrew`       | Black bg, bright green text, lime cursor |
-| `code-snippet-apple-terminal-man-page`       | Pale yellow bg, black text            |
-| `code-snippet-apple-terminal-novel`          | Warm parchment bg, dark brown text    |
-| `code-snippet-apple-terminal-ocean`          | Deep blue bg, white text              |
-| `code-snippet-apple-terminal-pro`            | Black bg, grey text, lime cursor      |
-| `code-snippet-apple-terminal-red-sands`      | Deep red bg, sandy text               |
-| `code-snippet-apple-terminal-silver-aerogel` | Dark grey bg, white text              |
-| `code-snippet-apple-terminal-solid-colors`   | Deep purple bg, white text            |
+| `code-snippet-apple-terminal-man-page`       | Pale yellow bg, black text               |
+| `code-snippet-apple-terminal-novel`          | Warm parchment bg, dark brown text       |
+| `code-snippet-apple-terminal-ocean`          | Deep blue bg, white text                 |
+| `code-snippet-apple-terminal-pro`            | Black bg, grey text, lime cursor         |
+| `code-snippet-apple-terminal-red-sands`      | Deep red bg, sandy text                  |
+| `code-snippet-apple-terminal-silver-aerogel` | Dark grey bg, white text                 |
+| `code-snippet-apple-terminal-solid-colors`   | Deep purple bg, white text               |
 
 ### Components
 

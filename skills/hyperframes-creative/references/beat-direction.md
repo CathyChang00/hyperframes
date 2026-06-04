@@ -51,6 +51,8 @@ Specific motion verbs per element — not "it animates in" but HOW:
 
 Every element gets a verb. If you can't name the verb, the element is not yet designed.
 
+For text elements specifically, you can name a deterministic, named effect by ID (e.g. `typewriter`, `kinetic-center-build`, `soft-blur-in`) instead of inventing timing from scratch — the 24-effect vocabulary and how to load it live in `skills/hyperframes-animation/adapters/animate-text.md`.
+
 ### Transition
 
 How this beat hands off to the next. Specify the type and parameters.
