@@ -15,6 +15,8 @@ npx skills add heygen-com/hyperframes
 - `/product-launch-video` — URL (or a pre-written script / text brief in no-capture mode) → 60-90s product launch / promo video.
 - `/faceless-explainer` — arbitrary text, **no URL and no website capture** → 60-90s faceless explainer; every visual is LLM-invented (typography / abstract graphics / diagram / data-viz).
 
+**Porting an existing composition?** `/remotion-to-hyperframes` translates a Remotion (React) video composition into HyperFrames HTML — a source migration, separate from the creation workflows above.
+
 ## Build & Test
 
 ```bash

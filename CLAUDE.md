@@ -6,17 +6,18 @@
 
 **Making a video?** Start at the router (`/video-workflows`) — it maps your request to the right workflow before you invoke a specific one.
 
-| Skill                        | Command                  | When to use                                                                                                                                   |
-| ---------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **video-workflows** (router) | `/video-workflows`       | **FIRST** stop for any "make me a video" intent — routes to the right workflow                                                                |
-| **product-launch-video**     | `/product-launch-video`  | URL or product brief / script → 60-90s product launch / SaaS / promo video                                                                    |
-| **faceless-explainer**       | `/faceless-explainer`    | Arbitrary text (topic / article / notes), **no URL, no website capture** → 60-90s faceless explainer                                          |
-| **hyperframes-core**         | `/hyperframes-core`      | HTML composition contract: data attributes, clips, tracks, sub-compositions, variables, media, deterministic rules                            |
-| **hyperframes-creative**     | `/hyperframes-creative`  | Creative direction: `design.md`, palettes, typography, narration, beat planning, audio-reactive, composition patterns                         |
-| **hyperframes-animation**    | `/hyperframes-animation` | All motion: atomic rules, scene blueprints, transitions, and runtime adapters (GSAP default; Lottie, Three.js, Anime.js, CSS, WAAPI, TypeGPU) |
-| **hyperframes-cli**          | `/hyperframes-cli`       | Dev-loop CLI: init, lint, validate, inspect, preview, render, doctor                                                                          |
-| **hyperframes-media**        | `/hyperframes-media`     | Asset preprocessing: TTS, BGM, transcribe, remove-background, and caption authoring                                                           |
-| **hyperframes-registry**     | `/hyperframes-registry`  | Installing registry blocks and components via `hyperframes add`                                                                               |
+| Skill                        | Command                    | When to use                                                                                                                                   |
+| ---------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **video-workflows** (router) | `/video-workflows`         | **FIRST** stop for any "make me a video" intent — routes to the right workflow                                                                |
+| **product-launch-video**     | `/product-launch-video`    | URL or product brief / script → 60-90s product launch / SaaS / promo video                                                                    |
+| **faceless-explainer**       | `/faceless-explainer`      | Arbitrary text (topic / article / notes), **no URL, no website capture** → 60-90s faceless explainer                                          |
+| **remotion-to-hyperframes**  | `/remotion-to-hyperframes` | Port / convert / migrate an existing **Remotion** (React) composition into HyperFrames HTML — source translation, not creation                |
+| **hyperframes-core**         | `/hyperframes-core`        | HTML composition contract: data attributes, clips, tracks, sub-compositions, variables, media, deterministic rules                            |
+| **hyperframes-creative**     | `/hyperframes-creative`    | Creative direction: `design.md`, palettes, typography, narration, beat planning, audio-reactive, composition patterns                         |
+| **hyperframes-animation**    | `/hyperframes-animation`   | All motion: atomic rules, scene blueprints, transitions, and runtime adapters (GSAP default; Lottie, Three.js, Anime.js, CSS, WAAPI, TypeGPU) |
+| **hyperframes-cli**          | `/hyperframes-cli`         | Dev-loop CLI: init, lint, validate, inspect, preview, render, doctor                                                                          |
+| **hyperframes-media**        | `/hyperframes-media`       | Asset preprocessing: TTS, BGM, transcribe, remove-background, and caption authoring                                                           |
+| **hyperframes-registry**     | `/hyperframes-registry`    | Installing registry blocks and components via `hyperframes add`                                                                               |
 
 > **Tailwind v4 projects** (`hyperframes init --tailwind`): see `/hyperframes-core` → `references/tailwind.md`.
 

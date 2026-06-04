@@ -33,6 +33,10 @@ Two axes pick the workflow: **INPUT type** and **OUTPUT length**. Inside the 30-
 
 Only the **30-90s** row is covered today — by two workflows split on subject. Empty cells mean **no workflow exists for that combination**: say so directly (the generic / "通用" outcome) rather than forcing a near-fit.
 
+## Migrating an existing composition (special case)
+
+The table above is for **creating** a video from an input. One workflow sits outside it: if the user explicitly asks to **port / convert / migrate an existing Remotion (React) composition** into HyperFrames → `/remotion-to-hyperframes`. This is source translation, not creation-from-input, so it has no INPUT × LENGTH cell. Route here ONLY on explicit migration language ("port my Remotion project", "convert this Remotion comp", "rewrite this as HyperFrames") — a passing mention of Remotion is not a trigger; default to the creation table or `/hyperframes-core`.
+
 ## Routing procedure
 
 1. **Determine INPUT type + target length.** If either is unknown, ask at most 2 clarifying questions:
@@ -61,6 +65,13 @@ Only the **30-90s** row is covered today — by two workflows split on subject. 
 - **Output:** 60-90s faceless explainer video as a HyperFrames composition rendered to MP4. Every visual is LLM-invented per scene (typography / abstract graphics / diagram / data-viz); ships the `pin-and-paper` style preset
 - **Triggers:** "make a faceless explainer about X", "explain how DNS works as a video", "turn this article into an explainer video", "video explaining [concept], no product", "topic → short educational video", "explainer from my notes"
 - **Do NOT use for:** anything centered on a specific product / company being marketed, or any request that supplies a URL (→ `/product-launch-video`); tutorials over 2 min; social ads under 30s; videos that need real screenshots or scraped brand assets
+
+### `/remotion-to-hyperframes`
+
+- **Input:** An existing **Remotion** (React) video composition's source — the user explicitly asks to port / convert / migrate / rewrite it as HyperFrames. This is NOT a creation-from-input workflow.
+- **Output:** A HyperFrames HTML composition translated from the Remotion source, graded against the Remotion render with an SSIM eval harness + tiered test corpus
+- **Triggers:** "port my Remotion project to HyperFrames", "convert this Remotion comp", "migrate from Remotion", "rewrite this as HyperFrames HTML"
+- **Do NOT use for:** authoring a NEW composition (even while A/B-testing a Remotion video), a passing mention of Remotion, or "the same video as my Remotion one" without an explicit migrate request (→ creation workflows / `/hyperframes-core`)
 
 ## Out of scope for this router
 
