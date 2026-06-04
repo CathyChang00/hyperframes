@@ -330,7 +330,7 @@ preflight does everything the agent does not need to judge and writes it all int
 **Exit codes (new behavior, orchestrator must read them)**:
 
 - **exit 0** -> all gates pass -> proceed to (3) and dispatch finalize.
-- **exit 2** -> **BLOCKING** - lint / validate / inspect has at least one real ERROR (`exit_code != 0`). **Do not** dispatch finalize and **do not** bypass with `--allow-gate-failure`. Read `finalize_brief.json.gates.<gate>.output_tail` to locate which scene and what kind of violation:
+- **exit 2** -> **BLOCKING** - lint / validate / inspect has at least one real ERROR (`exit_code` is non-zero). **Do not** dispatch finalize and **do not** bypass with `--allow-gate-failure`. Read `finalize_brief.json.gates.<gate>.output_tail` to locate which scene and what kind of violation:
   - `text_box_overflow` / `canvas_overflow` / `container_overflow` -> worker estimated layout by intuition, but real wrapping / overflow failed. Usually **go back to Step 6 and re-dispatch that worker** (include the inspect selector + scene so the worker knows what collided and can use relative flow instead of fixed absolute placement); rare by-design overflow -> add `data-layout-allow-overflow="true"` to the element and rerun preflight.
   - `lint` / `validate` failure -> usually a scene file schema / selector / asset path issue. Inspect the tail to locate the file, `Edit` it, and rerun preflight.
   - To see how finalize handles these itself (for agent-flow debugging), rerun `preflight-finalize.mjs --allow-gate-failure`.

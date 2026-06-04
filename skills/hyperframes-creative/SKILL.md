@@ -1,6 +1,6 @@
 ---
 name: hyperframes-creative
-description: Non-animation creative direction for HyperFrames videos. Use for design.md handling, palettes, typography, narration, beat planning, audio-reactive visuals, composition patterns, and brand / style decisions. For atomic motion patterns and scene blueprints, use `hyperframes-animation`.
+description: Non-animation creative direction for HyperFrames videos. Use for design spec (frame.md / design.md) handling, palettes, typography, narration, beat planning, audio-reactive visuals, composition patterns, and brand / style decisions. For atomic motion patterns and scene blueprints, use `hyperframes-animation`.
 ---
 
 # HyperFrames Creative
@@ -11,8 +11,8 @@ For motion patterns, scene blueprints, transitions, and CSS marker effects, use 
 
 ## Workflow
 
-1. If a project has `design.md` or `DESIGN.md`, treat it as brand truth: colors, fonts, spacing, tone, and constraints.
-2. If no design file exists and the user asks for visual direction, choose a route:
+1. If a project has a design spec, read it first — precedence `frame.md` → `design.md` → `DESIGN.md`. `frame.md` is the preferred spec for video/hyperframes projects and wins if more than one exists (same format as `design.md`); it is always lowercase, no `FRAME.md` variant, while `design.md` and `DESIGN.md` are different files on Linux. Treat it as brand truth: colors, fonts, spacing, tone, and constraints.
+2. If no design spec exists and the user asks for visual direction, choose a route:
    - Named style or mood → `references/visual-styles.md`
    - Fast defaults → `references/house-style.md`
    - Interactive selection → `references/design-picker.md`
