@@ -1,6 +1,6 @@
 ---
 name: product-launch-video
-description: product-launch video workflow - URL -> narrator_scripts.json + audio (voice + BGM) + section_plan.md.
+description: product-launch video workflow - a product / marketing URL (crawled with headless Chrome for brand tokens + assets) OR a pre-written script / text brief with no URL (no-capture mode; a style preset supplies the palette + design system) -> narrator_scripts.json + audio (voice + BGM) + section_plan.md -> 60-90s product launch / SaaS / promo video rendered to MP4. Use for marketing, launching, or promoting a specific product / company / app / website. Triggers - "launch video for X", "promo for our site", "explain my SaaS in a minute", "feature reveal for X.com", "I have a script, turn it into a 60s promo". NOT for - a topic / concept explainer with no product and no URL (-> faceless-explainer); a GitHub PR / code change (-> pr-to-video); re-editing existing footage (-> footage-recut).
 metadata:
   tags: orchestrator, pipeline, product-launch
 ---

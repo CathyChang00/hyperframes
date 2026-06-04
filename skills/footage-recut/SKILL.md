@@ -112,7 +112,7 @@ Assemble `index.html`: a master paused timeline, the source video as a muted bac
 
 On render/preflight failure, dispatch the repair subagent (`agents/hyperframes-finalize.md`) with the failing log, fix, and re-render. Output: `renders/video.mp4` at the source fps.
 
-## Routing note (for the video-workflows router)
+## Routing note (for the hyperframes-read-first router)
 
 - **Input:** an existing local video file (MP4). The user supplies footage to be re-edited — not a URL, not a text brief.
 - **Output:** the same footage re-rendered with synced AI info-card overlays. Any length.

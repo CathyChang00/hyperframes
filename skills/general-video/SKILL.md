@@ -26,7 +26,7 @@ For specific requests ("add a title card", "fix the timing on scene 3"), skip di
 
 ### Step 1 — Design system → `hyperframes-creative`
 
-Establish the visual identity first. If the project has a design spec, read it (precedence `frame.md` → `design.md` → `DESIGN.md`; treat it as brand truth — exact colors, fonts, constraints). If none exists, pick a route via `hyperframes-creative`: a named style/mood → `references/visual-styles.md`; fast defaults → `references/house-style.md`; interactive picker → `references/design-picker.md`. The spec defines the **brand**, not the composition rules.
+Establish the visual identity first. If the project has a design spec, read it (precedence `frame.md` → `design.md` → `DESIGN.md`; treat it as brand truth — exact colors, fonts, constraints). If none exists, pick a route via `hyperframes-creative`: a named style/mood → `hyperframes-creative/references/visual-styles.md`; fast defaults → `hyperframes-creative/references/house-style.md`; interactive picker → `hyperframes-creative/references/design-picker.md`. The spec defines the **brand**, not the composition rules.
 
 <HARD-GATE>
 Before writing ANY composition HTML, verify you have a visual identity from Step 1. If you are reaching for `#333`, `#3b82f6`, or `Roboto`, you skipped it.

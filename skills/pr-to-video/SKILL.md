@@ -111,7 +111,7 @@ Shared `agents/hyperframes-scene.md`. Each scene is a `class="clip"` element on 
 
 Shared assemble + preflight + repair, then render. → `renders/video.mp4`.
 
-## Routing note (for the video-workflows router)
+## Routing note (for the hyperframes-read-first router)
 
 - **Input:** a **GitHub PR** — a code change (PR URL, `owner/repo#N`, or "this PR"). A URL, but **a `github.com/.../pull/N` link, not a product/marketing website**.
 - **Output:** 30-90s code-change explainer (changelog / feature-reveal / fix / refactor walkthrough).
