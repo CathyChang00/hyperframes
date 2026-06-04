@@ -14,6 +14,9 @@ npx skills add heygen-com/hyperframes
 
 - `/product-launch-video` — URL (or a pre-written script / text brief in no-capture mode) → 60-90s product launch / promo video.
 - `/faceless-explainer` — arbitrary text, **no URL and no website capture** → 60-90s faceless explainer; every visual is LLM-invented (typography / abstract graphics / diagram / data-viz).
+- `/footage-recut` — an existing local video (MP4) → re-edited MP4 with transcript-synced AI info-card overlays; any length. Transforms existing footage (no URL scrape, no text-to-video).
+- `/pr-to-video` — a GitHub PR (URL / `owner/repo#N` / "this PR") → 30-90s code-change explainer (changelog / feature reveal / fix / refactor). A PR link, not a product website.
+- `/general-video` — fallback for any other video creation (title card, logo reveal, data / stat montage, brand reel, motion poster, custom composition); the original hyperframes flow — design → plan → layout → build → validate, any length.
 
 **Porting an existing composition?** `/remotion-to-hyperframes` translates a Remotion (React) video composition into HyperFrames HTML — a source migration, separate from the creation workflows above.
 
