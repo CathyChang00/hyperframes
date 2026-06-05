@@ -110,7 +110,7 @@ Editorial judgment — no existing AI caption tool does this. It's pure upside.
 
 ### 16. Segment on breath, not on duration
 
-Chunk at natural pauses ≥ 250ms. A caption spanning a breath-break feels wrong. Scribe v2 word-level timestamps make this trivial.
+Chunk at natural pauses ≥ 250ms. A caption spanning a breath-break feels wrong. Whisper word-level timestamps make this trivial.
 
 ### 17. Safe zones per platform, always
 

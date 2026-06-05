@@ -44,9 +44,9 @@ Reusing them is what produces "template render in disguise":
 | `groups` array, `cg-N` IDs | Whatever you call your caption elements (`.flash`, `.scrawl`, `.stamp`, `.collapse`...) |
 | `tone: "soft" \| "present"` motion vocabulary | Invent your own (blur→focus, ghost-collapse, glitch, invasion, drip, fracture, type-stamp, particle-burst...) |
 | `caption_mode` field | Nonexistent — you decide what shows |
-| `check-occlusion.py --strict` gate | Bypassed — you own occlusion judgment by eye |
-| `check-timing.py` 80ms gate | Bypassed — you own timing by eye |
-| `make-composition.py` compile step | Skipped — `index.html` is the artifact |
+| `check-occlusion.cjs --strict` gate | Bypassed — you own occlusion judgment by eye |
+| `check-timing.cjs` 80ms gate | Bypassed — you own timing by eye |
+| `make-composition.cjs` compile step | Skipped — `index.html` is the artifact |
 | Inter font + warm-cream color palette | Whatever the scene wants (custom font load, brand color, hand-drawn SVG, etc.) |
 | Body-emphasis / climax size ratio rules | Whatever serves your visual idea |
 | Block-synchronized accumulation w/ display:none exit | Whatever entry/exit choreography you design |

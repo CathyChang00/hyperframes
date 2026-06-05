@@ -53,7 +53,7 @@ Subject fills the frame top-to-bottom (head_top y=126 / 10% from top). For body 
 }
 ```
 
-Result: body bg captures embed cinematic across the subject (eaten edges = texture not bug), climax fg sits on top fully visible because there was nowhere else for it to go. Make-composition.py emits both `index.html` (bg groups) and `index_fg.html` (fg groups); render-and-composite.sh runs two parallel Chromium passes and ffmpeg screen-blends fg over bg+matte.
+Result: body bg captures embed cinematic across the subject (eaten edges = texture not bug), climax fg sits on top fully visible because there was nowhere else for it to go. make-composition.cjs emits both `index.html` (bg groups) and `index_fg.html` (fg groups); render-and-composite.sh runs two parallel Chromium passes and ffmpeg screen-blends fg over bg+matte.
 
 Set via `caption_layer: "bg" | "fg"` plan-level (default for groups without explicit `layer:`), and `layer: "bg" | "fg"` per-group to override for hybrid.
 
@@ -260,10 +260,10 @@ Contrast floor — the climax must at least clear these:
 
 A quick audit script — before shipping, dump every plan's max-body vs max-crown font-size ratio, and flag anything <1.8×:
 
-```python
-body_max = max(fsize(g) for g in plan['groups'] if g['plane']=='body')
-crown_max = max(fsize(g) for g in plan['groups'] if g['plane']=='crown')
-ratio = crown_max / body_max  # aim for ≥1.8
+```js
+const bodyMax  = Math.max(...plan.groups.filter(g => g.plane === 'body').map(fsize));
+const crownMax = Math.max(...plan.groups.filter(g => g.plane === 'crown').map(fsize));
+const ratio = crownMax / bodyMax;  // aim for ≥1.8
 ```
 
 **Split pattern — when one word alone should carry the climax.** If the climax phrase is 2+ words ("and being consistent", "not even kidding") and one of them is the actual payoff, split into setup + payoff BUT keep them spatially bonded:
@@ -319,25 +319,21 @@ Two placement tweaks that separate "looks like a caption sitting in the scene" f
 
 ### Pre-render occlusion + frame-overflow gate
 
-Two checkers ship in `scripts/`. **Always run v2 before shipping**; v1 is kept as a fast-but-lossy fallback.
+**`check-occlusion.cjs` (canonical, pixel-perfect)** is the only occlusion checker in `scripts/`. It auto-runs `measure-layout.js` (headless Chromium via Puppeteer) which loads the compiled `index.html`, seeks the GSAP timeline to 4 sample times per group (15/40/65/90% through window), and queries `getBoundingClientRect()` on every `.cap` and child `.w` span. Output is `_layout.json` with the actual rendered pixel coordinates of every word at every sample. Then it computes per-word, per-cap occlusion against the real RVM matte alpha (read via `sharp`):
 
-**`check-occlusion-v2.py` (canonical, pixel-perfect)** — auto-runs `measure-layout.js` (headless Chromium via Puppeteer) which loads the compiled `index.html`, seeks the GSAP timeline to 4 sample times per group (15/40/65/90% through window), and queries `getBoundingClientRect()` on every `.cap` and child `.w` span. Output is `_layout.json` with the actual rendered pixel coordinates of every word at every sample. Then computes per-word, per-cap occlusion against the real RVM matte:
-
-- **Per-word peak occlusion** — catches the failure mode v1 misses entirely: a 5-word phrase where 3 words are fully eaten averages the same as 8 words half-eaten, but only one of those is shippable. Per-word peak ≥65% = `obliterated`, ≥35% = `warn`. A `WARN` band hit on a single climax word is OK (cinematic edge crop); two adjacent words obliterated is not.
+- **Per-word peak occlusion** — the load-bearing metric: a 5-word phrase where 3 words are fully eaten averages the same as 8 words half-eaten, but only one of those is shippable, so per-WORD peak is what gates. Per-word peak ≥65% = `obliterated`, ≥35% = `warn`. A `WARN` band hit on a single climax word is OK (cinematic edge crop); two adjacent words obliterated is not.
 - **Per-cap aggregate** — avg + peak occlusion across all samples. Cap fails at peak ≥50%.
 - **fg-layer caps are auto-skipped** (they render above the matte; no occlusion possible).
 
-Real example showing v2's accuracy gap over v1 (Startup_Host case): v1 reported `cg-1 "podcast." OK at 9%/12%` because it estimated y=134 (above subject head); v2 measured the actual DOM at y=209 (mid-head) and reported `FAIL 54%/60%`. Same case, v1 reported `cg-3 "diving deep" FAIL at 76%/77%` while v2 measured `WARN 36%/40%` because the bbox is wider than the head — most pixels are clear and only descenders dip into the silhouette. v1's heuristic was wrong in **both** directions.
+**Why measure the real DOM, not estimate a bbox.** An earlier heuristic estimated each word's box from `char_ratio × font × text_length` and was wrong in both directions. Startup_Host case: it reported `cg-1 "podcast." OK at 9%/12%` because it guessed y=134 (above the subject's head), but the rendered DOM was at y=209 (mid-head) → actually `FAIL 54%/60%`. Same case, it reported `cg-3 "diving deep" FAIL at 76%/77%` while the real measurement was `WARN 36%/40%` (the box is wider than the head — most pixels clear, only descenders dip into the silhouette). Estimation is retired; `check-occlusion.cjs` measures the rendered pixels.
 
-**`check-occlusion.py` (v1 heuristic, ±15% accurate)** — estimates bbox from char_ratio × font × text_length + plane-flex stack order. No headless browser. Use for fast iteration when you don't want to spawn Chromium. Same `--strict` flag, but trust v2 for ship/no-ship decisions.
+**Frame-edge overflow** — the checker also flags when a measured bbox extends outside the canvas (text clipped by ffmpeg). A single 10-char uppercase word at 0.15h on a 720-wide portrait clips the frame edges — surfaced as `[overflow] cg-N: Npx wide, cropped left by Xpx and right by Ypx`.
 
-**Frame-edge overflow** — both v1 and v2 also flag when the estimated/measured bbox extends outside the canvas (text clipped by ffmpeg). A single 10-char uppercase word at 0.15h on a 720-wide portrait clips the frame edges — the checker surfaces this as `[overflow] cg-N: Npx wide, cropped left by Xpx and right by Ypx`.
-
-**v2 reports facts, the agent applies judgment.** v2 FAIL is NOT an automatic "must re-layout" signal — it's evidence to interpret. Two competing goals coexist:
+**The checker reports facts, the agent applies judgment.** A FAIL is NOT an automatic "must re-layout" signal — it's evidence to interpret. Two competing goals coexist:
 1. **Readability** — every sentence must remain comprehensible to the viewer
 2. **Cinematic embed** — partial occlusion is the desired vogue-masthead effect; zero occlusion looks like a pasted subtitle
 
-When v2 reports a per-word obliteration (≥65%), apply this **3-step decision rule** before changing anything:
+When the checker reports a per-word obliteration (≥65%), apply this **3-step decision rule** before changing anything:
 
 **Step 1 — POS check.** Is the obliterated word a function word (the / a / an / of / in / on / at / to / I / it / is / are / was / be / that / this / which / and / or / but)? Function words are grammatically optional in most contexts — a 100%-eaten "the" or "I" or "of" usually does NOT break the sentence. Content words (nouns, verbs, adjectives, climax words) carry meaning — they MUST stay legible.
 
@@ -354,7 +350,7 @@ When v2 reports a per-word obliteration (≥65%), apply this **3-step decision r
 - the obliterated word IS the climax / key noun the viewer is supposed to read (e.g. the subject of a sentence, a brand name, a product feature)
 - key letters of a climax word are eaten (e.g. "STARTUP" with the S gone reads as "TARTUP" — the partial-letter pattern matters more than the whole-word percentage)
 
-**Real examples from the 13-case batch** — all four caps below got v2 per-word obliteration FAIL, all four were correctly judged OK by this rule:
+**Real examples from the 13-case batch** — all four caps below got a per-word obliteration FAIL, all four were correctly judged OK by this rule:
 
 | case | obliterated word @% | sentence | rule applied |
 |---|---|---|---|

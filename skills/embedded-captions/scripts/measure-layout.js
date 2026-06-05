@@ -6,9 +6,9 @@
  * times, queries every .cap container + every .w word span via
  * getBoundingClientRect(), writes results to _layout.json.
  *
- * The Python check-occlusion-v2.py then reads _layout.json + frames_fg/*.png
- * and computes per-word occlusion against the actual subject silhouette —
- * pixel accurate, no char_ratio guessing.
+ * check-occlusion.cjs then reads _layout.json + frames_fg/*.png and computes
+ * per-word occlusion against the actual subject silhouette (matte alpha via
+ * sharp) — pixel accurate, no char_ratio guessing.
  *
  * Usage:
  *   node measure-layout.js <project-dir> [times...]
@@ -55,7 +55,7 @@ async function main() {
   }
   const indexPath = path.resolve(projectDir, "index.html");
   if (!fs.existsSync(indexPath)) {
-    console.error(`[measure] missing ${indexPath} — run make-composition.py first`);
+    console.error(`[measure] missing ${indexPath} — run make-composition.cjs first`);
     process.exit(2);
   }
 

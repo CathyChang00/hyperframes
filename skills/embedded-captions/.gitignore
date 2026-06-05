@@ -1,10 +1,5 @@
-# Python virtualenv (~174 MB) — create locally, never commit.
-.venv/
-__pycache__/
-*.pyc
-
 # RVM matting weights (~14 MB) — auto-downloaded on first matte run by
-# scripts/matte-rvm.py from the upstream RobustVideoMatting release.
+# scripts/matte.cjs from the upstream RobustVideoMatting release.
 assets/*.onnx
 
 .DS_Store

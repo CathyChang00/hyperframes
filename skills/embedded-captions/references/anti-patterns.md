@@ -118,18 +118,18 @@ You saw black bars on the sides and didn't computing the safe-zone. Your caption
 
 Run the **letterbox probe** first. If the source has existing captions, refuse with: "source already captioned, adding more would conflict."
 
-### You accept hyperframes init's whisper transcript.
-`hyperframes init --video` writes a whisper-small.en transcript to `transcript.json`. That's fine for their scaffold but terrible for us: word timings are imprecise and words get zero-duration entries ("everything" in the memory-wall original). Overwrite with ElevenLabs Scribe v2 via `transcribe.py` — our script now detects the whisper schema and replaces it.
+### You ship Whisper's transcript without checking timings against the beat.
+Transcription is Whisper (via `transcribe.cjs`, no API key) — good word timings, but not infallible: a word can land with a near-zero duration or a timestamp a beat off. This skill is verbatim + on-beat, so `check-timing.cjs --strict` (80ms tolerance) is the gate, not a suggestion — fix drift in `plan.json` before rendering, and never pack two transcript words into one timed entry (the second inherits the first's timestamp and fires early).
 
 ---
 
 ## Matting
 
 ### You enable CoreML for RVM ONNX.
-It's the Apple way, obviously faster. No. CoreML partitions the ONNX graph across providers (244 of 303 nodes on CoreML, 59 on CPU). The mixed-precision boundary produces alpha=30 inside the subject's face while background correctly reads 0. Captions shine through face. Use `providers=["CPUExecutionProvider"]` only. Our `matte-rvm.py` already does this; don't "optimize" it by re-adding CoreML.
+It's the Apple way, obviously faster. No. CoreML partitions the ONNX graph across providers (244 of 303 nodes on CoreML, 59 on CPU). The mixed-precision boundary produces alpha=30 inside the subject's face while background correctly reads 0. Captions shine through face. Pin the CPU execution provider only (`onnxruntime-node`). Our `matte.cjs` already does this; don't "optimize" it by re-adding CoreML.
 
 ### You pick a matte model by "general vs human."
-rembg's `u2net_human_seg` gets people but misses handheld mics. `isnet-general-use` catches more but still drops mics on standing mounts. The right choice for video is **RVM** (temporally coherent + fast CPU) with `matte-rvm.py`. Only fall back to rembg isnet when RVM fails for some reason.
+rembg's `u2net_human_seg` gets people but misses handheld mics. `isnet-general-use` catches more but still drops mics on standing mounts. The right choice for video is **RVM** (temporally coherent + fast CPU) with `matte.cjs`. Only fall back to rembg isnet when RVM fails for some reason.
 
 ---
 

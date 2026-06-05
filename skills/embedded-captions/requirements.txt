@@ -1,6 +1,0 @@
-# Python deps for the embedded-captions pipeline.
-#   python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
-elevenlabs        # transcribe.py — Scribe v2 (OPTIONAL: skipped if ELEVENLABS_API_KEY unset)
-onnxruntime       # matte-rvm.py — RVM matting (CPU only; CoreML banned, corrupts alpha)
-pillow            # frame I/O for matting + occlusion/overflow checks
-numpy             # matte / occlusion math

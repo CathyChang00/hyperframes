@@ -26,7 +26,7 @@ Each template directory contains:
 3. Probe the scene (3 frames at 20/50/80%) for plane positioning
 4. Group transcript words and assign slots (`spec.md` describes the slot arc)
 5. Write `<project>/plan.json` with template-specific fields
-6. `python scripts/make-composition.py <project>` → `index.html`
+6. `node scripts/make-composition.cjs <project>` → `index.html`
 7. `bash scripts/render-and-composite.sh <project>` → `final.mp4`
 
 ## What you DON'T do in template mode
