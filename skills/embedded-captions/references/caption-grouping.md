@@ -1,6 +1,6 @@
 # Caption Grouping
 
-How to turn ElevenLabs word-level transcript into the `groups[]` array of plan.json.
+How to turn the Whisper word-level transcript into the `groups[]` array of plan.json.
 
 ## Goal
 
@@ -8,7 +8,7 @@ How to turn ElevenLabs word-level transcript into the `groups[]` array of plan.j
 
 ## Input
 
-`transcript.json` from `transcribe.py`:
+`transcript.json` from `transcribe.cjs`:
 ```json
 { "words": [
   { "text": "Some", "start": 0.24, "end": 0.44, "type": "word" },

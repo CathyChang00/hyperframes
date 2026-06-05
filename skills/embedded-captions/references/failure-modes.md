@@ -12,7 +12,7 @@ RVM ONNX through CoreML partitions ~60 of 300 nodes to CoreML and the rest to CP
 ### Wrong downsample_ratio makes alpha smoky around edges
 RVM recommends ~512 on the shorter edge. For 1080p = 0.25, for 720p = 0.5. Too high (0.5 on 1080p) gives decent alpha but wastes compute; too low (0.125 on 1080p) smokes out hair.
 
-**Fix**: `matte-rvm.py` computes this automatically from input height.
+**Fix**: `matte.cjs` computes this automatically from input height.
 
 ### isnet-general-use / u2net_human_seg miss props
 rembg's general/human models capture the person but drop handheld props (mic, notebook). If the caption crosses the mic, it will NOT be occluded by the mic — text floats in front of it unnaturally.
@@ -113,10 +113,10 @@ TV archive clips often have pillarbox (black bars at sides) plus baked lower-thi
 
 **Fix**: Detect black-bar margins in the first frame (scan rows/columns for all-black). Constrain caption safe-zone to `[left_margin+pad, right_margin-pad, top_margin+pad, bottom_margin-pad]`. For Jobs, safe content zone was x=280-1640 (not 0-1920). Layout positions must respect this.
 
-### hyperframes init pre-populates whisper transcript → `transcribe.py` skips
-`hyperframes init --video <mp4>` auto-transcribes with whisper-small.en and writes `transcript.json`. Our `transcribe.py` had a "skip if exists" guard, so the more accurate ElevenLabs Scribe v2 run was silently skipped, leaving us with whisper-shaped data that our plan code doesn't parse.
+### transcribe.cjs sees an existing transcript and skips
+Transcription is Whisper now, via `transcribe.cjs` (it wraps `hyperframes transcribe` — no API key). `hyperframes init --video <mp4>` may itself auto-write a `transcript.json` in hyperframes' raw whisper shape (a flat word array, no top-level `language_code`). `transcribe.cjs` only treats a transcript as done when it's ALREADY in our normalized schema (`{ words: [...], language_code }`); otherwise it (re-)runs Whisper and normalizes the flat word list into `{ words:[{text,start,end,type:"word"}], language_code }`.
 
-**Fix**: `transcribe.py` now detects the whisper schema (top-level keys like `systeminfo`, `transcription`) and replaces it. Scribe v2 output always uses `{ words: [...], language_code }` schema. If you init via hyperframes first, expect the script to overwrite the whisper transcript.
+**Fix / expectation**: If you init via hyperframes first, expect `transcribe.cjs` to normalize that transcript into our schema. Don't hand-leave a half-normalized file (e.g. our `words` shape but no `language_code`) — that's the one state the skip-guard can misread.
 
 ### Transcript gaps > 3s with no speech
 If the original audio has a long silence, leaving the caption plane empty feels wrong mid-video. Either (a) let the prior caption linger, (b) show a title-card crown during the silence, or (c) cut the silence out of the clip.

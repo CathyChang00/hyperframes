@@ -28,20 +28,20 @@ fi
 export HYPERFRAMES_ROOT="$HF"   # so the occlusion gate's measure-layout.js finds puppeteer too
 HF_CLI="$HF/packages/cli/dist/cli.js"
 if [[ ! -d "$PROJECT/frames_fg" ]]; then
-  echo "[render] missing matte frames at $PROJECT/frames_fg — run matte-rvm.py first" >&2
+  echo "[render] missing matte frames at $PROJECT/frames_fg — run matte.cjs first" >&2
   exit 1
 fi
 if [[ ! -f "$PROJECT/index.html" ]]; then
   if [[ -f "$PROJECT/plan.json" ]]; then
     echo "[render] no index.html — auto-compiling from plan.json"
-    python3 "$(dirname "$0")/make-composition.py" "$PROJECT"
+    node "$(dirname "$0")/make-composition.cjs" "$PROJECT"
   else
-    echo "[render] missing $PROJECT/index.html and plan.json — run make-composition.py first" >&2
+    echo "[render] missing $PROJECT/index.html and plan.json — run make-composition.cjs first" >&2
     exit 1
   fi
 elif [[ -f "$PROJECT/plan.json" && "$PROJECT/plan.json" -nt "$PROJECT/index.html" ]]; then
   echo "[render] plan.json newer than index.html — recompiling"
-  python3 "$(dirname "$0")/make-composition.py" "$PROJECT"
+  node "$(dirname "$0")/make-composition.cjs" "$PROJECT"
 fi
 
 # Gate: plan.json word timings must align with transcript.json within 80ms.
@@ -49,28 +49,17 @@ fi
 # breaks the "belongs to the scene" illusion — hard fail, not a warning.
 # Skip only if transcript.json is missing (custom mode without transcript).
 if [[ -f "$PROJECT/plan.json" && -f "$PROJECT/transcript.json" ]]; then
-  if ! python3 "$(dirname "$0")/check-timing.py" "$PROJECT" --strict; then
+  if ! node "$(dirname "$0")/check-timing.cjs" "$PROJECT" --strict; then
     echo "[render] ABORTED — fix plan.json word timings to match transcript.json, then re-run." >&2
     exit 2
   fi
 fi
 
-# Gate: subject occlusion + frame-edge overflow.
-# v2 (canonical): runs measure-layout.js (headless Chromium) to get the actual
-#   pixel coordinates of every cap and word from the rendered DOM, then computes
-#   per-word peak occlusion against the RVM matte. Catches whole-word obliteration
-#   that v1's bbox-average misses. Requires index.html — i.e. make-composition.py
-#   must have run first.
-# v1 (fallback): heuristic bbox from char_ratio × font × text. Faster (no
-#   Chromium spawn). Lossy ±15%. Used when OCCLUSION_FAST=1 or index.html absent.
-# Skip gracefully if plan.json is missing (custom-mode) or frames_fg absent.
+# Gate: subject occlusion + frame-edge overflow — pixel-perfect via Chromium DOM
+# rects (measure-layout.js) × the RVM matte alpha (sharp). Template mode only
+# (skipped when plan.json is absent; custom mode uses check-overflow.js below).
 if [[ -f "$PROJECT/plan.json" && -d "$PROJECT/frames_fg" ]]; then
-  CHECKER="check-occlusion-v2.py"
-  if [[ "${OCCLUSION_FAST:-0}" == "1" ]] || [[ ! -f "$PROJECT/index.html" ]]; then
-    CHECKER="check-occlusion.py"
-    echo "[render] using v1 (heuristic) checker — set OCCLUSION_FAST=0 to use v2 pixel-perfect" >&2
-  fi
-  if ! python3 "$(dirname "$0")/$CHECKER" "$PROJECT" --strict; then
+  if ! node "$(dirname "$0")/check-occlusion.cjs" "$PROJECT" --strict; then
     echo "[render] ABORTED — fix plan.json layout to reduce subject occlusion / frame-edge overflow, then re-run." >&2
     echo "         Override: OCCLUSION_SKIP=1 bash render-and-composite.sh <project>" >&2
     if [[ "${OCCLUSION_SKIP:-0}" != "1" ]]; then
@@ -96,7 +85,7 @@ FPS=""
 if [[ -f "$PROJECT/matte.fps" ]]; then
   FPS="$(tr -dc '0-9' < "$PROJECT/matte.fps")"
   if [[ -f "$PROJECT/plan.json" ]]; then
-    PFPS="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("fps",""))' "$PROJECT/plan.json" 2>/dev/null || true)"
+    PFPS="$(node -e 'try{process.stdout.write(String(require(process.argv[1]).fps??""))}catch(e){}' "$PROJECT/plan.json" 2>/dev/null || true)"
     if [[ -n "$PFPS" && "$PFPS" != "$FPS" ]]; then
       echo "[render] WARN: plan.json fps=$PFPS != matte fps=$FPS — using matte fps to keep occlusion aligned" >&2
     fi
@@ -104,12 +93,12 @@ if [[ -f "$PROJECT/matte.fps" ]]; then
 fi
 if [[ -z "$FPS" || "$FPS" == "0" ]]; then
   if [[ -f "$PROJECT/plan.json" ]]; then
-    FPS="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("fps",24))' "$PROJECT/plan.json")"
+    FPS="$(node -e 'process.stdout.write(String(require(process.argv[1]).fps??24))' "$PROJECT/plan.json")"
   elif [[ -d "$PROJECT/frames_fg" ]]; then
     N="$(ls "$PROJECT/frames_fg" | wc -l | tr -d ' ')"
     DUR="$(grep -oE 'data-duration="[0-9.]+"' "$PROJECT/index.html" | head -1 | grep -oE '[0-9.]+' || echo '')"
     if [[ -n "$DUR" && "$N" -gt 0 ]]; then
-      FPS="$(python3 -c "print(round($N / $DUR))")"
+      FPS="$(awk "BEGIN{printf \"%d\", $N/$DUR + 0.5}")"
     else
       FPS=24
     fi
@@ -124,7 +113,7 @@ fi
 # Precedence: CLI env flag > plan.json > HTML data attribute > "bg".
 CAPTION_LAYER="${CAPTION_LAYER_FLAG:-}"
 if [[ -z "$CAPTION_LAYER" && -f "$PROJECT/plan.json" ]]; then
-  CAPTION_LAYER="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("caption_layer","bg"))' "$PROJECT/plan.json")"
+  CAPTION_LAYER="$(node -e 'process.stdout.write(String(require(process.argv[1]).caption_layer??"bg"))' "$PROJECT/plan.json")"
 fi
 if [[ -z "$CAPTION_LAYER" && -f "$PROJECT/index.html" ]]; then
   ATTR="$(grep -oE 'data-caption-layer="(bg|fg)"' "$PROJECT/index.html" | head -1 | grep -oE '(bg|fg)' || true)"

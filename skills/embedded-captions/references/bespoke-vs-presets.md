@@ -89,7 +89,7 @@ These are per-group affordances you'll occasionally need. Express via `custom_cs
 .cap-emph .w:first-child { font-size: 110%; }   /* oversize first word only */
 ```
 
-The `#cg-N` selector always works because `make-composition.py` writes `<div id="cg-N" ...>` for every group.
+The `#cg-N` selector always works because `make-composition.cjs` writes `<div id="cg-N" ...>` for every group.
 
 ### "Caps should accumulate (flex stack) instead of swap"
 
@@ -136,15 +136,15 @@ For a new video that's clearly similar to an existing canonical example:
 hyperframes init <project> --non-interactive --video <video.mp4> --skip-skills
 
 # 2. Matte + transcribe
-python scripts/matte-rvm.py <project>
-python scripts/transcribe.py <project>
+node scripts/matte.cjs <project>
+node scripts/transcribe.cjs <project>
 
 # 3. Copy the canonical HTML instead of writing plan.json
 cp references/example-renders/memory-wall.html <project>/index.html
 
 # 4. Replace GROUPS array with the new transcript's grouping (hand-edit index.html)
 
-# 5. Render directly (skip make-composition.py since we're not using plan.json)
+# 5. Render directly (skip make-composition.cjs since we're not using plan.json)
 bash scripts/render-and-composite.sh <project>
 ```
 
