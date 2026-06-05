@@ -20,7 +20,7 @@ Classification matrix — pick direction by intersection:
 
 ## Direction specs
 
-### 1. documentary-dignified  *(Errol Morris / PBS Frontline)*
+### 1. documentary-dignified  *(Errol Morris / PBS Frontline)*  — custom-mode direction (no prebuilt template)
 
 - **Family**: Söhne Mono OR GT Sectra for name cards; Inter for body
 - **Weights**: 500 body, 700 name card

@@ -5,26 +5,28 @@
 #   bash render-and-composite.sh <project-dir> [hyperframes-repo-path]
 #
 # Env:
-#   HYPERFRAMES_ROOT  default: the hyperframes repo this skill ships inside
-#                     (skills/embedded-captions/scripts → repo root, 3 dirs up)
+#   HYPERFRAMES_ROOT  override the hyperframes checkout location
 
 set -euo pipefail
 
 PROJECT="${1:?usage: render-and-composite.sh <project-dir> [hyperframes-repo]}"
-# This skill lives at skills/embedded-captions/scripts/ inside the hyperframes
-# repo, so the repo root is three levels up. arg 2 or HYPERFRAMES_ROOT override.
-SKILL_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SKILL_SCRIPT_DIR/../../.." && pwd)"
-HF="${2:-${HYPERFRAMES_ROOT:-$REPO_ROOT}}"
-
 PROJECT="$(cd "$PROJECT" && pwd)"
-HF_CLI="$HF/packages/cli/dist/cli.js"
 
-if [[ ! -f "$HF_CLI" ]]; then
-  echo "[render] hyperframes CLI not found at $HF_CLI" >&2
-  echo "         Set HYPERFRAMES_ROOT or pass the repo path as arg 2." >&2
+# Resolve the hyperframes checkout. Candidate order:
+#   1. arg 2   2. $HYPERFRAMES_ROOT   3. repo root if this skill ships INSIDE the
+#   hyperframes repo (skills/embedded-captions/scripts → ../../..)   4. ~/Downloads/hyperframes
+SKILL_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HF=""
+for cand in "${2:-}" "${HYPERFRAMES_ROOT:-}" "$(cd "$SKILL_SCRIPT_DIR/../../.." 2>/dev/null && pwd)" "$HOME/Downloads/hyperframes"; do
+  if [[ -n "$cand" && -f "$cand/packages/cli/dist/cli.js" ]]; then HF="$cand"; break; fi
+done
+if [[ -z "$HF" ]]; then
+  echo "[render] hyperframes CLI not found. Set HYPERFRAMES_ROOT to your hyperframes" >&2
+  echo "         checkout (needs packages/cli/dist/cli.js — 'bun install && bun run build')." >&2
   exit 1
 fi
+export HYPERFRAMES_ROOT="$HF"   # so the occlusion gate's measure-layout.js finds puppeteer too
+HF_CLI="$HF/packages/cli/dist/cli.js"
 if [[ ! -d "$PROJECT/frames_fg" ]]; then
   echo "[render] missing matte frames at $PROJECT/frames_fg — run matte-rvm.py first" >&2
   exit 1
@@ -78,20 +80,42 @@ if [[ -f "$PROJECT/plan.json" && -d "$PROJECT/frames_fg" ]]; then
   fi
 fi
 
-# FPS: from plan.json if present (template mode), else infer from frames_fg
-# count + index.html duration (custom mode), else default to 24.
-if [[ -f "$PROJECT/plan.json" ]]; then
-  FPS="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("fps",24))' "$PROJECT/plan.json")"
-elif [[ -d "$PROJECT/frames_fg" ]]; then
-  N="$(ls "$PROJECT/frames_fg" | wc -l | tr -d ' ')"
-  DUR="$(grep -oE 'data-duration="[0-9.]+"' "$PROJECT/index.html" | head -1 | grep -oE '[0-9.]+' || echo '')"
-  if [[ -n "$DUR" && "$N" -gt 0 ]]; then
-    FPS="$(python3 -c "print(round($N / $DUR))")"
+# Custom mode (no plan.json) skips the template gates above. Run a lightweight,
+# mode-agnostic frame-overflow check as a WARNING only — custom designs may bleed
+# off-frame intentionally, so it never aborts, but it surfaces captions that fall
+# off the canvas (the failure we otherwise only catch by eye).
+if [[ ! -f "$PROJECT/plan.json" && -f "$PROJECT/index.html" && -f "$(dirname "$0")/check-overflow.js" ]]; then
+  node "$(dirname "$0")/check-overflow.js" "$PROJECT" \
+    || echo "[render] (overflow check skipped — Chromium/puppeteer unavailable)" >&2
+fi
+
+# FPS: matte.fps (written by matte-rvm at the source's NATIVE rate) is authoritative
+# so the matte overlay stays frame-aligned with the render. Falls back to plan.fps /
+# frame-count inference / 24. Warn if plan.json fps disagrees with the matte.
+FPS=""
+if [[ -f "$PROJECT/matte.fps" ]]; then
+  FPS="$(tr -dc '0-9' < "$PROJECT/matte.fps")"
+  if [[ -f "$PROJECT/plan.json" ]]; then
+    PFPS="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("fps",""))' "$PROJECT/plan.json" 2>/dev/null || true)"
+    if [[ -n "$PFPS" && "$PFPS" != "$FPS" ]]; then
+      echo "[render] WARN: plan.json fps=$PFPS != matte fps=$FPS — using matte fps to keep occlusion aligned" >&2
+    fi
+  fi
+fi
+if [[ -z "$FPS" || "$FPS" == "0" ]]; then
+  if [[ -f "$PROJECT/plan.json" ]]; then
+    FPS="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("fps",24))' "$PROJECT/plan.json")"
+  elif [[ -d "$PROJECT/frames_fg" ]]; then
+    N="$(ls "$PROJECT/frames_fg" | wc -l | tr -d ' ')"
+    DUR="$(grep -oE 'data-duration="[0-9.]+"' "$PROJECT/index.html" | head -1 | grep -oE '[0-9.]+' || echo '')"
+    if [[ -n "$DUR" && "$N" -gt 0 ]]; then
+      FPS="$(python3 -c "print(round($N / $DUR))")"
+    else
+      FPS=24
+    fi
   else
     FPS=24
   fi
-else
-  FPS=24
 fi
 
 # Caption layer: "bg" (classic embed — matte overlays subject on top of caps)

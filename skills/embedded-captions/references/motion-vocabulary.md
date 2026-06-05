@@ -64,7 +64,7 @@ Per-word, 200ms total: two 1px lines converge on word center (linear 150ms), the
 Each word from alternating direction: L, R, L, R. `translateX: ±40→0`, ease-out 300ms. **Rhythm-break move** — use sparingly, once per 30s max.
 
 ### 10. burn-in
-**Zero animation.** Sudden 1-frame opacity 1. No fade, no transform. Interview-doc style. Use for every 6–8th phrase in documentary direction for variety, and as the DEFAULT for `documentary-dignified` template.
+**Zero animation.** Sudden 1-frame opacity 1. No fade, no transform. Interview-doc style. Use for every 6–8th phrase in a documentary direction for variety (custom mode; see direction-catalog §1).
 
 ---
 

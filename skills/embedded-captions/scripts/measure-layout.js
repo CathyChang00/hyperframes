@@ -16,24 +16,34 @@
  */
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 
-// Use hyperframes' bundled puppeteer (bun-resolved location). This skill ships
-// inside the hyperframes repo at skills/embedded-captions/scripts/, so the repo
-// root (with the bun-resolved node_modules) is three levels up. Override via env.
-const HF_ROOT = process.env.HYPERFRAMES_ROOT || path.resolve(__dirname, "../../..");
-const candidates = [
-  `${HF_ROOT}/node_modules/.bun/puppeteer@24.40.0/node_modules/puppeteer`,
-  `${HF_ROOT}/node_modules/puppeteer`,
-];
+// Locate hyperframes' bundled puppeteer. render-and-composite.sh exports
+// HYPERFRAMES_ROOT; standalone we also try the in-repo path + ~/Downloads, and
+// accept ANY puppeteer@* the bun store holds (not a pinned version).
+const HF_ROOTS = [
+  process.env.HYPERFRAMES_ROOT,
+  path.resolve(__dirname, "../../.."),          // skills/embedded-captions/scripts → repo root if in-repo
+  path.join(os.homedir(), "Downloads", "hyperframes"),
+].filter(Boolean);
 let puppeteer = null;
-for (const p of candidates) {
+for (const root of HF_ROOTS) {
+  const cands = [path.join(root, "node_modules", "puppeteer")];
+  const bunDir = path.join(root, "node_modules", ".bun");
   try {
-    if (fs.existsSync(p)) { puppeteer = require(p); break; }
-  } catch (e) { /* try next */ }
+    if (fs.existsSync(bunDir)) {
+      for (const d of fs.readdirSync(bunDir)) {
+        if (d.startsWith("puppeteer@")) cands.push(path.join(bunDir, d, "node_modules", "puppeteer"));
+      }
+    }
+  } catch (e) { /* ignore */ }
+  for (const p of cands) {
+    try { if (fs.existsSync(p)) { puppeteer = require(p); break; } } catch (e) { /* try next */ }
+  }
+  if (puppeteer) break;
 }
 if (!puppeteer) {
-  console.error("[measure] could not locate puppeteer in hyperframes node_modules");
-  console.error("[measure] tried:", candidates.join(", "));
+  console.error("[measure] could not locate puppeteer — set HYPERFRAMES_ROOT to a built hyperframes checkout");
   process.exit(3);
 }
 
@@ -98,6 +108,8 @@ async function main() {
       await new Promise((res) => setTimeout(res, 200));
     }
     if (!ready) { console.error("[measure] GSAP timeline never registered"); process.exit(4); }
+    // let webfonts settle so measured glyph metrics match the render
+    await page.evaluate(async () => { try { await document.fonts.ready; } catch (e) {} });
 
     const samples = [];
     for (const t of sampleTimes) {

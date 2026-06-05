@@ -170,7 +170,7 @@ The DNA defaults prevent most ugly outcomes. But avoid in per-group CSS:
 This DNA assumes mid-to-dark backgrounds (luminance 60-180). For:
 - Bright white studios → switch `cap_color: "#3a2a18"` + `blend_mode:
   "multiply"` for the "inverse" take
-- Documentary formal → use `documentary-dignified` template
+- Documentary formal → custom mode (documentary-dignified direction; see references/direction-catalog.md §1)
 - Energetic vlog hooks → future `kinetic-vlog` DNA (not yet shipped)
 
 ## Example: memory-wall original, expressed in freeform
