@@ -245,7 +245,11 @@ Heuristic: if you find cg-N and cg-N+1 are in different zones (top vs bottom, le
 
 ### The climax has to POP (炸) — not just "be a bit bigger"
 
-A climax caption that's the same size as body emphasis is a failed climax. The viewer's eye needs a clear visual break: THIS is the payoff. Metrics to aim for:
+A climax caption that's the same size as body emphasis is a failed climax. The viewer's eye needs a clear visual break: THIS is the payoff.
+
+**Size the embedded climax to the FRAME, not to the rail (two-track rule).** The climax is a hero — its size is anchored to frame height: **`font-size: calc(0.16–0.22 * var(--h))`** (default ~0.18–0.20h; go bigger for more 炸 — it should dominate the frame, only width/readability caps it). It is **NOT** a multiple of the rail: the rail is a small standard subtitle (~0.045h), so "≥1.8× the rail" would yield a tiny, un-炸 climax. Express rail, embed-body and embed-climax all as `var(--h)` fractions so they scale across resolutions — **never hardcode px**. The ratios below are a **floor / hierarchy check** (the climax must clear body-emphasis by ≥1.8× and the smallest tier by ≥2.5×), not the climax's sizing basis. Width is the real ceiling: shrink only if the word can't fit the frame at a legible size (see "Readability is a hard constraint").
+
+Contrast floor — the climax must at least clear these:
 
 | Ratio | Feels like |
 |---|---|

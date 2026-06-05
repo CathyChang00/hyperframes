@@ -34,6 +34,7 @@ with only the climax(es) promoted to embed. Rail is not a fallback — it's the 
 
 ## Look (restrained on purpose)
 
+- **Size: ~`calc(0.045 * var(--h))`** (≈48px @1080, ≈58px @1290) — readable, *not* hero. The rail is a subtitle; it is deliberately much smaller than the embed body/climax. Express as a `var(--h)` fraction (never hardcode px) so it scales across resolutions. The embed climax is sized to the frame independently (see composition-craft § POP) — **never** size the climax as a multiple of this rail.
 - One clean sans (Inter / Helvetica Now / Neue Haas), weight 500–600; white (or near-white).
 - **Legibility without grading the video:** a tight text treatment local to the glyphs only —
   a soft dark drop-shadow, or a subtle rounded gradient pill / 30–40% scrim **sized to the text
