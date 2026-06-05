@@ -1,4 +1,6 @@
-# Template mode — pick a locked visual style
+# Cinematic mode (pure embed) — pick a locked visual style
+
+> These four templates are **Cinematic mode** (the user-facing name). The directory stays `modes/template/` and is compiled by `make-composition.cjs`. For rail + embed, see [../standard/](../standard/).
 
 Use this mode when the user wants a **consistent, predictable look** —
 either they named a template or they want something off-the-shelf.
@@ -36,8 +38,8 @@ Each template directory contains:
 - Add custom DOM layers (grain, vignette, focus flash, etc.)
 - Tweak GSAP motion curves or word reveal timing per group
 
-If the user wants any of those → **switch to custom mode** (`modes/custom/`).
-That's exactly what custom mode is for.
+If the user wants any of those, it's a hand-authored job → use **Standard mode**
+([../standard/](../standard/)), which builds a rail + embed scene from the template library.
 
 ## Adding a new template
 

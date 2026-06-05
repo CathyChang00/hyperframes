@@ -4,7 +4,7 @@ This is the deep "how to lay a caption INTO the scene" manual — it governs the
 track only (captions composited behind the subject). The default **rail** track (standard
 lower-third subtitle, where most text lives) has its own, much simpler spec → [rail.md](rail.md).
 Read this before authoring any **promoted** phrase, in either authoring mode (template
-`plan.json` or custom `index.html`).
+Cinematic `plan.json` or Standard `index.html`).
 
 Topics: phrase grouping, planes & clean-zone anchoring, zone coherence, climax pop,
 readability, edge breathing, the occlusion 3-step judgement, accumulation, and persistence.
