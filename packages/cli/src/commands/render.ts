@@ -6,6 +6,7 @@ import {
   resolveVariablesArg,
   validateVariablesAgainstProject,
 } from "../utils/variables.js";
+import { resolveBrowserTimeoutMsArg, resolveCompositionEntryArg } from "../utils/renderArgs.js";
 
 export const examples: Example[] = [
   ["Render to MP4", "hyperframes render --output output.mp4"],
@@ -49,7 +50,7 @@ import { maybePromptRenderFeedback } from "../telemetry/feedback.js";
 import { bytesToMb } from "../telemetry/system.js";
 import { VERSION } from "../version.js";
 import { isDevMode } from "../utils/env.js";
-import { buildDockerRunArgs } from "../utils/dockerRunArgs.js";
+import { buildDockerRunArgs, resolveDockerPlatform } from "../utils/dockerRunArgs.js";
 import { normalizeErrorMessage } from "../utils/errorMessage.js";
 import { findFFmpeg, getFFmpegInstallHint } from "../browser/ffmpeg.js";
 import type { RenderJob } from "@hyperframes/producer";
@@ -119,7 +120,8 @@ export default defineCommand({
       alias: "c",
       description:
         "Render a specific composition file instead of index.html (e.g. compositions/intro.html). " +
-        "Sub-compositions using <template> wrappers must be referenced from index.html via data-composition-src.",
+        "Sub-compositions using <template> wrappers must be referenced from index.html via data-composition-src. " +
+        "Pass `.` (or omit the flag) to render the project's index.html.",
     },
     output: {
       type: "string",
@@ -234,7 +236,26 @@ export default defineCommand({
         "Use --no-page-side-compositing to force the layered path.",
       default: true,
     },
+    "browser-timeout": {
+      type: "string",
+      description:
+        "Puppeteer page-navigation timeout in SECONDS for the entry HTML. " +
+        "Increase when heavy compositions (many videos / fonts / asset " +
+        "requests) cannot reach domcontentloaded within the 60s default " +
+        "(see issue #1199). Accepts 0.001-86400 (24h cap). " +
+        "Note: this controls page.goto only — very heavy compositions may " +
+        "also need PRODUCER_PUPPETEER_PROTOCOL_TIMEOUT_MS / " +
+        "PRODUCER_PLAYER_READY_TIMEOUT_MS bumped (the post-goto window.__hf " +
+        "readiness poll has its own 45s budget). " +
+        "Env fallback: PRODUCER_PAGE_NAVIGATION_TIMEOUT_MS (MILLISECONDS).",
+    },
   },
+  // `run` is the citty handler for `hyperframes render` — sequential flag
+  // validation + render dispatch. Inherited CRITICAL on main (CRAP 1290);
+  // this PR extracted --browser-timeout + --composition validators into
+  // `utils/renderArgs.ts`, reducing cyclomatic 75→65 and CRAP 1290→978.
+  // Full decomposition is tracked separately and out of scope for #1199.
+  // fallow-ignore-next-line complexity
   async run({ args }) {
     // ── Resolve project ────────────────────────────────────────────────────
     const project = resolveProject(args.dir);
@@ -378,29 +399,12 @@ export default defineCommand({
       process.exit(1);
     }
 
-    // ── Validate composition entry file ──────────────────────────────────
-    const entryFile = args.composition?.trim().replace(/^\.\//, "") || undefined;
-    if (entryFile) {
-      const absProjectDir = resolve(project.dir);
-      const entryPath = resolve(absProjectDir, entryFile);
-      if (!entryPath.startsWith(absProjectDir)) {
-        errorBox(
-          "Invalid composition path",
-          `Entry file must stay inside the project directory: ${entryFile}`,
-        );
-        process.exit(1);
-      }
-      try {
-        statSync(entryPath);
-      } catch {
-        errorBox(
-          "Composition not found",
-          `"${entryFile}" does not exist in the project directory.`,
-          "Pass a path to a .html file relative to the project root (e.g. compositions/intro.html).",
-        );
-        process.exit(1);
-      }
-    }
+    // ── Validate browser-timeout (seconds) and composition entry file ────
+    // Both validators live in `utils/renderArgs.ts` so the parse/reject
+    // branches are unit-testable without `process.exit`. See issue #1199
+    // for the original EISDIR / silent-timeout-0 footguns this guards.
+    const pageNavigationTimeoutMs = resolveBrowserTimeoutMsArg(args["browser-timeout"]);
+    const entryFile = resolveCompositionEntryArg(args.composition, project.dir, statSync);
 
     // ── Print render plan ─────────────────────────────────────────────────
     if (!quiet) {
@@ -523,6 +527,7 @@ export default defineCommand({
         entryFile,
         outputResolution,
         pageSideCompositing: args["page-side-compositing"] !== false,
+        pageNavigationTimeoutMs,
         exitAfterComplete: true,
       });
     } else {
@@ -541,6 +546,7 @@ export default defineCommand({
         variables,
         entryFile,
         outputResolution,
+        pageNavigationTimeoutMs,
         exitAfterComplete: true,
       });
     }
@@ -570,6 +576,13 @@ interface RenderOptions {
   /** Output resolution preset; see `resolveDeviceScaleFactor` for constraints. */
   outputResolution?: CanvasResolution;
   pageSideCompositing?: boolean;
+  /**
+   * Puppeteer `page.goto()` timeout for the entry HTML, in milliseconds.
+   * When omitted, the engine default (60s) applies. Surfaced as
+   * `--browser-timeout <seconds>` at the CLI and threaded through to the
+   * producer's EngineConfig override.
+   */
+  pageNavigationTimeoutMs?: number;
 }
 
 /**
@@ -632,15 +645,23 @@ function dockerImageExists(tag: string): boolean {
   }
 }
 
-function ensureDockerImage(version: string, quiet: boolean): string {
-  const tag = dockerImageTag(version);
+function dockerImageTagForPlatform(version: string, platform: string): string {
+  // Suffix the tag with the arch so amd64 and arm64 images of the same
+  // hyperframes version coexist in the local cache (a developer who flips
+  // between hosts shouldn't have to rebuild).
+  const archSuffix = platform === "linux/arm64" ? "-arm64" : "";
+  return `${dockerImageTag(version)}${archSuffix}`;
+}
+
+function ensureDockerImage(version: string, platform: string, quiet: boolean): string {
+  const tag = dockerImageTagForPlatform(version, platform);
 
   if (dockerImageExists(tag)) {
     if (!quiet) console.log(c.dim(`  Docker image: ${tag} (cached)`));
     return tag;
   }
 
-  if (!quiet) console.log(c.dim(`  Building Docker image: ${tag}...`));
+  if (!quiet) console.log(c.dim(`  Building Docker image: ${tag} (${platform})...`));
 
   const dockerfilePath = resolveDockerfilePath();
 
@@ -649,16 +670,27 @@ function ensureDockerImage(version: string, quiet: boolean): string {
   mkdirSync(tmpDir, { recursive: true });
   writeFileSync(join(tmpDir, "Dockerfile"), readFileSync(dockerfilePath));
 
-  // linux/amd64 forced — chrome-headless-shell doesn't ship ARM Linux binaries
+  // Platform is now derived from the host arch (see resolveDockerPlatform).
+  // Apple Silicon and other arm64 hosts get a native linux/arm64 build; the
+  // Dockerfile skips chrome-headless-shell on arm64 and falls back to system
+  // chromium because chrome-headless-shell ships linux64 only.
+  //
+  // TARGETARCH is passed explicitly rather than relying on BuildKit's
+  // automatic platform args because the legacy builder (and some BuildKit
+  // configurations like colima 0.6.x) leaves it unset, which would defeat
+  // the arch conditional in the Dockerfile.
+  const targetArch = platform === "linux/arm64" ? "arm64" : "amd64";
   try {
     execFileSync(
       "docker",
       [
         "build",
         "--platform",
-        "linux/amd64",
+        platform,
         "--build-arg",
         `HYPERFRAMES_VERSION=${version}`,
+        "--build-arg",
+        `TARGETARCH=${targetArch}`,
         "-t",
         tag,
         tmpDir,
@@ -676,6 +708,50 @@ function ensureDockerImage(version: string, quiet: boolean): string {
   return tag;
 }
 
+/**
+ * Resolves the Docker `--platform` for this host and enforces the constraints
+ * that come with it — keeping that policy out of `renderDocker` so the
+ * orchestrator stays focused on build/run wiring. May terminate the process
+ * via errorBox on unrecoverable mismatches (e.g. --gpu on arm64).
+ */
+function resolveDockerHostPlatform(options: RenderOptions): string {
+  const platform = resolveDockerPlatform();
+
+  // Docker Desktop on Apple Silicon (and colima with VZ) doesn't implement
+  // the `--gpus` host-passthrough flag, so requesting `--gpu` on a linux/arm64
+  // container fails at `docker run` with an opaque device-driver error. Catch
+  // it early with actionable guidance.
+  if (options.gpu && platform === "linux/arm64") {
+    errorBox(
+      "--gpu is not supported with --docker on arm64 hosts",
+      "Docker Desktop/colima on Apple Silicon doesn't expose --gpus host passthrough to linux/arm64 containers.",
+      "Drop --gpu, or run a native (non-Docker) render on this host, or set HYPERFRAMES_DOCKER_PLATFORM=linux/amd64 if you need GPU encoding (slow under qemu but works).",
+    );
+    process.exit(1);
+  }
+
+  if (!options.quiet && platform === "linux/arm64") {
+    // chrome-headless-shell doesn't publish a linux-arm64 build, so the arm64
+    // image falls back to system chromium. That loses byte-for-byte parity
+    // with amd64 renders — fine for end-user output, not fine if you're
+    // comparing against an amd64 golden baseline. Set
+    // HYPERFRAMES_DOCKER_PLATFORM=linux/amd64 to keep parity (qemu-emulated,
+    // slower).
+    console.log(
+      c.dim(
+        "  Host is arm64 — using linux/arm64 image with system chromium " +
+          "(output won't be byte-identical to amd64 renders; " +
+          "set HYPERFRAMES_DOCKER_PLATFORM=linux/amd64 to force parity).",
+      ),
+    );
+  }
+
+  return platform;
+}
+
+// Inherited minor finding (CRAP 37.1, cyclomatic 11). This PR only added
+// `pageNavigationTimeoutMs` to the options forwarded to `buildDockerRunArgs`.
+// fallow-ignore-next-line complexity
 async function renderDocker(
   projectDir: string,
   outputPath: string,
@@ -689,9 +765,11 @@ async function renderDocker(
     console.log(c.dim("  Dev mode: using hyperframes@latest in Docker image"));
   }
 
+  const platform = resolveDockerHostPlatform(options);
+
   let imageTag: string;
   try {
-    imageTag = ensureDockerImage(dockerVersion, options.quiet);
+    imageTag = ensureDockerImage(dockerVersion, platform, options.quiet);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     const isDockerMissing = /connect|not found|ENOENT/i.test(message);
@@ -712,6 +790,7 @@ async function renderDocker(
     projectDir: resolve(projectDir),
     outputDir: resolve(outputDir),
     outputFilename,
+    platform,
     options: {
       fps: options.fps,
       quality: options.quality,
@@ -727,6 +806,7 @@ async function renderDocker(
       entryFile: options.entryFile,
       outputResolution: options.outputResolution,
       pageSideCompositing: options.pageSideCompositing,
+      pageNavigationTimeoutMs: options.pageNavigationTimeoutMs,
     },
   });
 
@@ -802,6 +882,9 @@ export async function renderLocal(
     useGpu: options.gpu,
     producerConfig: producer.resolveConfig({
       browserGpuMode: options.browserGpuMode ?? "software",
+      ...(options.pageNavigationTimeoutMs != null
+        ? { pageNavigationTimeout: options.pageNavigationTimeoutMs }
+        : {}),
     }),
     hdrMode: options.hdrMode,
     crf: options.crf,
@@ -895,6 +978,9 @@ function handleRenderError(
  * Extract rich metrics from the completed render job and send to telemetry.
  * speed_ratio = composition_duration / render_time — higher is better, >1 means faster than realtime.
  */
+// Inherited CRITICAL (CRAP 148.4, cyclomatic 24): exhaustive nullish-fallback
+// chain across 30+ telemetry fields. Not touched by this PR.
+// fallow-ignore-next-line complexity
 function trackRenderMetrics(
   job: RenderJob,
   elapsedMs: number,
