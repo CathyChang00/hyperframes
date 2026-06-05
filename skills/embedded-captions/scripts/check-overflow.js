@@ -2,7 +2,7 @@
 /**
  * check-overflow.js — mode-agnostic frame-overflow WARNING for custom mode.
  *
- * Template mode has check-occlusion-v2 (which also flags frame-edge overflow),
+ * Template mode has check-occlusion.cjs (which also flags frame-edge overflow),
  * but custom mode runs no gates. This is the cheap safety net: it loads the
  * rendered index.html, seeks the GSAP timeline across the clip, and flags ANY
  * visible text element (regardless of class) whose box leaves the canvas — i.e.
