@@ -23,6 +23,20 @@ These are non-negotiable for every multi-scene composition:
 3. **Exit animations are BANNED** except on the final scene. Do NOT use `gsap.to()` to animate elements out before a transition fires. The transition IS the exit. Outgoing scene content must be fully visible when the transition starts — the transition handles the visual handoff.
 4. **Final scene exception:** The last scene MAY fade elements out (e.g., fade to black at the end of the composition). This is the only scene where exit animations are allowed.
 
+```js
+// ❌ BANNED — fading the outgoing scene out, then the next scene just runs its entrance.
+//    This is a jump cut with a dip, not a transition.
+tl.to("#s1", { opacity: 0, duration: 0.4 }, 4.0);
+tl.from("#s2 .headline", { y: 40, opacity: 0 }, 4.4);
+
+// ✅ CORRECT — outgoing and incoming animate AT THE SAME TIME T; the motion IS the handoff.
+const T = 4.0;
+tl.to("#s1", { yPercent: -100, filter: "blur(8px)", duration: 0.5, ease: "power3.in" }, T);
+tl.fromTo("#s2", { yPercent: 100 }, { yPercent: 0, duration: 0.5, ease: "power3.out" }, T);
+```
+
+> **You are NOT done after this file.** This overview gives you _which_ transition and _when_. Before writing any transition you MUST open **`catalog.md`** in this directory for the GSAP code and the hard rule every transition follows — _position new scene → animate outgoing → swap → animate incoming → clean up overlays_ — plus the per-category `css-*.md` files for specifics. Authoring transitions from this overview alone is how you end up shipping the ❌ pattern above.
+
 ## Energy → Primary Transition
 
 | Energy                                   | CSS Primary                  | Shader Primary                       | Accent                         | Duration  | Easing                 |

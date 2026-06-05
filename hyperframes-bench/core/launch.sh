@@ -19,13 +19,33 @@
 set -uo pipefail
 MODEL_ID="$1"; FULL="$2"
 MAX_TURNS="${BENCH_MAX_TURNS:-3}"
+HERE="$(cd "$(dirname "$0")" && pwd)"
 
-claude -p "$FULL" \
-  --model "$MODEL_ID" \
-  --output-format stream-json --verbose \
-  --dangerously-skip-permissions \
-  --strict-mcp-config \
-  --max-turns "$MAX_TURNS" \
-  </dev/null
+# Routing-only stop: a PreToolUse hook halts the run the instant the agent invokes a
+# WORKFLOW Skill. The routing decision is already in the tool_use block (so skills_invoked
+# is still captured), and we skip paying for the workflow's build-prep. Clarify/decline
+# cases invoke no workflow Skill → unaffected, still run to --max-turns.
+# Disable with BENCH_STOP_ON_ROUTE=0.
+STOP_ON_ROUTE="${BENCH_STOP_ON_ROUTE:-1}"
+SETTINGS_JSON='{"hooks":{"PreToolUse":[{"matcher":"Skill","hooks":[{"type":"command","command":"python3 '"$HERE"'/route-stop-hook.py"}]}]}}'
+
+if [ "$STOP_ON_ROUTE" != "0" ]; then
+  claude -p "$FULL" \
+    --model "$MODEL_ID" \
+    --output-format stream-json --verbose \
+    --dangerously-skip-permissions \
+    --strict-mcp-config \
+    --max-turns "$MAX_TURNS" \
+    --settings "$SETTINGS_JSON" \
+    </dev/null
+else
+  claude -p "$FULL" \
+    --model "$MODEL_ID" \
+    --output-format stream-json --verbose \
+    --dangerously-skip-permissions \
+    --strict-mcp-config \
+    --max-turns "$MAX_TURNS" \
+    </dev/null
+fi
 
 exit 0

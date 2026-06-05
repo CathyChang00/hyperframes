@@ -37,7 +37,7 @@ no video to score.
 
 ./bench score  results/<run-id>     # re-judge saved traces (no agent calls)
 ./bench report results/<run-id>     # regenerate report.md
-./bench show   results/<run-id> r06__hf-local__sonnet__r1   # inspect one cell
+./bench show   results/<run-id> cand-p02__hf-local__sonnet__r1   # inspect one cell
 ```
 
 ## Expressing "the test I want" (agent guide)
@@ -51,7 +51,7 @@ the plan (or `default_plan`); explicit flags win.
 | did routing regress (local code)      | `bench run --plan routing-full`                                                |
 | do competitors steal the route        | `bench run --plan collision`                                                   |
 | just the adversarial cases on opus    | `bench run --dataset routing --tags adversarial --models opus --envs hf-local` |
-| one case, many repeats, for flakiness | `bench run --cases r15 --repeats 9 --models sonnet`                            |
+| one case, many repeats, for flakiness | `bench run --cases cand-p20 --repeats 9 --models sonnet`                       |
 | test the **online** published skills  | `bench run --envs hf-online` (pin a branch via `envs/hf-online.json`'s `ref`)  |
 
 Then parse `results/<run-id>/aggregate.json` (or `results.jsonl`) and report back.
@@ -76,8 +76,8 @@ heygen-com/hyperframes[#<ref>]`. `ref` pins a branch/tag. ⚠️ default branch 
 
 ```json
 {
-  "key": "r06__hf-local__sonnet__r1",
-  "case": "r06",
+  "key": "cand-p42__hf-local__sonnet__r1",
+  "case": "cand-p42",
   "category": "A-direct",
   "env": "hf-local",
   "model": "sonnet",

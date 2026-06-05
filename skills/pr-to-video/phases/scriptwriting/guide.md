@@ -229,12 +229,12 @@ The single largest quality bug in PR videos is **scripts that talk too long**. T
 
 **Budget the script by word count, not by gut-feel seconds.** The validator (`scripts/validate.mjs narrator`) enforces these as machine checks; failing the hard cap is fatal.
 
-| Bound                             | Words (at 2.2 wps) | Duration  | When                                                                                                                                                                                      |
-| --------------------------------- | ------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Soft target — default**         | **≤ 19**           | **≤ 9 s** | Every scene aims for this; visual phase plans tight, idle phase stays short, the cut feels alive.                                                                                         |
-| **Exception budget — ≤ 2 scenes** | ≤ 26               | ≤ 12 s    | The main `feature_showcase` (the one change you really need to explain) or a complex causal-chain `product_intro`. Earn the extra seconds; don't spend them on hook / branding / credits. |
-| **Hard cap — fatal**              | > 26               | > 12 s    | The validator rejects. Trim or split the scene.                                                                                                                                           |
-| **Whole-film target**             | ≤ ~155             | ~70 s     | A PR-video sweet spot is 30-90 s; the body carries the load, the close is 5-8 s.                                                                                                          |
+| Bound                             | Words (at 2.2 wps) | Duration     | When                                                                                                                                                                                      |
+| --------------------------------- | ------------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Soft target — default**         | **≤ 19**           | **≤ 9 s**    | Every scene aims for this; visual phase plans tight, idle phase stays short, the cut feels alive.                                                                                         |
+| **Exception budget — ≤ 2 scenes** | ≤ 26               | ≤ 12 s       | The main `feature_showcase` (the one change you really need to explain) or a complex causal-chain `product_intro`. Earn the extra seconds; don't spend them on hook / branding / credits. |
+| **Hard cap — fatal**              | > 26               | > 12 s       | The validator rejects. Trim or split the scene.                                                                                                                                           |
+| **Whole-film target**             | ≤ ~265             | up to ~2 min | Sweet spot is still ~30-90 s (≤ ~155 words); ~2 min is the ceiling. The body carries the load, the close is 5-8 s.                                                                        |
 
 **How to estimate while writing:**
 

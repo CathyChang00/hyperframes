@@ -12,7 +12,14 @@ import oracles as oracle_pkg
 
 DEFAULT_ORACLES = ["route", "router_first", "intent"]
 GOOD = {"correct", "clarify_ok", "oos_ok"}          # "the agent did the right thing"
-EXCLUDE_FROM_ACC = {"unavailable"}                  # capability absent — not the agent's fault
+# "no fair routing decision observed" → excluded from accuracy (NOT counted as a failure):
+# capability absent / agent built it inline / oracle couldn't read a decision. The real
+# routing failures (miss, competitor, soft) are everything that is neither GOOD nor excluded.
+EXCLUDE_FROM_ACC = {"unavailable", "inline", "unparsed"}
+
+
+def _bucket(v):
+    return "good" if v in GOOD else ("excluded" if v in EXCLUDE_FROM_ACC else "bad")
 
 # Bin's scope view: project route verdicts onto "did the agent correctly decide to
 # accept / ask / decline, vs the request's true scope" — a DIFFERENT question from
@@ -22,7 +29,7 @@ _VERDICT_TO_RESPONSE = {
     "correct": "accept", "miss": "accept", "competitor": "accept",
     "clarify_ok": "clarify", "soft": "clarify",
     "oos_ok": "refuse",
-    # unavailable / unparsed -> no scope decision observed (excluded)
+    # unavailable / inline / unparsed -> no scope decision observed (excluded)
 }
 
 
@@ -101,12 +108,19 @@ def aggregate(results, cfg):
     per_case = defaultdict(list)
     cost = 0.0
     turns = []
+    artifact_suspected = 0   # A3: failures where the agent asked for an asset the bench never supplied
+    miss_kinds = Counter()   # R2: which KIND of miss (overreach / wrong_workflow / premature / refused)
 
     for r in results:
+        ro = r.get("oracles", {}).get("route", {}) or {}
         v = _route_verdict(r)
         if v:
             route_verdicts[v] += 1
-            by_category[r.get("category") or "?"][("good" if v in GOOD else "bad")] += 1
+            by_category[r.get("category") or "?"][_bucket(v)] += 1
+        if v == "miss":
+            miss_kinds[ro.get("kind") or "unclassified"] += 1
+        if _bucket(v) == "bad" and ro.get("asked_for_missing_input"):
+            artifact_suspected += 1
         per_case[r["case"]].append(v)
         rf = (r.get("oracles", {}).get("router_first", {}) or {}).get("router_first")
         if rf is not None:
@@ -119,6 +133,7 @@ def aggregate(results, cfg):
 
     scorable = sum(c for v, c in route_verdicts.items() if v not in EXCLUDE_FROM_ACC)
     good = sum(c for v, c in route_verdicts.items() if v in GOOD)
+    excluded = sum(c for v, c in route_verdicts.items() if v in EXCLUDE_FROM_ACC)
 
     # per-case consistency across repeats (majority verdict + agreement %)
     consistency = {}
@@ -137,6 +152,9 @@ def aggregate(results, cfg):
             "scorable": scorable,
             "good": good,
             "accuracy": round(good / scorable, 3) if scorable else None,
+            "miss_breakdown": dict(miss_kinds),     # R2: overreach vs wrong_workflow vs premature vs refused
+            "excluded": excluded,                   # R3: unavailable + inline + unparsed (no fair decision)
+            "artifact_suspected": artifact_suspected,
         },
         "router_first": {
             "rate": round(rf_true / rf_total, 3) if rf_total else None,

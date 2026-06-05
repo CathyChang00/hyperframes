@@ -53,14 +53,19 @@ def _installed_skills(template_dir):
                   if not n.startswith(".") and os.path.isdir(os.path.join(d, n)))
 
 
-def prepare_env(env_name, force=False):
-    """Build (or reuse) one installed-skills template for an env. Returns a dict:
-    {dir, installed[], ok, cached, error}."""
+def prepare_env(env_name, rebuild=True):
+    """Build one installed-skills template for an env. By DEFAULT rebuilds from scratch on
+    every run — re-installs the LOCAL working-tree skills AND re-fetches the remote competitor
+    skills (remotion-dev/remotion, browser-use/video-use) so every run is tested against the
+    LATEST of all sources. The old marker cache never invalidated, so a stale local edit or an
+    upstream competitor update would silently leak. Pass rebuild=False (`bench run --reuse-env`)
+    to reuse the last-built template for fast iteration. Returns {dir, installed[], ok, cached,
+    error}."""
     env_cfg = load_json(env_file(env_name))
     tdir = os.path.join(cache_dir(), "templates", env_name)
     marker = os.path.join(tdir, ".bench-skills.txt")
 
-    if not force and os.path.exists(marker):
+    if not rebuild and os.path.exists(marker):
         installed = [s for s in open(marker).read().split("\n") if s]
         return {"dir": tdir, "installed": installed, "ok": True, "cached": True, "error": None}
 
@@ -103,14 +108,31 @@ def render_prompt(case, registry=None):
             v = inp.get("value", "")
             if v:
                 parts.append(v)
-        elif t in ("pdf", "image", "video"):
+        elif t in ("pdf", "image", "video", "doc", "code", "file"):
             name = inp.get("value")
             if not name and inp.get("asset_id"):
                 entry = registry.get(inp["asset_id"], {})
                 name = entry.get("name", inp["asset_id"])
-            label = {"pdf": "attached file", "image": "attached image", "video": "attached video"}[t]
+            label = {"image": "attached image", "video": "attached video"}.get(t, "attached file")
             parts.append(f"[{label}: {name}]")
     return " ".join(parts).strip()
+
+
+def stage_assets(case, registry, workspace):
+    """Copy each fixture an input references (by asset_id) into the workspace root as its
+    `name`, so the agent actually finds the asset the prompt mentions instead of stalling on
+    'I don't see it in the working directory'. Routing reads the surface handle + file type;
+    the file just has to exist. Returns the staged filenames."""
+    staged = []
+    for inp in case.get("inputs", []):
+        entry = registry.get(inp.get("asset_id")) if inp.get("asset_id") else None
+        if not entry:
+            continue
+        src = os.path.join(BENCH_ROOT, "fixtures", entry["path"])
+        if os.path.exists(src):
+            shutil.copy(src, os.path.join(workspace, entry["name"]))
+            staged.append(entry["name"])
+    return staged
 
 
 def _prompt_hash(prompt, env, model):
@@ -166,6 +188,7 @@ def run_cell(cell, env_state, cfg, out_dir, dry_run=False, force=False, keep=Fal
     workspace = tempfile.mkdtemp(prefix="bench.")
     try:
         shutil.copytree(env_state["dir"], workspace, dirs_exist_ok=True)
+        stage_assets(case, registry, workspace)   # drop referenced fixture files into cwd
         model_id = cfg["models"][cell["model"]]
         try:
             proc = subprocess.run(["bash", LAUNCH_SH, model_id, prompt], cwd=workspace,
@@ -220,18 +243,20 @@ def _git_describe(path):
     return {"commit": g(["rev-parse", "--short", "HEAD"]), "branch": g(["rev-parse", "--abbrev-ref", "HEAD"])}
 
 
-def run_matrix(cells, cfg, out_dir, label="run", concurrency=None, dry_run=False, force=False, keep=False):
+def run_matrix(cells, cfg, out_dir, label="run", concurrency=None, dry_run=False, force=False,
+               keep=False, rebuild_env=True):
     os.makedirs(os.path.join(out_dir, "cells"), exist_ok=True)
     concurrency = concurrency or cfg.get("concurrency", 4)
     registry = _fixtures_registry()
 
-    # prepare each unique env template once (serially — shared, mustn't race)
+    # prepare each unique env template once (serially — shared, mustn't race). Rebuilds fresh
+    # by default so every run pulls the latest local + competitor skills (see prepare_env).
     envs = sorted({c["env"] for c in cells})
     env_states = {}
     for env in envs:
-        st = prepare_env(env, force=force)
+        st = prepare_env(env, rebuild=rebuild_env)
         env_states[env] = st
-        tag = "cached" if st.get("cached") else ("FAILED" if not st["ok"] else "built")
+        tag = "reused" if st.get("cached") else ("FAILED" if not st["ok"] else "built fresh")
         print(f"  env {env}: {tag} ({len(st.get('installed', []))} skills)"
               + (f"\n    {st['error']}" if st.get("error") else ""))
 

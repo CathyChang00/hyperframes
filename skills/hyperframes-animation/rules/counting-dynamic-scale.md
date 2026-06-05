@@ -219,7 +219,7 @@ CSS prerequisite:
 
 ### Multi-stat coordinated reveal
 
-For 3 stats counting in parallel, share the SAME ease and duration so they finish together — visually a chord, not arpeggio:
+For 3 stats counting in parallel, share the SAME ease and duration so they finish together — visually a chord, not arpeggio. Each stat usually also needs a **paired graphic** (bar / ring / stars) — don't stop at the number; see [stat-bars-and-fills.md](stat-bars-and-fills.md):
 
 ```js
 ["#stat1", "#stat2", "#stat3"].forEach((sel, i) => {
@@ -258,6 +258,7 @@ For 3 stats counting in parallel, share the SAME ease and duration so they finis
 
 ## Combinations
 
+- [stat-bars-and-fills.md](stat-bars-and-fills.md) — **the paired graphic beside the number** (growth bars / progress ring / star wipe). A stat scene is usually BOTH rules: the count-up here + a fill there. Give the fill the same ease and duration so number and graphic land as one beat.
 - [svg-path-draw.md](svg-path-draw.md) — icons drawing in around the number
 - [center-outward-expansion.md](center-outward-expansion.md) — related icons exploding outward synced to count peak
 

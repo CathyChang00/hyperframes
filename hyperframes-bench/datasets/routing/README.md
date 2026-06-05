@@ -7,18 +7,24 @@ per line in `cases.jsonl`. This is the source of truth — nothing here is gener
 
 ```json
 {
-  "id": "r06",
+  "id": "cand-p42",
   "category": "A-direct",
-  "tags": ["direct", "pr-url"],
+  "tags": [],
   "intent": "make-a-video",
   "inputs": [
-    { "type": "text", "value": "Make a changelog video for" },
-    { "type": "link", "subtype": "github-pr", "value": "github.com/vercel/next.js/pull/58000" }
+    {
+      "type": "text",
+      "value": "Make a changelog video for github.com/tailwindlabs/tailwindcss/pull/12345"
+    }
   ],
   "expect": { "route": "pr-to-video", "intent": "make-a-video" },
-  "notes": "why this is the right route"
+  "notes": "A GitHub PR URL with changelog intent → pr-to-video. [evidence: …]"
 }
 ```
+
+The current dataset (built from the `candidates.*.jsonl` proposal pools) authors each case as a
+**single inline `text` input** — URLs and attachment mentions live in the prose, so the rendered
+prompt equals the case text verbatim. The contract below is richer than that and still supported:
 
 - `inputs[].type` ∈ `text | link | pdf | image | video`, **freely combined**. The prompt the
   agent receives is `inputs` rendered to surface text at run time (link → the URL, pdf/image →

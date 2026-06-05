@@ -1,6 +1,6 @@
 ---
 name: product-launch-video
-description: product-launch video workflow - a product / marketing URL (crawled with headless Chrome for brand tokens + assets) OR a pre-written script / text brief with no URL (no-capture mode; a style preset supplies the palette + design system) -> narrator_scripts.json + audio (voice + BGM) + section_plan.md -> 60-90s product launch / SaaS / promo video rendered to MP4. Use for marketing, launching, or promoting a specific product / company / app / website. Triggers - "launch video for X", "promo for our site", "explain my SaaS in a minute", "feature reveal for X.com", "I have a script, turn it into a 60s promo". NOT for - a topic / concept explainer with no product and no URL (-> faceless-explainer); a GitHub PR / code change (-> pr-to-video); re-editing existing footage (-> footage-recut).
+description: product-launch video workflow - a product / marketing URL (crawled with headless Chrome for brand tokens + assets) OR a pre-written script / text brief (if it names a product site, the agent offers to crawl it for brand tokens + assets; otherwise no-capture mode with a style preset supplying the palette + design system; the script can be used verbatim as the voice-over or restructured) -> narrator_scripts.json + audio (voice + BGM) + section_plan.md -> a product launch / SaaS / promo video (up to ~2 min; sweet spot ~60-90s) rendered to MP4. Use for marketing, launching, or promoting a specific product / company / app / website. Triggers - "launch video for X", "promo for our site", "explain my SaaS in a minute", "feature reveal for X.com", "I have a script, turn it into a 60s promo". NOT for - a topic / concept explainer with no product and no URL (-> faceless-explainer); a GitHub PR / code change (-> pr-to-video); re-editing existing footage (-> footage-recut).
 metadata:
   tags: orchestrator, pipeline, product-launch
 ---
@@ -94,18 +94,45 @@ The complete directory shape is in "Design notes / Directory shape" at the end. 
 
 ### Step 1 - Capture (Phase 1)
 
-1. Resolve `SKILL_DIR` and `TARGET_URL`.
+1. Resolve `SKILL_DIR` and any explicit `TARGET_URL` from the prompt.
 2. Resolve Step 0 and ensure `PROJECT_DIR` exists.
 3. Read `$PROJECT_DIR/context.log` if it exists, and use the Resume table below to skip completed phases.
-4. **Run Bash directly**. Step 1 chooses one of two paths based on input type, while **both paths share the `derive-context-pack` + `build-design --no-emit` steps** (design-system consumes capture artifacts directly):
+4. **Classify the input first** (Step 1.0 below) to fix two flags — `CAPTURE` (crawl a site or not) and `VO_MODE` (how story-design treats a user-supplied script) — then **run Bash directly**. Whichever path you take, **both share the `derive-context-pack` + `build-design --no-emit` steps** (design-system consumes capture artifacts directly):
 
-**(A) URL input** - hyperframes capture:
+#### Step 1.0 - Classify the input (set CAPTURE + VO_MODE)
+
+| Input shape                                          | What to do                                                                                                                                                                                                |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Explicit URL in the prompt**                       | `TARGET_URL` = that URL; `CAPTURE=yes`; no user script → narration is generated from the captured site (skip the voice-over question). Take the capture path (A).                                         |
+| **User pasted / pointed at a script or brief**       | (1) Save the verbatim text to `$PROJECT_DIR/user_script.txt`. (2) **Ask the voice-over question once** (below) → set `VO_MODE`. (3) **Resolve a capture target from the script** (below) → set `CAPTURE`. |
+| **A topic / brief with no script prose, no product** | `CAPTURE=no`; no voice-over question (there is no user wording to preserve — story-design writes from the brief). Take the no-capture path (B).                                                           |
+
+**Voice-over question** (only when the user supplied actual script prose) — ask one short line and wait:
+
+> 你的 script 是直接**逐字**当 voice-over，还是我帮你**重构**成更上镜的分镜台词？
+>
+> - 逐字 (verbatim) — 保留原文，我只切分镜 + 配画面；时长跟着脚本走。
+> - 重构 (restructure) — 当作 brief，改写成每场 1-2 句、更紧凑的旁白。
+
+Set `VO_MODE = verbatim | restructure` (default `restructure` if the user is indifferent). It is threaded to story-design in Step 2.
+
+**Resolve a capture target from the script** — by default look for a site and crawl it (real brand colors / fonts / assets beat a preset fallback). **Skip to `CAPTURE=no` only when the user opted out** ("别搜 / 不要联网 / 纯文字 / text-only / no capture / don't search"). Otherwise, in order:
+
+1. **An explicit `http(s)://…` URL in the script** → `TARGET_URL` = it; `CAPTURE=yes`. Announce it; no need to ask.
+2. **A clear brand / product name but no URL** → run `WebSearch` to resolve the official site, then **confirm the single resolved URL with the user in one line** before crawling (search can land on the wrong domain). On confirm → `TARGET_URL` + `CAPTURE=yes`; if the user declines or nothing credible turns up → `CAPTURE=no`.
+3. **No site derivable** → `CAPTURE=no`.
+
+> **Capture + user script coexist.** When `CAPTURE=yes` **and** `user_script.txt` exists, the crawl supplies **only** brand tokens + assets + visual register — the **narration spine stays `user_script.txt`** (Step 2 honors it via `VO_MODE`, never the site's own copy). When `CAPTURE=no`, take path (B) (synthesize the minimal capture package) and `user_script.txt` is the brief.
+
+**(A) Capture path (`CAPTURE=yes`)** - hyperframes capture:
 
 ```bash
 (cd "$PROJECT_DIR" && npx hyperframes capture "<TARGET_URL>" -o ./capture)
 ```
 
-**(B) script / brief input (no URL, pure text video / user-provided script)** - do not capture; synthesize a minimal capture package and feed it into the same downstream path. **The preset is chosen by you (master)** because no site can be inferred; choose from the 19 presets according to the user's intent, or ask one short question. The full user script/brief goes into `visible-text.txt`; `colors:[]` makes build-design use the **R2 preset-palette fallback** (a complete readable palette exists even without brand colors; if the user specified brand colors, fill `colors`, which overrides the preset defaults):
+> If `user_script.txt` exists (the user gave a script that also named a site), this capture is for **brand + assets only**; Step 2 still uses `user_script.txt` as the narration spine.
+
+**(B) No-capture path (`CAPTURE=no` — pure text video, or a user script with no derivable site)** - do not capture; synthesize a minimal capture package and feed it into the same downstream path. **The preset is chosen by you (master)** because no site can be inferred; choose from the 19 presets according to the user's intent, or ask one short question. The full user script/brief goes into `visible-text.txt`; `colors:[]` makes build-design use the **R2 preset-palette fallback** (a complete readable palette exists even without brand colors; if the user specified brand colors, fill `colors`, which overrides the preset defaults):
 
 ```bash
 (cd "$PROJECT_DIR" && mkdir -p capture/extracted capture/assets)
@@ -117,7 +144,7 @@ JSON
 (cd "$PROJECT_DIR" && printf '%s\n' "<full user script / brief>" > capture/extracted/visible-text.txt)
 ```
 
-> Path B satisfies both "user-provided script" and "no asset capture" at once: `narrator_scripts` is still generated by Step 2 story-design from the brief (all scenes use `assetCandidates: []`, so the video is text/typography only). If the user **already has a final `narrator_scripts.json`**, place it in `$PROJECT_DIR/`; the Resume table will skip story-design.
+> Path B satisfies both "user-provided script" and "no asset capture" at once: `narrator_scripts` is still generated by Step 2 story-design from `user_script.txt` (honoring `VO_MODE`; all scenes use `assetCandidates: []`, so the video is text/typography only). If the user **already has a final `narrator_scripts.json`**, place it in `$PROJECT_DIR/`; the Resume table will skip story-design.
 
 **Shared downstream for both paths** (Path B build-design **must include `--style <chosen-preset>`** to force the preset; Path A omits it and uses auto-inference):
 
@@ -153,7 +180,9 @@ The Step 1 Bash phase has already deterministically produced `design-system/infe
   PROJECT_DIR: <video project root>
   Schema validator: <SKILL_DIR>/scripts/validate.mjs narrator
   Design DNA: ./design-system/inference.json   # Read site_dna once at the start to set the narrative register (deterministic Step 1 artifact, independent of the design-system subagent)
-  Script style: Keep each scene's script concise - 1-2 sentences, no more than 20 words
+  Provided script: ./user_script.txt   # ONLY when the user supplied a script (Step 1.0). This file is the narration spine; omit the whole line when there is no user script.
+  Voice-over mode: <verbatim | restructure>   # From Step 1.0; pair it with the Provided script line. Omit when there is no user script.
+  Script style: Keep each scene's script concise - 1-2 sentences, no more than 20 words   # Applies in restructure / no-user-script mode ONLY. In verbatim mode this budget is suspended — preserve the user's wording and let total length follow the script (see story-design guide "Provided-Script Modes").
   ```
 
 > Why these two run in parallel and do not wait for each other: see "Design notes / sibling producer" at the end. The real join point is Phase 3 visual-design, which requires both `chunks/index.json` and `narrator_scripts.json`.

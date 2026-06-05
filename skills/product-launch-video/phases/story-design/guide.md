@@ -13,6 +13,19 @@ Video narrative is independent from website structure. A website is an informati
 
 The planning standard: **write the emotional beat alongside the structural type**, **name the specific persuasion technique** (do not merely write "show benefits"), and **specify a transition for every seam**. What carries the viewer's eye from scene N to scene N+1 is part of the story itself, not something to defer to the visual phase.
 
+## Provided-Script Modes (verbatim vs restructure)
+
+When the dispatch context includes a **`Provided script:`** line, the user supplied their own script (`user_script.txt`) and it is the **narration spine** — not the site copy. Read it first. The **`Voice-over mode:`** line then decides how much freedom you have with the wording:
+
+- **`restructure`** (also the implicit mode when there is no user script): treat the script/brief as raw material. Rewrite it into punchy per-scene narration under the dispatch's `Script style` budget (1-2 sentences, ≤20 words), and reorder / merge / omit freely to fit the chosen archetype. This is the default flow described in the rest of this guide.
+- **`verbatim`**: the user's words are **fixed**. Segment `user_script.txt` into scene-sized chunks at natural sentence / paragraph boundaries and copy each chunk into `script` **unchanged** — do not reword, summarize, add, drop, or reorder text (you may split one long sentence at a clause boundary, but never edit the words). The "≤20 words" budget and the **Script Voice Quality Bar** rewriting rules below are **suspended** in this mode. Specifics:
+  - **Duration follows the script.** Set each scene's `estimatedDuration` from the chunk's natural spoken length (~2.5 words/sec → a 25-word chunk ≈ 10s), and let the **total video length follow the full script** — there is no 60-90s cap in verbatim mode. (Downstream, `prep.mjs` later replaces the estimate with the real TTS voice duration, so the scene auto-fits the actual spoken length.)
+  - **You still design everything else.** Each scene still needs full `narrativeIntent`, a `transition`, and `assetCandidates`. Infer the archetype that best fits the script's _existing_ arc rather than imposing a new structure on top of fixed words.
+  - **Don't manufacture silent scenes.** Use `script: ""` only if the user's text itself has a deliberate gap; otherwise every chunk carries its verbatim line.
+  - The schema rules still apply (e.g. ≥1 `feature_showcase` / `product_intro` scene) — assign scene `type`s to the verbatim chunks so the arc satisfies them.
+
+In **both** modes, when a capture ran (`context_pack.md` has an Asset Inventory) you still mine it for `assetCandidates` and visual register exactly as below — the modes govern only the _words_, not the visuals.
+
 ## Use `site_dna` to Set the Register (read once at the start)
 
 `design-system/inference.json` `site_dna` is the deterministic Phase 1 summary of the site's character. Read it once at the start and tune the narrative to the same channel as the final visuals (**read only the `site_dna` section; do not read `design.html` / `chunks/` because those are parallel outputs from the design-system subagent, and reading them would break Phase 1b||2 parallelism**). **If `inference.json` is missing** (Phase 1 did not run `build-design.mjs --no-emit`), first run `(cd "$PROJECT_DIR" && node <SKILL_DIR>/phases/design-system/scripts/build-design.mjs ./design-system --no-emit)`, then read it; this is deterministic output, so rerunning it does not affect Phase 1b||2 parallelism.

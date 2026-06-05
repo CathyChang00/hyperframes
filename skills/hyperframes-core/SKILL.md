@@ -55,6 +55,37 @@ Two root forms; they are **not** interchangeable.
 
 See `references/sub-compositions.md` for the file shape, host wiring, pitfall examples, and the pre-render verification checklist.
 
+### Root must be sized (silent layout bug)
+
+The standalone root must establish an explicitly **sized box**, and every ancestor between it and a `height: 100%` element must have a resolved height. If the root or an intermediate wrapper has no height, a flex/`height:100%` content container collapses to ~0 and content piles into the **top-left corner** (often clipping the first glyph at x=0). `lint`, `validate`, and `inspect` do **not** catch this — `inspect` substitutes the authored `data-width`/`data-height` for a collapsed root and reports "0 layout issues."
+
+```html
+<body style="margin: 0">
+  <div
+    id="root"
+    data-composition-id="main"
+    data-width="1920"
+    data-height="1080"
+    data-duration="5"
+    style="position: relative; width: 1920px; height: 1080px; overflow: hidden"
+  >
+    <!-- Center robustly: position:absolute + inset:0 fills the sized root regardless of
+         intermediate wrappers; or use a flex container ONLY if its parent chain is sized. -->
+    <section
+      class="clip"
+      data-start="0"
+      data-duration="5"
+      data-track-index="1"
+      style="position: absolute; inset: 0; display: grid; place-items: center; padding: 120px 160px; box-sizing: border-box"
+    >
+      <h1>Title</h1>
+    </section>
+  </div>
+</body>
+```
+
+Keep the `padding` (≥80px) on the centering container — it is the title-safe margin that stops large type touching the frame edge. See `references/minimal-composition.md`.
+
 ## Timeline Contract (GSAP default)
 
 Every composition registers exactly one GSAP timeline.
@@ -69,14 +100,16 @@ For non-GSAP runtimes (Lottie / Three / WAAPI / CSS / Anime.js / TypeGPU), the e
 
 ## Non-Negotiable Rules
 
-These break the renderer. (Synchronous timeline construction is covered above in **Timeline Contract**.)
+These break the renderer — or produce **silent visual bugs that `lint`/`validate`/`inspect` do NOT catch** (rules 7-8). (Synchronous timeline construction is covered above in **Timeline Contract**.)
 
 1. No `Math.random()` / `Date.now()` / `performance.now()` driving visuals — use a seeded PRNG.
-2. No `repeat: -1`. Use `repeat: Math.ceil(duration / cycleDuration) - 1`.
+2. No `repeat: -1`. Use `repeat: Math.max(0, Math.floor(duration / cycleDuration) - 1)` — **`floor`, not `ceil`** (`ceil` overshoots `data-duration` and trips the `gsap_repeat_ceil_overshoot` lint; `max(0, …)` avoids a negative repeat = infinite).
 3. No `video.play()` / `audio.play()` / `currentTime = …`. The framework owns media playback.
 4. No `gsap.set()` on clip elements from later scenes (they are not in the DOM yet). Use `tl.set(selector, vars, time)` at or after the clip's `data-start`.
 5. No animating `display` / `visibility`. Animate `opacity` / transforms; the clip lifecycle handles show/hide.
 6. No `<br>` in body text. Let text wrap via `max-width`.
+7. Transformed elements must be block-level + sized. `transform`/`scaleX`/`scaleY` is a **no-op on an inline `<span>`**, and scaling an auto-width (0px) element shows nothing → invisible bars/fills. Give them `display: block`/`inline-block`/flex-item **and** a real `width`/`height` (e.g. `width: 100%` inside a sized parent).
+8. Absolutely-positioned decoratives (badges, pills, tags) that **pulse or overshoot** (`yoyo` scale, `back.out`) need clearance at their **peak** size and must not straddle an `overflow: hidden` edge — else they overlap a neighbor or get clipped. Position for the largest frame, not the resting one.
 
 ## Editing Existing Compositions
 

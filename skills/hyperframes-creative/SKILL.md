@@ -9,6 +9,13 @@ Brand, pacing, style, narration, and composition direction. Use after the techni
 
 For motion patterns, scene blueprints, transitions, and CSS marker effects, use `hyperframes-animation` — this skill is intentionally non-animation.
 
+> **Read these two FIRST for any non-trivial composition — they override web instincts:**
+>
+> - `references/house-style.md` — "interpret the prompt, generate real content," the lazy-default list, and the background/foreground layer recipe. This is what turns a literal restyle into a _concept_.
+> - `references/video-composition.md` — video-medium density, scale, foreground metadata (the "produced, not generated" detailing: data bars, registration marks, monospace readouts, 8-10 elements/scene).
+>
+> Skipping these is the single biggest cause of generic, web-page-looking output. They are not optional rows in the routing table below — for anything beyond a one-line edit, open both before you choose colors or write HTML.
+
 ## Workflow
 
 1. If a project has a design spec, read it first — precedence `frame.md` → `design.md` → `DESIGN.md`. `frame.md` is the preferred spec for video/hyperframes projects and wins if more than one exists (same format as `design.md`); it is always lowercase, no `FRAME.md` variant, while `design.md` and `DESIGN.md` are different files on Linux. Treat it as brand truth: colors, fonts, spacing, tone, and constraints.

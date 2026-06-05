@@ -4,14 +4,16 @@
   bench list [datasets|envs|plans|models] [--json]
   bench run  [--plan NAME] [--dataset D] [--models ...] [--envs ...]
              [--cases r01 r06 | --tags adversarial] [--repeats N]
-             [--concurrency C] [--dry-run] [--force] [--keep] [--label L] [--out DIR]
+             [--concurrency C] [--dry-run] [--force] [--reuse-env] [--keep] [--label L] [--out DIR]
   bench score  <run-dir>      # re-run oracles over saved traces (no agent calls)
   bench report <run-dir>      # regenerate report.md from results.jsonl
   bench show   <run-dir> <cell-key>
 
 An unspecified axis falls back to the plan (or `default_plan` in bench.config.json); any
 explicit flag overrides that field. Cells with a matching content-hash are reused unless
---force. Results are written under results/<run-id>/ as results.jsonl (machine), aggregate.json
+--force. Env templates REBUILD FRESH every run (re-install local skills + re-fetch remote
+competitor skills) so each run tests the latest; pass --reuse-env to reuse the last build.
+Results are written under results/<run-id>/ as results.jsonl (machine), aggregate.json
 (summary), and report.md (human).
 """
 import os
@@ -123,7 +125,8 @@ def cmd_run(args):
           f"cells={len(cells)}{'  [DRY RUN]' if args.dry_run else ''}")
     out = runner.run_matrix(cells, cfg, out_dir, label=label,
                             concurrency=args.concurrency, dry_run=args.dry_run,
-                            force=args.force, keep=args.keep)
+                            force=args.force, keep=args.keep,
+                            rebuild_env=not args.reuse_env)
     agg = out["aggregate"]
     print(f"\n→ {out_dir}")
     print(f"  route accuracy: {agg['route']['accuracy']}  "
@@ -181,6 +184,9 @@ def main():
     pr.add_argument("--dry-run", action="store_true",
                     help="install envs + render prompts but DON'T launch the agent (no cost)")
     pr.add_argument("--force", action="store_true", help="ignore the cell cache")
+    pr.add_argument("--reuse-env", action="store_true",
+                    help="reuse the last-built env template instead of rebuilding fresh "
+                         "(default rebuilds: re-installs local skills + re-fetches competitors)")
     pr.add_argument("--keep", action="store_true", help="keep each cell's cloned workspace")
     pr.add_argument("--label")
     pr.add_argument("--out")

@@ -1,107 +1,130 @@
-"""Render a run into report.md (human-facing). The machine-facing summary is aggregate.json;
-this is the prose an agent pastes back to the user, or a human skims directly.
+"""Render a run into report.md — a SHORT, plain-language answer to one question:
+"is my routing good right now?" The full machine-readable metrics live in aggregate.json;
+this file is the human skim. Deliberately no scope-matrix / verdict tables / cost / router-first.
 """
 import os
 
+WORKFLOW_LABEL = "workflow"
 
-def _bar(verdicts):
-    order = ["correct", "clarify_ok", "oos_ok", "soft", "miss", "competitor",
-             "unavailable", "unparsed"]
-    rows = []
-    for v in order:
-        if verdicts.get(v):
-            rows.append(f"| {v} | {verdicts[v]} |")
-    return rows
+
+def _verdict(r):
+    return (r.get("oracles", {}).get("route", {}) or {}).get("verdict")
+
+
+def _observed(r):
+    return (r.get("oracles", {}).get("route", {}) or {}).get("observed") or "—"
+
+
+def _expected(r):
+    return (r.get("expected") or {}).get("route")
+
+
+def _prompt(out_dir, r, n=95):
+    try:
+        t = open(os.path.join(out_dir, r.get("paths", {}).get("prompt", ""))).read().strip()
+        t = " ".join(t.split())
+        return (t[:n] + "…") if len(t) > n else t
+    except Exception:
+        return ""
+
+
+def _pct(a, b):
+    return f"{round(100 * a / b)}%" if b else "—"
 
 
 def write_report(out_dir, results, agg, cfg, manifest):
-    lines = []
-    a = lines.append
-    git = manifest.get("local_hf", {})
-    a(f"# hyperframes-bench — {manifest.get('label', 'run')}")
+    workflows = set(cfg.get("workflow_skills", []))
+    L = []
+    a = L.append
+
+    a(f"# Routing check — {manifest.get('label', 'run')}")
     a("")
-    a(f"- cells: **{agg['cells']}**  ·  models: {', '.join(manifest.get('models', []))}  "
-      f"·  envs: {', '.join(manifest.get('envs', []))}")
-    if git.get("commit"):
-        a(f"- local hyperframes: `{git.get('branch', '?')}@{git['commit']}`")
+    a(f"`{', '.join(manifest.get('models', []))}` · env `{', '.join(manifest.get('envs', []))}` · "
+      f"{len(results)} requests tested")
+    a("")
     if manifest.get("dry_run"):
-        a("- **DRY RUN** — env installed + prompts rendered, agent NOT launched (no verdicts).")
+        a("**DRY RUN** — prompts rendered, agent not called, no verdicts.")
+        with open(os.path.join(out_dir, "report.md"), "w") as f:
+            f.write("\n".join(L) + "\n")
+        return
+
+    # "no fair routing decision observed" — excluded from the headline (keep in sync with
+    # score.py EXCLUDE_FROM_ACC): capability absent / built inline / oracle couldn't read it.
+    EXCLUDED = {"unavailable", "inline", "unparsed"}
+
+    # three buckets that actually answer "is routing good"
+    routeable = [r for r in results if _expected(r) in workflows]   # should pick a workflow
+    graded = [r for r in routeable if _verdict(r) not in EXCLUDED]   # a routing decision was observed
+    route_ok = [r for r in graded if _verdict(r) == "correct"]
+    oos = [r for r in results if _expected(r) == "out-of-scope"]     # should decline
+    oos_ok = [r for r in oos if _verdict(r) == "oos_ok"]
+    vague = [r for r in results if _expected(r) == "clarify"]        # should ask
+    vague_ok = [r for r in vague if _verdict(r) == "clarify_ok"]
+    excluded = [r for r in (routeable + vague) if _verdict(r) in EXCLUDED]
+
+    a("## Is routing good?")
+    a("")
+    if graded:
+        a(f"- ✅ **Picks the right workflow — {_pct(len(route_ok), len(graded))}** "
+          f"({len(route_ok)}/{len(graded)} requests that map to one)")
+    if oos:
+        mark = "✅" if len(oos_ok) / len(oos) >= 0.7 else "⚠️"
+        a(f"- {mark} **Keeps out-of-scope requests out of a workflow — {_pct(len(oos_ok), len(oos))}** "
+          f"({len(oos_ok)}/{len(oos)}; the rest grabbed a workflow it shouldn't have)")
+    if vague:
+        a(f"- **Asks when the request is too vague — {_pct(len(vague_ok), len(vague))}** "
+          f"({len(vague_ok)}/{len(vague)})")
+    if excluded:
+        a(f"- _{len(excluded)} not graded (built inline / unreadable trace) — excluded, see dashboard_")
     a("")
 
-    acc = agg["route"]["accuracy"]
-    a("## Routing")
+    # one-line bottom line driven by the two main numbers
+    route_strong = graded and len(route_ok) / len(graded) >= 0.9
+    oos_weak = oos and len(oos_ok) / len(oos) < 0.5
+    oos_misuse = sum(1 for r in oos if _verdict(r) != "oos_ok")
+    if route_strong and oos_weak:
+        a("**Bottom line:** routing to the right workflow is reliable, but the agent too often "
+          "pulls a workflow into an out-of-scope request instead of leaving it alone.")
+    elif route_strong:
+        tail = (f" The main thing left: **{oos_misuse}** out-of-scope request(s) still got pulled "
+                f"into a workflow." if oos_misuse else "")
+        a("**Bottom line:** routing is in good shape — it picks the right workflow reliably and "
+          "keeps out-of-scope requests out of one." + tail)
+    else:
+        a("**Bottom line:** routing needs work — see below.")
     a("")
-    a(f"- accuracy (good / scorable): **{acc if acc is not None else 'n/a'}**  "
-      f"({agg['route']['good']} / {agg['route']['scorable']})  "
-      f"— good = correct + clarify_ok + oos_ok; scorable excludes `unavailable`")
-    rf = agg["router_first"]
-    if rf["applicable"]:
-        a(f"- router-first rate: **{rf['rate']}**  ({rf['true']} / {rf['applicable']} applicable)")
+
+    # ---- what to fix (concise) -------------------------------------------------------
+    a("## What to fix")
     a("")
-    bar = _bar(agg["route"]["verdicts"])
-    if bar:
-        a("| route verdict | n |")
-        a("|---|---|")
-        lines.extend(bar)
+
+    # 1) out-of-scope that wrongly pulled in a workflow — the real misuse
+    oos_bad = sorted((r for r in oos if _verdict(r) != "oos_ok"), key=lambda r: r["case"])
+    if oos_bad:
+        a(f"**Pulled a workflow into an out-of-scope request — {len(oos_bad)} of {len(oos)}.** "
+          "HyperFrames can't do these; it should have left them alone:")
+        for r in oos_bad[:8]:
+            a(f"- `{r['case']}` — \"{_prompt(out_dir, r)}\" → {_observed(r)}")
+        if len(oos_bad) > 8:
+            a(f"- …and {len(oos_bad) - 8} more")
         a("")
 
-    if agg["by_category"]:
-        a("## By category")
-        a("")
-        a("| category | good | bad |")
-        a("|---|---|---|")
-        for cat in sorted(agg["by_category"]):
-            c = agg["by_category"][cat]
-            a(f"| {cat} | {c.get('good', 0)} | {c.get('bad', 0)} |")
-        a("")
-
-    # surface the cells that need a human eye
-    flagged = [r for r in results
-               if (r.get("oracles", {}).get("route", {}) or {}).get("verdict")
-               in ("miss", "competitor", "soft", "unparsed")]
-    if flagged:
-        a("## Flagged (miss / competitor / soft / unparsed)")
-        a("")
-        a("| cell | verdict | observed | note |")
-        a("|---|---|---|---|")
-        for r in sorted(flagged, key=lambda x: x["key"]):
-            rv = r["oracles"]["route"]
-            a(f"| {r['key']} | {rv.get('verdict')} | {rv.get('observed')} | {rv.get('note', '')} |")
+    # 2) should have routed / asked but didn't — the real misses on in-scope requests
+    other = [r for r in (routeable + vague)
+             if _verdict(r) not in ("correct", "clarify_ok")
+             and _verdict(r) not in EXCLUDED
+             and not (r.get("oracles", {}).get("route", {}) or {}).get("asked_for_missing_input")]
+    other.sort(key=lambda r: r["case"])
+    if other:
+        a(f"**Other misses — {len(other)}** (a request that should route or ask, but didn't):")
+        for r in other:
+            obs = _observed(r)
+            did = (f"→ {obs}" if obs != "—" else "→ no workflow chosen")
+            a(f"- `{r['case']}` — \"{_prompt(out_dir, r)}\" {did} "
+              f"_(expected {_expected(r)})_")
         a("")
 
-    unavail = [r for r in results
-               if (r.get("oracles", {}).get("route", {}) or {}).get("verdict") == "unavailable"]
-    if unavail:
-        cases = sorted({r["case"] for r in unavail})
-        a(f"## Unavailable ({len(unavail)} cells)")
-        a("")
-        a("Expected workflow not installed in this env (capability absent, **not** a routing "
-          "failure). Cases: " + ", ".join(cases))
-        a("")
-
-    sm = agg.get("scope_matrix")
-    if sm and sm.get("scored"):
-        a("## Scope — accept / clarify / refuse vs. true scope")
-        a("")
-        a(f"- scope accuracy: **{sm['scope_accuracy']}**  "
-          f"(TP + TN + guide_ok = {sm['confusion']['TP'] + sm['confusion']['TN'] + sm['confusion']['guide_ok']}"
-          f" / {sm['scored']} scored; {sm['excluded']} excluded)")
-        a("")
-        g = sm["truth_x_response"]
-        labels = {"in-scope": "in-scope (can do)", "ambiguous": "ambiguous (ask)", "can't": "can't (decline)"}
-        a("| true scope ↓ \\ response → | accept | clarify | refuse |")
-        a("|---|---|---|---|")
-        for t in ("in-scope", "ambiguous", "can't"):
-            r = g[t]
-            a(f"| {labels[t]} | {r['accept']} | {r['clarify']} | {r['refuse']} |")
-        a("")
-        c = sm["confusion"]
-        a(f"- **TP** {c['TP']} · **TN** {c['TN']} · **FP** {c['FP']} · **FN** {c['FN']} · "
-          f"guide_ok {c['guide_ok']} · over_clarify {c['over_clarify']} · "
-          f"premature_accept {c['premature_accept']}")
-        a(f"- _{sm['caveat']}_")
-        a("")
-
-    a(f"_cost: ${agg['cost_usd_total']}  ·  avg turns: {agg['turns_avg']}_")
+    a("---")
+    a("_full metrics: `aggregate.json` · per-request traces: `trace_report.html`_")
     with open(os.path.join(out_dir, "report.md"), "w") as f:
-        f.write("\n".join(lines) + "\n")
+        f.write("\n".join(L) + "\n")
