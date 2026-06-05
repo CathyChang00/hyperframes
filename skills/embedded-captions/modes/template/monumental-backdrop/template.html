@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+  TEMPLATE: monumental-backdrop
+  Visual DNA: inherits from memory-wall canonical — Inter family, warm
+  cream (#fff4dc), screen blend, warm glow + dark drop text-shadow,
+  per-word soft/present motion from the validated memory-wall timeline.
+  Four typography slots matching the cap-1..cap-4 arc.
+
+  LOCKED (do not override in plan.json):
+    - Font family (Inter + fallback)
+    - Four slots (cap-1 italic 600 / cap-2 italic 500 / cap-3 upright 700 /
+       cap-4 uppercase 900) — proportions, weight, italic, letter-spacing
+    - mix-blend-mode, color, text-shadow, filter (tunable via plan.json
+       blend_mode / cap_color / text_shadow / text_filter, NOT via css)
+    - Motion: per-word soft-or-present reveal, group fade-in/out
+
+  OPEN per group (agent decides per scene via plan.json `css` field):
+    - POSITION: top/left/right/bottom, transform, text-align
+    - SCALE: `scale` field multiplies the slot's base size
+    - LAYER: `layer: "bg" | "fg"` per group
+    - SLOT choice: `slot: "1" | "2" | "3" | "4"`
+
+  The agent composes BY:
+    1. Choosing which slot gives this word its typographic voice
+    2. Setting scale to fit the scene (1.0 = default, 3.0 = monumental)
+    3. Placing via css (where in frame — use scene clean zones)
+    4. Choosing layer (bg for embed, fg for announcement)
+
+  DO NOT put `font-weight`, `letter-spacing`, `font-style`, or `color` in
+  the css field — those belong to the slot, not the scene decision.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width={{WIDTH}}, height={{HEIGHT}}" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root { --font-scale: {{FONT_SCALE}}; --h: {{HEIGHT}}px; }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: {{WIDTH}}px; height: {{HEIGHT}}px;
+        overflow: hidden;
+        background: #000;
+        font-family: "Inter", "Helvetica Neue", system-ui, sans-serif;
+      }
+      #a-roll { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      #stage {
+        position: absolute;
+        top: 0; left: 0;
+        width: {{WIDTH}}px; height: {{HEIGHT}}px;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* BASE — shared typography DNA (memory-wall lineage) */
+      .cap {
+        display: block;
+        position: absolute;
+        opacity: 0;
+        mix-blend-mode: {{BLEND_MODE}};
+        color: {{CAP_COLOR}};
+        text-shadow: {{TEXT_SHADOW}};
+        filter: {{TEXT_FILTER}};
+        line-height: 1.0;
+        will-change: transform, opacity;
+        /* sensible defaults — agent overrides via #cg-N rules */
+        top: 10%; left: 0; right: 0; text-align: center;
+      }
+      .cap .w { display: inline-block; opacity: 0; will-change: opacity, transform; }
+
+      /* FOUR SLOTS — matching memory-wall canonical typography arc.
+         Sizes are frame-height-relative so they scale cross-aspect.
+         `--s` is the per-group scale multiplier set via #cg-N rule. */
+      .cap-1 { font-size: calc(0.060 * var(--h) * var(--font-scale) * var(--s, 1));
+               font-weight: 600; font-style: italic;
+               letter-spacing: -0.01em; }
+      .cap-2 { font-size: calc(0.051 * var(--h) * var(--font-scale) * var(--s, 1));
+               font-weight: 500; font-style: italic;
+               letter-spacing: -0.005em; }
+      .cap-3 { font-size: calc(0.056 * var(--h) * var(--font-scale) * var(--s, 1));
+               font-weight: 700;
+               letter-spacing: -0.015em; }
+      .cap-4 { font-size: calc(0.070 * var(--h) * var(--font-scale) * var(--s, 1));
+               font-weight: 900; text-transform: uppercase;
+               letter-spacing: -0.03em; line-height: 0.95; }
+
+      /* Per-group position overrides (position-only, typography is locked above) */
+      {{CUSTOM_CSS}}
+    </style>
+  </head>
+  <body>
+    <div id="root"
+         data-composition-id="main"
+         data-start="0"
+         data-duration="{{DURATION}}"
+         data-width="{{WIDTH}}"
+         data-height="{{HEIGHT}}">
+
+      <video id="a-roll" src="source.mp4" muted playsinline
+             data-duration="{{DURATION}}" data-track-index="0"
+             style="z-index: 1"></video>
+
+      <div id="stage">
+        {{GROUPS_HTML}}
+      </div>
+
+      <audio id="a-roll-audio" src="source.mp4"
+             data-start="0" data-duration="{{DURATION}}"
+             data-track-index="3" data-volume="1"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const DUR = {{DURATION}};
+      const GROUPS = {{GROUPS_JSON}};
+
+      GROUPS.forEach(function (g) {
+        var sel = "#" + g.id;
+        var isSoft = g.tone === "soft";
+
+        // Container visible from just-before-g.in until g.out
+        tl.set(sel, { opacity: 1 }, Math.max(0, g.in - 0.01));
+
+        // Per-word reveal — memory-wall motion vocabulary
+        g.words.forEach(function (w, i) {
+          var wsel = sel + " .w[data-i='" + i + "']";
+          if (isSoft) {
+            tl.fromTo(wsel,
+              { opacity: 0, y: 8 },
+              { opacity: 1, y: 0, duration: 0.45, ease: "power2.out", overwrite: "auto" },
+              w.start);
+          } else {
+            tl.fromTo(wsel,
+              { opacity: 0, y: 6, scale: 1.04 },
+              { opacity: 1, y: 0, scale: 1.0, duration: 0.22,
+                ease: "power3.out", overwrite: "auto", transformOrigin: "50% 50%" },
+              w.start);
+          }
+        });
+
+        // Group fade-out 0.5s before g.out (unless g.out == duration)
+        if (g.out < DUR) {
+          tl.to(sel, { opacity: 0, duration: 0.5, ease: "power2.in", overwrite: "auto" },
+                g.out - 0.5);
+        }
+        tl.set(sel, { opacity: 0, visibility: "hidden" }, g.out);
+      });
+
+      tl.seek(0);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

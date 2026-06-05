@@ -1,0 +1,161 @@
+<!doctype html>
+<!--
+  TEMPLATE: documentary-dignified
+  STYLE LOCKED. LAYOUT OPEN.
+
+  Look: Errol Morris / PBS Frontline / "60 Minutes" documentary. Caption
+  sits in a LOCKED position at bottom-left. No animation on entry or exit
+  (burn-in). Speaker name card appears once at first utterance. The whole
+  feel is gravitas — the story carries the emphasis, not the typography.
+
+  Locked:
+    - Inter 500 body, Inter 700 name card. No other font.
+    - White on a 40% black gradient bar (NOT a solid pill box).
+    - No mix-blend — captions sit in FG zone, fully readable.
+    - Burn-in motion: 1-frame opacity 1 at g.in, 1-frame opacity 0 at g.out.
+    - Two-line max. 32-36 chars/line. 1.5s min gap between groups.
+    - No emphasis styling per word. Every word is chosen — no filler.
+
+  Open (agent decides per scene):
+    - {{CAPTION_TOP}} / {{CAPTION_HEIGHT}} — exact gradient bar placement
+    - {{NAME_CARD_TOP}} — if a speaker name card is used
+    - Groups + slot (body / name) + timing
+    - {{FONT_SCALE}} — size multiplier
+
+  This direction is where the skill out-designs Veed/Submagic. They can't
+  do documentary restraint. Every preset in their lib is attention-grabby.
+
+  Rhetorical defaults:
+    - Aggressive filler suppression (transcript → caption filter: 50-70%)
+    - No emphasis per word
+    - Silence honored (no back-fill)
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width={{WIDTH}}, height={{HEIGHT}}" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root { --font-scale: {{FONT_SCALE}}; }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: {{WIDTH}}px; height: {{HEIGHT}}px;
+        overflow: hidden;
+        background: #000;
+        font-family: "Inter", system-ui, sans-serif;
+      }
+      #a-roll { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      #stage {
+        position: absolute;
+        top: 0; left: 0;
+        width: {{WIDTH}}px; height: {{HEIGHT}}px;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* LAYOUT (agent-tunable) */
+      .caption-plane {
+        position: absolute;
+        top: {{CAPTION_TOP}}px;
+        left: 0; right: 0;
+        height: {{CAPTION_HEIGHT}}px;
+        padding: 0 80px;
+        /* Signature: gradient bar from transparent up to 40% black.
+           NOT a solid pill box. Gradient reads as "cinematic restraint". */
+        background: linear-gradient(to top,
+          rgba(0, 0, 0, 0.55) 0%,
+          rgba(0, 0, 0, 0.35) 50%,
+          rgba(0, 0, 0, 0) 100%);
+      }
+      .caption-plane .cap {
+        position: absolute;
+        bottom: 28px;
+        left: 80px; right: 80px;
+        max-width: calc(100% - 160px);
+        text-align: left;
+      }
+      .name-plane {
+        position: absolute;
+        top: {{NAME_CARD_TOP}}px;
+        left: 80px;
+        pointer-events: none;
+      }
+
+      /* STYLE (locked) */
+      .cap {
+        display: block;
+        line-height: 1.25;
+        opacity: 0;
+        color: #F5EFE6;
+        /* No text-shadow flourish. The gradient bar is the contrast mechanism. */
+      }
+      .cap .w { display: inline-block; }
+
+      .cap-body { font-size: calc(44px * var(--font-scale));
+                  font-weight: 500;
+                  letter-spacing: -0.005em; }
+      .cap-name { font-size: calc(30px * var(--font-scale));
+                  font-weight: 700;
+                  letter-spacing: 0.03em;
+                  text-transform: uppercase; }
+      .cap-name-role { font-size: calc(24px * var(--font-scale));
+                       font-weight: 400;
+                       letter-spacing: 0.08em;
+                       text-transform: uppercase;
+                       color: rgba(245, 239, 230, 0.75);
+                       margin-top: 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="root"
+         data-composition-id="main"
+         data-start="0"
+         data-duration="{{DURATION}}"
+         data-width="{{WIDTH}}"
+         data-height="{{HEIGHT}}">
+
+      <video id="a-roll" src="source.mp4" muted playsinline
+             data-duration="{{DURATION}}" data-track-index="0"
+             style="z-index: 1"></video>
+
+      <div id="stage">
+        <div class="caption-plane">
+        {{GROUPS_HTML}}
+        </div>
+        <div class="name-plane">
+        {{CROWN_HTML}}
+        </div>
+      </div>
+
+      <audio id="a-roll-audio" src="source.mp4"
+             data-start="0" data-duration="{{DURATION}}"
+             data-track-index="3" data-volume="1"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const DUR = {{DURATION}};
+      const GROUPS = {{GROUPS_JSON}};
+      const CROWN  = {{CROWN_JSON}};
+
+      // Burn-in: no transform, no per-word reveal. One frame opacity 0→1
+      // at g.in, one frame 1→0 at g.out. Every word of the group shows
+      // immediately — no stagger. This is the whole point of documentary
+      // restraint.
+      function animateGroup(g) {
+        var sel = "#" + g.id;
+        tl.set(sel, { opacity: 1 }, g.in);
+        tl.set(sel, { opacity: 0, visibility: "hidden" }, g.out);
+      }
+
+      GROUPS.forEach(animateGroup);
+      if (CROWN) animateGroup(CROWN);
+
+      tl.seek(0);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
