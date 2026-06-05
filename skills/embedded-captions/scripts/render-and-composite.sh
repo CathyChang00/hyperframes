@@ -1,0 +1,234 @@
+#!/usr/bin/env bash
+# End-to-end: hyperframes render + ffmpeg overlay matte → final.mp4
+#
+# Usage:
+#   bash render-and-composite.sh <project-dir> [hyperframes-repo-path]
+#
+# Env:
+#   HYPERFRAMES_ROOT  default: the hyperframes repo this skill ships inside
+#                     (skills/embedded-captions/scripts → repo root, 3 dirs up)
+
+set -euo pipefail
+
+PROJECT="${1:?usage: render-and-composite.sh <project-dir> [hyperframes-repo]}"
+# This skill lives at skills/embedded-captions/scripts/ inside the hyperframes
+# repo, so the repo root is three levels up. arg 2 or HYPERFRAMES_ROOT override.
+SKILL_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SKILL_SCRIPT_DIR/../../.." && pwd)"
+HF="${2:-${HYPERFRAMES_ROOT:-$REPO_ROOT}}"
+
+PROJECT="$(cd "$PROJECT" && pwd)"
+HF_CLI="$HF/packages/cli/dist/cli.js"
+
+if [[ ! -f "$HF_CLI" ]]; then
+  echo "[render] hyperframes CLI not found at $HF_CLI" >&2
+  echo "         Set HYPERFRAMES_ROOT or pass the repo path as arg 2." >&2
+  exit 1
+fi
+if [[ ! -d "$PROJECT/frames_fg" ]]; then
+  echo "[render] missing matte frames at $PROJECT/frames_fg — run matte-rvm.py first" >&2
+  exit 1
+fi
+if [[ ! -f "$PROJECT/index.html" ]]; then
+  if [[ -f "$PROJECT/plan.json" ]]; then
+    echo "[render] no index.html — auto-compiling from plan.json"
+    python3 "$(dirname "$0")/make-composition.py" "$PROJECT"
+  else
+    echo "[render] missing $PROJECT/index.html and plan.json — run make-composition.py first" >&2
+    exit 1
+  fi
+elif [[ -f "$PROJECT/plan.json" && "$PROJECT/plan.json" -nt "$PROJECT/index.html" ]]; then
+  echo "[render] plan.json newer than index.html — recompiling"
+  python3 "$(dirname "$0")/make-composition.py" "$PROJECT"
+fi
+
+# Gate: plan.json word timings must align with transcript.json within 80ms.
+# A caption whose animation fires 500ms before or after the word is spoken
+# breaks the "belongs to the scene" illusion — hard fail, not a warning.
+# Skip only if transcript.json is missing (custom mode without transcript).
+if [[ -f "$PROJECT/plan.json" && -f "$PROJECT/transcript.json" ]]; then
+  if ! python3 "$(dirname "$0")/check-timing.py" "$PROJECT" --strict; then
+    echo "[render] ABORTED — fix plan.json word timings to match transcript.json, then re-run." >&2
+    exit 2
+  fi
+fi
+
+# Gate: subject occlusion + frame-edge overflow.
+# v2 (canonical): runs measure-layout.js (headless Chromium) to get the actual
+#   pixel coordinates of every cap and word from the rendered DOM, then computes
+#   per-word peak occlusion against the RVM matte. Catches whole-word obliteration
+#   that v1's bbox-average misses. Requires index.html — i.e. make-composition.py
+#   must have run first.
+# v1 (fallback): heuristic bbox from char_ratio × font × text. Faster (no
+#   Chromium spawn). Lossy ±15%. Used when OCCLUSION_FAST=1 or index.html absent.
+# Skip gracefully if plan.json is missing (custom-mode) or frames_fg absent.
+if [[ -f "$PROJECT/plan.json" && -d "$PROJECT/frames_fg" ]]; then
+  CHECKER="check-occlusion-v2.py"
+  if [[ "${OCCLUSION_FAST:-0}" == "1" ]] || [[ ! -f "$PROJECT/index.html" ]]; then
+    CHECKER="check-occlusion.py"
+    echo "[render] using v1 (heuristic) checker — set OCCLUSION_FAST=0 to use v2 pixel-perfect" >&2
+  fi
+  if ! python3 "$(dirname "$0")/$CHECKER" "$PROJECT" --strict; then
+    echo "[render] ABORTED — fix plan.json layout to reduce subject occlusion / frame-edge overflow, then re-run." >&2
+    echo "         Override: OCCLUSION_SKIP=1 bash render-and-composite.sh <project>" >&2
+    if [[ "${OCCLUSION_SKIP:-0}" != "1" ]]; then
+      exit 2
+    fi
+    echo "[render] OCCLUSION_SKIP=1 set — continuing despite occlusion/overflow warnings." >&2
+  fi
+fi
+
+# FPS: from plan.json if present (template mode), else infer from frames_fg
+# count + index.html duration (custom mode), else default to 24.
+if [[ -f "$PROJECT/plan.json" ]]; then
+  FPS="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("fps",24))' "$PROJECT/plan.json")"
+elif [[ -d "$PROJECT/frames_fg" ]]; then
+  N="$(ls "$PROJECT/frames_fg" | wc -l | tr -d ' ')"
+  DUR="$(grep -oE 'data-duration="[0-9.]+"' "$PROJECT/index.html" | head -1 | grep -oE '[0-9.]+' || echo '')"
+  if [[ -n "$DUR" && "$N" -gt 0 ]]; then
+    FPS="$(python3 -c "print(round($N / $DUR))")"
+  else
+    FPS=24
+  fi
+else
+  FPS=24
+fi
+
+# Caption layer: "bg" (classic embed — matte overlays subject on top of caps)
+# or "fg" (captions always on top — announcement feel, used for 9:16 portraits
+# where the subject fills the frame and bg mode loses too much to occlusion).
+# Precedence: CLI env flag > plan.json > HTML data attribute > "bg".
+CAPTION_LAYER="${CAPTION_LAYER_FLAG:-}"
+if [[ -z "$CAPTION_LAYER" && -f "$PROJECT/plan.json" ]]; then
+  CAPTION_LAYER="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("caption_layer","bg"))' "$PROJECT/plan.json")"
+fi
+if [[ -z "$CAPTION_LAYER" && -f "$PROJECT/index.html" ]]; then
+  ATTR="$(grep -oE 'data-caption-layer="(bg|fg)"' "$PROJECT/index.html" | head -1 | grep -oE '(bg|fg)' || true)"
+  [[ -n "$ATTR" ]] && CAPTION_LAYER="$ATTR"
+fi
+CAPTION_LAYER="${CAPTION_LAYER:-bg}"
+echo "[render] caption_layer=$CAPTION_LAYER"
+
+BG="$PROJECT/bg_plus_caps.mp4"
+FINAL="$PROJECT/final.mp4"
+
+# Snapshot the current index.html + plan.json into history/ so the user
+# can recover a prior iteration's design after further edits overwrite it.
+HISTORY_DIR="$PROJECT/history"
+mkdir -p "$HISTORY_DIR"
+STAMP="$(date +%Y%m%d-%H%M%S)"
+cp "$PROJECT/index.html" "$HISTORY_DIR/index-${STAMP}.html"
+cp "$PROJECT/plan.json"  "$HISTORY_DIR/plan-${STAMP}.json" 2>/dev/null || true
+echo "[render] snapshot → history/index-${STAMP}.html"
+
+echo "[render] hyperframes render @ ${FPS}fps"
+
+# Hyperframes occasionally hangs on Chromium shutdown *after* the output file
+# is successfully written (seen multiple times on 15–30s clips). Without a
+# guard the shell waits forever. This helper enforces a max wall-clock budget,
+# and if the output is already on disk when we hit it, treats the run as
+# successful and kills the zombie. Tune HF_TIMEOUT_S via env if needed.
+HF_TIMEOUT_S="${HF_TIMEOUT_S:-240}"
+# hf_render_dir: render one hyperframes composition.
+# args: <output.mp4> <label> <project_dir>
+# watches for the Chromium-shutdown-hang; if output file exists and is >1MB
+# past timeout, treats as success and kills the zombie.
+hf_render_dir() {
+  local out="$1" label="$2" proj="$3"
+  node "$HF_CLI" render --dir "$proj" --fps "$FPS" -o "$out" &
+  local pid=$! start=$SECONDS elapsed
+  while kill -0 "$pid" 2>/dev/null; do
+    elapsed=$((SECONDS - start))
+    if (( elapsed > HF_TIMEOUT_S )); then
+      local sz=0
+      [[ -f "$out" ]] && sz=$(stat -f%z "$out" 2>/dev/null || echo 0)
+      if (( sz > 1000000 )); then
+        echo "[render] ${label}: node hung ${elapsed}s after shutdown (output ${sz}B exists, treating as success)"
+        kill -9 "$pid" 2>/dev/null
+        pkill -9 -f "puppeteer_dev_chrome_profile" 2>/dev/null
+        return 0
+      fi
+      echo "[render] ${label}: hung ${elapsed}s with no output — killing and failing" >&2
+      kill -9 "$pid" 2>/dev/null
+      pkill -9 -f "puppeteer_dev_chrome_profile" 2>/dev/null
+      return 2
+    fi
+    sleep 5
+  done
+  wait "$pid" 2>/dev/null
+  [[ -f "$out" ]]
+}
+
+# Hybrid renders need 2 independent hyperframes passes. They share no state, so
+# we run them in parallel (one in the main PROJECT, one in a shadow dir with
+# index_fg.html renamed to index.html). Saves ~half of the Chromium cost.
+FG_SHADOW=""
+if [[ -f "$PROJECT/index_fg.html" ]]; then
+  FG_SHADOW="$PROJECT/_fg_shadow"
+  rm -rf "$FG_SHADOW" && mkdir -p "$FG_SHADOW"
+  # Link shared assets; copy index_fg.html into shadow as index.html.
+  for item in source.mp4 audio.mp3 transcript.json hyperframes.json frames_bg frames_fg; do
+    [[ -e "$PROJECT/$item" ]] && ln -sf "$PROJECT/$item" "$FG_SHADOW/$item"
+  done
+  cp "$PROJECT/index_fg.html" "$FG_SHADOW/index.html"
+
+  FG_CAPS="$PROJECT/fg_caps.mp4"
+  echo "[render] hybrid fg/bg — launching both passes in parallel"
+  hf_render_dir "$BG" "bg_plus_caps" "$PROJECT" &
+  BG_PID=$!
+  hf_render_dir "$FG_CAPS" "fg_caps" "$FG_SHADOW" &
+  FG_PID=$!
+  # Wait for both; fail if either fails.
+  wait "$BG_PID"; BG_RC=$?
+  wait "$FG_PID"; FG_RC=$?
+  rm -rf "$FG_SHADOW"
+  if (( BG_RC != 0 )); then echo "[render] bg render failed" >&2; exit 1; fi
+  if (( FG_RC != 0 )); then echo "[render] fg render failed" >&2; exit 1; fi
+else
+  hf_render_dir "$BG" "bg_plus_caps" "$PROJECT" \
+    || { echo "[render] bg render failed" >&2; exit 1; }
+fi
+
+# Probe render dims for ffmpeg scale
+W="$(ffprobe -v error -select_streams v:0 -show_entries stream=width  -of default=nw=1:nk=1 "$BG")"
+H="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=nw=1:nk=1 "$BG")"
+
+# Decide composite mode:
+#  - If make-composition emitted index_fg.html (any group has layer:fg),
+#    use hybrid regardless of plan-level caption_layer.
+#  - Else if caption_layer=fg globally, skip matte.
+#  - Else (default), matte embed.
+if [[ -f "$PROJECT/index_fg.html" ]]; then
+  # Hybrid: bg_plus_caps and fg_caps were both rendered above in parallel.
+  # Now composite: bg_plus_caps + matte (subject on top) + fg_caps (screen).
+  FG_CAPS="$PROJECT/fg_caps.mp4"
+  echo "[render] hybrid — composite (bg_plus_caps + matte + fg_caps[screen blend])"
+  # fg_caps is bright caption on pure black. blend=screen makes it behave
+  # like CSS mix-blend-mode: screen on the matted video — captions pick up
+  # scene luminance, NOT a flat opaque overlay (which looks sticker-like).
+  # Use rgb format to avoid YUV-space color drift, then convert back for libx264.
+  ffmpeg -y -i "$BG" \
+    -framerate "$FPS" -i "$PROJECT/frames_fg/f_%04d.png" \
+    -i "$FG_CAPS" \
+    -filter_complex "[1:v]scale=${W}:${H},format=yuva420p[matte];[0:v][matte]overlay=format=auto,format=gbrp[matted];[2:v]format=gbrp[fg];[matted][fg]blend=all_mode=screen,format=yuv420p[v]" \
+    -map "[v]" -map 0:a \
+    -r "$FPS" -c:v libx264 -crf 18 -preset medium -c:a copy \
+    "$FINAL"
+elif [[ "$CAPTION_LAYER" == "fg" ]]; then
+  # Global FG mode: skip matte overlay entirely. bg_plus_caps.mp4 already
+  # has captions on top of a-roll. Re-encode for consistency.
+  echo "[render] fg mode (global) — skipping matte, re-encoding ${W}x${H}"
+  ffmpeg -y -i "$BG" \
+    -r "$FPS" -c:v libx264 -crf 18 -preset medium -c:a copy \
+    "$FINAL"
+else
+  echo "[render] bg mode — overlay matte (${W}x${H})"
+  ffmpeg -y -i "$BG" \
+    -framerate "$FPS" -i "$PROJECT/frames_fg/f_%04d.png" \
+    -filter_complex "[1:v]scale=${W}:${H},format=yuva420p[fg];[0:v][fg]overlay=format=auto[v]" \
+    -map "[v]" -map 0:a \
+    -r "$FPS" -c:v libx264 -crf 18 -preset medium -c:a copy \
+    "$FINAL"
+fi
+
+echo "[render] done → $FINAL"
