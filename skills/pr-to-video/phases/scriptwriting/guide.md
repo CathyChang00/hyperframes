@@ -205,8 +205,23 @@ pr-to-video is **faceless**: no screenshots, no captured assets. Downstream (vis
 Therefore:
 
 - **`assetCandidates` is `[]` for every scene by default.** It tells downstream "this scene is invented from the brief + diff."
-- **The only exception:** the user explicitly provided a real image in `public/` (e.g. an architecture diagram). Then add `{ "path": "public/<basename>", "description": "<≤25 words>" }`. Do not invent paths; do not reference `capture/`.
+- **Exception 1 — a user-provided image:** the user explicitly placed a real image in `public/` (e.g. an architecture diagram). Then add `{ "path": "public/<basename>", "description": "<≤25 words>" }`. Do not invent paths; do not reference `capture/`.
+- **Exception 2 — the credits / shipped-by close (contributor avatars):** see below.
 - Visual intent (which hunk, before/after, file-tree) belongs in `narrativeRole` + the transition `description`; the visual phase reads those.
+
+### Optional close: a credits / shipped-by scene (the one relaxation of faceless)
+
+A PR is shipped by people. `capture/extracted/people.json` lists the real contributors — `author` (the PR opener), `committer`s (the people who actually wrote/co-authored the commits, with a `commitCount`), `reviewer`s (each with a `reviewState`), `commenter`s — bot-filtered and deduped, and the orchestrator has already downloaded each one's GitHub avatar to `public/avatars/<login>.png` (the `avatarFetched: true` entries — confirm with `ls public/avatars/`). The top-level `reviewDecision` (e.g. `APPROVED`) is honest grounding.
+
+> **The PR `author` is only who opened the PR — not necessarily who wrote the code.** A teammate frequently authors most commits and force-pushes the branch. Lead the credits with the `committer`s by `commitCount`, not the opener, or you'll miss the main contributor.
+
+You **may** add a single closing scene that names the humans behind the change — a `branding` ("shipped by …") or `social_proof` ("approved by 3 reviewers") beat. On that scene only:
+
+- `assetCandidates` = an array of `{ "path": "public/avatars/<login>.png", "description": "<login>, <role>" }`, **2-6 entries**, commit authors (by `commitCount`) first then reviewers, only `avatarFetched: true` logins.
+- The body stays faceless — avatars appear **only** on this close, never decorating a code/diff scene.
+- The visual register is an avatar row / contributor wall with names + roles + an "approved" check (the visual phase already handles non-empty `assetCandidates` — it features them like real screenshots).
+
+This is **optional and tasteful, not mandatory**: a one-line hotfix doesn't need a credits roll; a feature or release the team rallied around earns one. When `people.json` has only the author (a solo PR with no reviews), a credits scene is usually overkill — skip it. The hook/body/payoff arc remains the spine; credits are a grace note at the end.
 
 ## Validation Checklist
 

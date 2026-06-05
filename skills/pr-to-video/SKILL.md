@@ -13,18 +13,18 @@ This workflow owns only the PR-specific front (**ingest + story-design**); every
 
 All artifacts go to `PROJECT_DIR = videos/<project-name>/` (created in Step 0); all paths below are relative to it.
 
-| Phase                   | Execution                                                                                                  | Primary artifact                                                              | Detailed flow                             |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------- |
-| init                    | Bash                                                                                                       | `hyperframes.json`                                                            | Step 0                                    |
-| **ingest** (own)        | Bash (`gh` CLI + `ingest.mjs`, NO agent, NO scrape)                                                        | `capture/pr.json` + `diff.patch` + `extracted/{tokens.json,visible-text.txt}` | Step 1                                    |
-| design-system (shared)  | Bash (no agent, deterministic `claude`)                                                                    | `design-system/design.html` + `chunks/`                                       | Step 1b                                   |
-| **story-design** (own)  | subagent (`general-purpose`)                                                                               | `narrator_scripts.json`                                                       | `agents/story-design.md`                  |
-| audio (shared)          | `audio.mjs` in Bash                                                                                        | `audio_meta.json`                                                             | `phases/audio/guide.md`                   |
-| visual-design (shared)  | subagent (`general-purpose`)                                                                               | `section_plan.md`                                                             | `agents/visual-design.md`                 |
-| prep (shared)           | `prep.mjs` in Bash                                                                                         | `group_spec.json`                                                             | `scripts/prep.mjs`                        |
-| captions (shared, det.) | `captions.mjs group` -> `captions.mjs html` in Bash (no subagent)                                          | `caption_groups.json` + `compositions/captions.html`                          | `scripts/captions.mjs`                    |
-| scenes (shared)         | N x subagent (`general-purpose`, parallel in the same message)                                             | `compositions/scene_*.html` or `compositions/group_w*.html`                   | `agents/hyperframes-scene.md`             |
-| finalize (shared)       | Bash prelude (wait-bgm + assemble + inject/verify-transitions + sfx-verify + preflight) -> repair subagent | `renders/video.mp4`                                                           | Step 7 / `agents/hyperframes-finalize.md` |
+| Phase                   | Execution                                                                                                  | Primary artifact                                                                                              | Detailed flow                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| init                    | Bash                                                                                                       | `hyperframes.json`                                                                                            | Step 0                                    |
+| **ingest** (own)        | Bash (`gh` CLI + `ingest.mjs` + `fetch-people-avatars.mjs`, NO agent, NO scrape)                           | `capture/pr.json` + `diff.patch` + `extracted/{tokens.json,visible-text.txt,people.json}` + `public/avatars/` | Step 1                                    |
+| design-system (shared)  | Bash (no agent, deterministic `claude`)                                                                    | `design-system/design.html` + `chunks/`                                                                       | Step 1b                                   |
+| **story-design** (own)  | subagent (`general-purpose`)                                                                               | `narrator_scripts.json`                                                                                       | `agents/story-design.md`                  |
+| audio (shared)          | `audio.mjs` in Bash                                                                                        | `audio_meta.json`                                                                                             | `phases/audio/guide.md`                   |
+| visual-design (shared)  | subagent (`general-purpose`)                                                                               | `section_plan.md`                                                                                             | `agents/visual-design.md`                 |
+| prep (shared)           | `prep.mjs` in Bash                                                                                         | `group_spec.json`                                                                                             | `scripts/prep.mjs`                        |
+| captions (shared, det.) | `captions.mjs group` -> `captions.mjs html` in Bash (no subagent)                                          | `caption_groups.json` + `compositions/captions.html`                                                          | `scripts/captions.mjs`                    |
+| scenes (shared)         | N x subagent (`general-purpose`, parallel in the same message)                                             | `compositions/scene_*.html` or `compositions/group_w*.html`                                                   | `agents/hyperframes-scene.md`             |
+| finalize (shared)       | Bash prelude (wait-bgm + assemble + inject/verify-transitions + sfx-verify + preflight) -> repair subagent | `renders/video.mp4`                                                                                           | Step 7 / `agents/hyperframes-finalize.md` |
 
 ## Prerequisites
 
@@ -75,14 +75,24 @@ gh auth status || { echo "gh not authenticated — run: gh auth login"; exit 1; 
 
 (cd "$PROJECT_DIR" && mkdir -p capture/extracted capture/assets)
 (cd "$PROJECT_DIR" && gh pr view "$PR" \
-  --json number,title,body,author,url,baseRefName,headRefName,commits,files,additions,deletions,changedFiles,labels \
+  --json number,title,body,author,url,baseRefName,headRefName,commits,files,additions,deletions,changedFiles,labels,reviews,latestReviews,comments,assignees,reviewDecision,mergedBy \
   > capture/pr.json)
 (cd "$PROJECT_DIR" && gh pr diff "$PR" > capture/diff.patch)
 
 # Fold pr.json + diff.patch into tokens.json (colors:[] → claude native palette) +
-# visible-text.txt (the narrative brief). capture/assets/ stays empty (faceless).
+# visible-text.txt (the narrative brief) + people.json (PR author + commit authors w/ counts +
+# reviewers / commenters / assignees, bot-filtered + deduped, each with a GitHub avatar URL).
+# (The PR `author` is only the opener; commit authors from commits[].authors[] are tracked too.)
+# ingest is OFFLINE.
 (cd "$PROJECT_DIR" && node <SKILL_DIR>/scripts/ingest.mjs \
   --pr-json ./capture/pr.json --diff ./capture/diff.patch --out-dir ./capture/extracted)
+
+# Network step (the people front's only one — ingest stays offline): download each
+# contributor's GitHub avatar to public/avatars/<login>.png for an optional credits /
+# shipped-by close. Best-effort — a missing avatar or offline run never blocks (exit 0).
+# Avatars + that close are the ONE place pr-to-video relaxes the faceless default.
+(cd "$PROJECT_DIR" && node <SKILL_DIR>/scripts/fetch-people-avatars.mjs \
+  --people ./capture/extracted/people.json)
 ```
 
 Validation:
@@ -92,10 +102,12 @@ Validation:
 [ -s "$PROJECT_DIR/capture/diff.patch" ] && \
 [ -s "$PROJECT_DIR/capture/extracted/tokens.json" ] && \
 [ -s "$PROJECT_DIR/capture/extracted/visible-text.txt" ] && \
+[ -s "$PROJECT_DIR/capture/extracted/people.json" ] && \
 [ -d "$PROJECT_DIR/capture/assets" ] && echo ok || echo missing
+# public/avatars/ is best-effort — its absence is NOT a failure (no avatars resolved / offline).
 ```
 
-If `gh` errors (auth / not found / private), report the exact stderr and stop — **do not fabricate PR contents**. If `ingest.mjs` exits 1, read its stderr (usually a malformed `pr.json`), fix, rerun (deterministic, finishes instantly).
+If `gh` errors (auth / not found / private), report the exact stderr and stop — **do not fabricate PR contents**. If `ingest.mjs` exits 1, read its stderr (usually a malformed `pr.json`), fix, rerun (deterministic, finishes instantly). `fetch-people-avatars.mjs` always exits 0; if avatars are missing, story-design simply has no credits scene to author.
 
 ### Step 1b - Design system (Bash, NO agent, deterministic — SHARED)
 
@@ -128,11 +140,12 @@ Schema validator: <SKILL_DIR>/scripts/validate.mjs narrator
 PR facts: ./capture/pr.json                          # title / body / commits / files / +/- stats — read first
 Diff: ./capture/diff.patch                           # the actual change — pull 2-4 representative hunks
 Brief: ./capture/extracted/visible-text.txt          # the assembled narrative brief
+People: ./capture/extracted/people.json              # contributors (PR author + commit authors w/ commitCount + reviewers/commenters) + avatarFile; avatars in public/avatars/ — optional credits close
 Design DNA: ./design-system/inference.json           # Read site_dna once to set register (soft hint only)
 Script style: concise, dev-facing — 1-2 sentences/scene, <=20 words; name the change, the why, the impact
 ```
 
-The agent picks a PR **archetype** for `narrativeArchetype` (`changelog` / `feature-reveal` / `fix-explainer` / `refactor-walkthrough`, or `"<outer> with <inner>"`) and emits `narrator_scripts.json` (it runs the validator before returning). `continuity` drives worker grouping: `continue` = same worker as the previous scene (a run of **up to 3** scenes, cap=3); `break` = new worker; scene 1 is always `break`. `intent` / `sharedMotif` are soft hints. `assetCandidates` is `[]` on essentially every scene (faceless).
+The agent picks a PR **archetype** for `narrativeArchetype` (`changelog` / `feature-reveal` / `fix-explainer` / `refactor-walkthrough`, or `"<outer> with <inner>"`) and emits `narrator_scripts.json` (it runs the validator before returning). `continuity` drives worker grouping: `continue` = same worker as the previous scene (a run of **up to 3** scenes, cap=3); `break` = new worker; scene 1 is always `break`. `intent` / `sharedMotif` are soft hints. `assetCandidates` is `[]` on essentially every scene (faceless) — the one exception is an **optional credits / shipped-by close** that may reference the contributor avatars in `public/avatars/<login>.png` (from `people.json`).
 
 ### Step 3 - Audio — SHARED
 
@@ -341,13 +354,13 @@ Read `$PROJECT_DIR/context.log` and resume from:
 └── videos/<project-name>/    # PROJECT_DIR - HyperFrames project root
     ├── hyperframes.json  context.log
     ├── capture/              # synthetic package (NOT a scrape) — kept for backend layout compatibility
-    │   ├── pr.json           # gh pr view --json
+    │   ├── pr.json           # gh pr view --json (now incl. reviews / comments / assignees / reviewDecision)
     │   ├── diff.patch        # gh pr diff (the full change; story-design pulls hunks from here)
-    │   ├── extracted/        # tokens.json (synthetic) + visible-text.txt (the assembled PR brief)
+    │   ├── extracted/        # tokens.json (synthetic) + visible-text.txt (brief) + people.json (contributors)
     │   └── assets/           # empty (faceless)
     ├── design-system/        # build-design outputs: inference.json / design.html / chunks/ / fonts/
     ├── narrator_scripts.json  audio_meta.json  section_plan.md  group_spec.json
-    ├── public/  assets/  compositions/  snapshots/
+    ├── public/  assets/  compositions/  snapshots/   # public/avatars/<login>.png — contributor avatars
     └── renders/video.mp4
 ```
 

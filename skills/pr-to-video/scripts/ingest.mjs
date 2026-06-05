@@ -9,13 +9,22 @@
 //
 // Reads:
 //   --pr-json <path>   gh pr view --json number,title,body,author,url,baseRefName,
-//                      headRefName,commits,files,additions,deletions,changedFiles,labels
+//                      headRefName,commits,files,additions,deletions,changedFiles,labels,
+//                      reviews,latestReviews,comments,assignees,reviewDecision,mergedBy
 //   --diff <path>      gh pr diff (raw unified diff)  [optional — brief still builds without it]
 // Writes (under --out-dir, default ./capture/extracted):
 //   tokens.json        synthetic design tokens (colors:[] → claude native palette)
 //   visible-text.txt   the narrative SOURCE: a readable plain-text brief assembled
-//                      from title + meta + body + commits + changed files + a
+//                      from title + meta + people + body + commits + changed files + a
 //                      budget-bounded selection of representative diff hunks.
+//   people.json        the contributors (PR author / commit authors / reviewers /
+//                      commenters / assignees — the PR `author` is only the opener, so
+//                      commit authors from commits[].authors[] are tracked separately),
+//                      bot-filtered + deduped, each with a GitHub avatar URL + intended
+//                      public/avatars/<login>.png path. The avatars themselves are
+//                      downloaded by the orchestrator (fetch-people-avatars.mjs) — THIS
+//                      script stays offline. people.json + the avatars are the ONE place
+//                      the faceless default is relaxed: an optional credits/shipped-by close.
 //
 // The story-design subagent reads visible-text.txt for the narrative AND gets the
 // full diff.patch separately for deep hunk selection — so this brief is curated,
@@ -97,6 +106,128 @@ const changedFiles = pr.changedFiles ?? (Array.isArray(pr.files) ? pr.files.leng
 const labels = Array.isArray(pr.labels)
   ? pr.labels.map((l) => (typeof l === "string" ? l : l?.name)).filter(Boolean)
   : [];
+
+// ---------- people (author / reviewers / commenters / assignees) ----------
+// Offline bot heuristic — gh gives reviewer/commenter authors as a bare `login`
+// (no `is_bot`), so we filter by the GitHub `[bot]` suffix + a denylist of the
+// review/CI bots that dominate org PRs. Best-effort: a bot that slips through
+// just gets an avatar downloaded and can still be excluded by story-design.
+const BOT_DENYLIST = new Set(
+  [
+    "claude", "graphite-app", "dependabot", "github-actions", "codecov",
+    "codecov-commenter", "coderabbitai", "sonarcloud", "sonarqubecloud", "vercel",
+    "netlify", "renovate", "snyk-bot", "greenkeeper", "mergify", "allcontributors",
+    "imgbot", "pre-commit-ci", "deepsource-autofix", "sentry-io", "semgrep-app",
+    "cubic-dev-ai", "gemini-code-assist", "copilot-pull-request-reviewer",
+    "github-advanced-security", "restyled-io", "changeset-bot", "bundlemon",
+  ].map((s) => s.toLowerCase()),
+);
+const isBot = (login) => {
+  if (!login) return true;
+  const l = login.toLowerCase();
+  return l.endsWith("[bot]") || l.endsWith("-bot") || l.endsWith("[robot]") || BOT_DENYLIST.has(l);
+};
+
+// "author" = the PR opener; "committer" = wrote/co-authored commits in this PR
+// (often differs from the opener — a teammate force-pushes the branch, or commits
+// are co-authored). Commit authors are first-class contributors for a credits close.
+const ROLE_ORDER = ["author", "committer", "reviewer", "commenter", "assignee"];
+const peopleMap = new Map(); // login -> { login, roles:Set, reviewState, association, commitCount }
+const botsFiltered = new Set();
+// Returns the person record for a real (non-bot) login, creating it on first
+// touch; records and drops bots. null means "skip this login".
+function consider(login) {
+  if (!login) return null;
+  if (isBot(login)) {
+    botsFiltered.add(login);
+    return null;
+  }
+  if (!peopleMap.has(login))
+    peopleMap.set(login, {
+      login,
+      roles: new Set(),
+      reviewState: null,
+      association: null,
+      commitCount: 0,
+    });
+  return peopleMap.get(login);
+}
+
+const authorLogin = pr.author?.login || null;
+{
+  const p = consider(authorLogin);
+  if (p) p.roles.add("author");
+}
+
+// Commit authors — the people who actually wrote the code. pr.commits[].authors[]
+// carries login/name/email; co-authored commits list several. Counts drive ordering
+// and the brief ("@login (N commits)"). Authors with no GitHub login (email-only)
+// can't be avatar'd, so they're skipped here.
+for (const c of Array.isArray(pr.commits) ? pr.commits : []) {
+  for (const a of Array.isArray(c?.authors) ? c.authors : []) {
+    const p = consider(a?.login);
+    if (!p) continue;
+    p.roles.add("committer");
+    p.commitCount += 1;
+  }
+}
+
+// Reviewers — prefer latestReviews (one row per reviewer, final state); fall back
+// to reviews[] (all events → keep the last state per reviewer).
+let reviewSource = Array.isArray(pr.latestReviews) ? pr.latestReviews : [];
+if (!reviewSource.length && Array.isArray(pr.reviews)) {
+  const lastByAuthor = new Map();
+  for (const r of pr.reviews) {
+    const lg = r?.author?.login;
+    if (lg) lastByAuthor.set(lg, r); // later events overwrite earlier
+  }
+  reviewSource = [...lastByAuthor.values()];
+}
+for (const r of reviewSource) {
+  const p = consider(r?.author?.login);
+  if (!p) continue;
+  p.roles.add("reviewer");
+  if (r.state) p.reviewState = r.state;
+  if (r.authorAssociation) p.association = r.authorAssociation;
+}
+
+for (const c of Array.isArray(pr.comments) ? pr.comments : []) {
+  const p = consider(c?.author?.login);
+  if (p) p.roles.add("commenter");
+}
+for (const a of Array.isArray(pr.assignees) ? pr.assignees : []) {
+  const p = consider(a?.login);
+  if (p) p.roles.add("assignee");
+}
+
+const REVIEW_STATE_LABEL = {
+  APPROVED: "approved",
+  CHANGES_REQUESTED: "changes requested",
+  COMMENTED: "commented",
+  DISMISSED: "dismissed",
+  PENDING: "pending",
+};
+const primaryRoleRank = (roles) => {
+  for (let i = 0; i < ROLE_ORDER.length; i++) if (roles.includes(ROLE_ORDER[i])) return i;
+  return ROLE_ORDER.length;
+};
+const people = [...peopleMap.values()]
+  .map((p) => ({
+    login: p.login,
+    roles: ROLE_ORDER.filter((r) => p.roles.has(r)),
+    commitCount: p.commitCount || 0,
+    reviewState: p.reviewState || null,
+    association: p.association || null,
+    // Unauthenticated avatar endpoint — redirects to the user's avatar; the
+    // orchestrator's fetch-people-avatars.mjs downloads it here.
+    avatarUrl: `https://github.com/${encodeURIComponent(p.login)}.png?size=200`,
+    avatarFile: `public/avatars/${p.login}.png`,
+    avatarFetched: false, // set true by fetch-people-avatars.mjs once downloaded
+  }))
+  .sort((a, b) => primaryRoleRank(a.roles) - primaryRoleRank(b.roles));
+
+const reviewDecision = pr.reviewDecision || null;
+const mergedByLogin = pr.mergedBy?.login || null;
 
 // ---------- clean body ----------
 function cleanBody(raw) {
@@ -246,6 +377,38 @@ if (labels.length) lines.push(`Labels: ${labels.join(", ")}`);
 if (url) lines.push(`URL: ${url}`);
 lines.push("");
 
+// People & reviews — human context for an optional credits / shipped-by close.
+// Avatars land in public/avatars/<login>.png (downloaded by the orchestrator).
+if (people.length) {
+  lines.push("## People & reviews");
+  const authorPerson = people.find((p) => p.roles.includes("author"));
+  if (authorPerson) lines.push(`Author (opened PR): @${authorPerson.login}`);
+  const committers = people.filter((p) => p.roles.includes("committer"));
+  if (committers.length) {
+    const parts = committers
+      .slice()
+      .sort((a, b) => b.commitCount - a.commitCount)
+      .map((p) => `@${p.login}${p.commitCount ? ` (${p.commitCount} commit${p.commitCount === 1 ? "" : "s"})` : ""}`);
+    lines.push(`Commit authors: ${parts.join(", ")}`);
+  }
+  const reviewers = people.filter((p) => p.roles.includes("reviewer"));
+  if (reviewers.length) {
+    const parts = reviewers.map(
+      (p) => `@${p.login}${p.reviewState ? ` (${REVIEW_STATE_LABEL[p.reviewState] || p.reviewState.toLowerCase()})` : ""}`,
+    );
+    lines.push(`Reviewers: ${parts.join(", ")}`);
+  }
+  const commentersOnly = people.filter(
+    (p) => p.roles.includes("commenter") && !p.roles.includes("author") && !p.roles.includes("reviewer"),
+  );
+  if (commentersOnly.length) lines.push(`Commenters: ${commentersOnly.map((p) => `@${p.login}`).join(", ")}`);
+  if (reviewDecision) lines.push(`Review decision: ${reviewDecision}`);
+  if (mergedByLogin) lines.push(`Merged by: @${mergedByLogin}`);
+  lines.push(`Avatars: public/avatars/<login>.png (${people.length} contributor(s) — see people.json)`);
+  if (botsFiltered.size) lines.push(`(bots filtered out: ${[...botsFiltered].join(", ")})`);
+  lines.push("");
+}
+
 lines.push("## What the PR says");
 lines.push(body || "(no description provided)");
 lines.push("");
@@ -312,19 +475,33 @@ const tokens = {
   cssVariables: {},
 };
 
+// ---------- assemble people.json ----------
+const peopleDoc = {
+  authorLogin,
+  reviewDecision,
+  mergedBy: mergedByLogin,
+  botsFiltered: [...botsFiltered],
+  people, // deduped, bot-filtered; each has roles[] + avatarUrl + avatarFile + avatarFetched
+};
+
 // ---------- write ----------
 mkdirSync(outDir, { recursive: true });
 const tokensOut = join(outDir, "tokens.json");
 const textOut = join(outDir, "visible-text.txt");
+const peopleOut = join(outDir, "people.json");
 writeFileSync(tokensOut, JSON.stringify(tokens, null, 2) + "\n");
 writeFileSync(textOut, visibleText);
+writeFileSync(peopleOut, JSON.stringify(peopleDoc, null, 2) + "\n");
 
 // ---------- summary ----------
+const reviewerCount = people.filter((p) => p.roles.includes("reviewer")).length;
+const committerCount = people.filter((p) => p.roles.includes("committer")).length;
 console.log(
   [
     `✓ ingest: ${repo || "(repo?)"} PR #${number} — "${title}"`,
     `  +${additions} / -${deletions} across ${changedFiles} file(s); ${commitLines.length} commit(s)`,
     `  diff: ${filesShown} file(s) shown, ${filesOmitted} omitted (budget ${MAX_DIFF_CHARS} chars)`,
-    `  wrote ${textOut} (${visibleText.length} chars) + ${tokensOut}`,
+    `  people: ${people.length} contributor(s) (${committerCount} commit author(s), ${reviewerCount} reviewer(s)${reviewDecision ? `, decision ${reviewDecision}` : ""}${botsFiltered.size ? `; ${botsFiltered.size} bot(s) filtered` : ""})`,
+    `  wrote ${textOut} (${visibleText.length} chars) + ${tokensOut} + ${peopleOut}`,
   ].join("\n"),
 );
