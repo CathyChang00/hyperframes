@@ -148,8 +148,13 @@ HF_TIMEOUT_S="${HF_TIMEOUT_S:-240}"
 # past timeout, treats as success and kills the zombie.
 hf_render_dir() {
   local out="$1" label="$2" proj="$3" fmt="${4:-}"
-  local fmtarg=(); [[ -n "$fmt" ]] && fmtarg=(--format "$fmt")
-  node "$HF_CLI" render --dir "$proj" --fps "$FPS" "${fmtarg[@]}" -o "$out" &
+  # bash 3.2 (macOS) throws on empty-array expansion under `set -u`, so branch
+  # explicitly instead of splatting an optional --format array.
+  if [[ -n "$fmt" ]]; then
+    node "$HF_CLI" render --dir "$proj" --fps "$FPS" --format "$fmt" -o "$out" &
+  else
+    node "$HF_CLI" render --dir "$proj" --fps "$FPS" -o "$out" &
+  fi
   local pid=$! start=$SECONDS elapsed
   while kill -0 "$pid" 2>/dev/null; do
     elapsed=$((SECONDS - start))
@@ -198,6 +203,17 @@ if [[ -f "$PROJECT/index_fg.html" ]]; then
   rm -rf "$FG_SHADOW"
   if (( BG_RC != 0 )); then echo "[render] bg render failed" >&2; exit 1; fi
   if (( FG_RC != 0 )); then echo "[render] fg render failed" >&2; exit 1; fi
+elif [[ -f "$PROJECT/rail.html" ]]; then
+  # Standard mode: render index.html from a shadow dir so rail.html isn't ALSO
+  # discovered as a root composition (the multiple-root ambiguity — otherwise the
+  # renderer might pick rail.html as the entry). The rail renders separately below.
+  BASE_SHADOW="$PROJECT/_base_shadow"; rm -rf "$BASE_SHADOW"; mkdir -p "$BASE_SHADOW"
+  for item in source.mp4 audio.mp3 transcript.json hyperframes.json package.json frames_bg frames_fg; do
+    [[ -e "$PROJECT/$item" ]] && ln -sf "$PROJECT/$item" "$BASE_SHADOW/$item"
+  done
+  cp "$PROJECT/index.html" "$BASE_SHADOW/index.html"
+  hf_render_dir "$BG" "bg_plus_caps" "$BASE_SHADOW" || { echo "[render] bg render failed" >&2; rm -rf "$BASE_SHADOW"; exit 1; }
+  rm -rf "$BASE_SHADOW"
 else
   hf_render_dir "$BG" "bg_plus_caps" "$PROJECT" \
     || { echo "[render] bg render failed" >&2; exit 1; }

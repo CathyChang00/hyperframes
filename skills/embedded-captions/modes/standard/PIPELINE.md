@@ -84,11 +84,12 @@ Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **n
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:{{W}}px;height:{{H}}px;overflow:hidden;background:transparent;font-family:var(--ff)}
   #stage{position:absolute;inset:0;container-type:size}
-  .flow{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);width:90%;text-align:center;
+  .flow{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);width:90%;height:14%}
+  .line{position:absolute;left:0;right:0;bottom:0;text-align:center;
     line-height:1.15;font-weight:700;font-size:7.5cqh;color:var(--cfill);
     text-shadow:0 2px 8px rgba(0,0,0,.55)}                  /* glyph-local scrim; NEVER a full-frame bar/grade */
-  .flow .w{display:inline-block;opacity:0;margin:0 .1em;color:var(--cfill)}
-  .flow .w.act{color:var(--cacc)}
+  .line .w{display:inline-block;opacity:0;margin:0 .1em;color:var(--cfill)}
+  .line .w.act{color:var(--cacc)}
   .stage-tokens{--ff:'Inter';--cfill:#fff;--cacc:#10A37F}   /* ← same tokens as index.html */
 </style></head><body class="stage-tokens">
   <div id="root" data-composition-id="main" data-start="0" data-duration="{{DUR}}" data-width="{{W}}" data-height="{{H}}">
@@ -98,18 +99,23 @@ Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **n
     window.__timelines=window.__timelines||{};
     const tl=gsap.timeline({paused:true});
     const flow=document.querySelector('.flow');
-    // WORDS = transcript grouped into lines [{words:[{text,start,end}], end}] in scene-local seconds (2–4 words/line).
+    // WORDS = transcript grouped into lines [{words:[{text,start}], end}] in scene-local seconds
+    // (2–4 words/line; non-overlapping windows — line.end ≤ next line's first word.start).
     const WORDS={{WORDS_JSON}};
     const FLOW_IN=(w)=>gsap.fromTo(w,{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power3.out'}); // _motion.md
-    WORDS.forEach(line=>{
-      flow.innerHTML=line.words.map((w,i)=>`<span class="w" data-i="${i}">${w.text}</span>`).join(' ');
-      const spans=[...flow.querySelectorAll('.w')];
+    // Build EVERY line up-front as its own stacked container. Do NOT swap flow.innerHTML
+    // per line — that runs synchronously at construction, leaving only the last line in the
+    // DOM (earlier FLOW_IN tweens point at detached nodes). Separate containers = seek-safe.
+    WORDS.forEach((line)=>{
+      const div=document.createElement('div'); div.className='line';
+      div.innerHTML=line.words.map((w,i)=>`<span class="w" data-i="${i}">${w.text}</span>`).join(' ');
+      flow.appendChild(div);
+      const spans=[...div.querySelectorAll('.w')];
       spans.forEach((el,i)=>{const w=line.words[i];
         tl.add(FLOW_IN(el), w.start);
         tl.set(spans,{className:'w'}, w.start);
         tl.set(el,{className:'w act'}, w.start);});
-      tl.to(spans,{opacity:0,y:-10,duration:.4,ease:'power2.in'}, line.end);
-      tl.set(flow,{autoAlpha:0}, line.end+0.4); tl.set(flow,{autoAlpha:1}, line.end+0.401);
+      tl.to(spans,{opacity:0,y:-10,duration:.35,ease:'power2.in'}, line.end);   // hard exit, ends opacity:0
     });
     window.__timelines["main"]=tl;
   </script>
