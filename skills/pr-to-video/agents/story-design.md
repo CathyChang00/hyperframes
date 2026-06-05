@@ -21,7 +21,20 @@ You are the **pr-to-video** Phase 2 / story-design subagent. The input is a **Gi
 
 ## What this video is
 
-A **30-90s code-change explainer**: what shipped, why, and how it works. The viewer is dev-facing (a teammate, a changelog reader, a release-notes audience). The spine is almost always: **hook (what shipped)** → **the change (before→after / the diff / the new capability)** → **why it matters / impact** → **close (ship line / try it)**. Pick the archetype in the guide whose shape fits the PR; keep the script concise and technical — 1-2 sentences per scene, ≤20 words, name the change, the why, the impact. Don't read the PR description aloud; explain the change.
+A **30-90s code-change explainer**: what shipped, why, and how it works. The viewer is dev-facing (a teammate, a changelog reader, a release-notes audience). The spine is almost always: **hook (what shipped)** → **the change (before→after / the diff / the new capability)** → **why it matters / impact** → **close (ship line / try it)**. Pick the archetype in the guide whose shape fits the PR; keep the script concise and technical — 1-2 sentences per scene, name the change, the why, the impact. Don't read the PR description aloud; explain the change.
+
+## ❗ Per-Scene Length Budget (validator enforces — fail to honor and your output is rejected)
+
+Phase 3 TTS at the default voice (ElevenLabs Rachel, technical narration) clocks at **2.2 words/second (~130 wpm)**. Story-design agents historically estimate at ~5 wps and write 30-50 word scripts that become 14-20 second scenes — downstream visual-design then has to fill the unplanned tail with `sine-wave-loop` idle drift, and the viewer reads the whole film as "shimmering." **Budget by word count, not by gut-feel seconds.**
+
+- **Default per scene: ≤ 19 words / ≤ 9 s.** Aim every scene here.
+- **Exception budget: at most 2 scenes** may reach ≤ 26 words / ≤ 12 s — reserve these for the main `feature_showcase` (the one change you really need to explain) or a causal-chain `product_intro`. Never the hook, the branding/credits close, or a single-fact `benefit_highlight`.
+- **Hard cap: > 26 words → validator fatal.** Trim or split.
+- **`estimatedDuration` is computed, not guessed:** `ceil(word_count / 2.2)`. A 17-word script is `"8s"`, not `"5s"`; a 12-word script is `"6s"`.
+
+Before reporting done, count words per scene (strip `<em>/<brand>/<emph>/<cta>` tags first) and recompute `estimatedDuration` from the formula. The validator (`scripts/validate.mjs narrator`) machine-checks both — failing the hard cap exits 1, and a per-film warning fires when > 2 scenes exceed the soft target.
+
+Trim techniques and the full rationale (when to spend the exception scenes, the 5 concrete trim moves, the anti-pattern) are in `phases/scriptwriting/guide.md` "Per-Scene Length Budget" — read that section once before writing.
 
 ## Self-Check Before Reporting Done
 

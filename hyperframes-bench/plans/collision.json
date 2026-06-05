@@ -1,0 +1,9 @@
+{
+  "name": "collision",
+  "description": "The highest-value routing slice: every case x sonnet x the competitor-collision env. Answers the durable question — with Remotion/video-use installed, does HyperFrames still win generic video and does the agent still enter via the router? Tracks router_first closely.",
+  "dataset": "routing",
+  "models": ["sonnet"],
+  "envs": ["hf+all"],
+  "cases": null,
+  "repeats": 3
+}

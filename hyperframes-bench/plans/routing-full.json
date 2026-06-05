@@ -1,0 +1,9 @@
+{
+  "name": "routing-full",
+  "description": "The full routing matrix: every case x 3 models x local env, 3 repeats for consistency. This is the canonical 'did routing regress' run against your local edits.",
+  "dataset": "routing",
+  "models": ["opus", "sonnet", "haiku"],
+  "envs": ["hf-local"],
+  "cases": null,
+  "repeats": 3
+}

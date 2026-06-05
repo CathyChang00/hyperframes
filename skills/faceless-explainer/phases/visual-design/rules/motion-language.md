@@ -16,13 +16,13 @@ A good promo video feels like one continuous whole, not a pile of unrelated anim
 
 HyperFrames uses GSAP. The table below is the **intent** vocabulary for plans; the build agent uses `/hyperframes-animation` to translate intent into concrete GSAP ease + duration:
 
-| Intent     | Feel                                        | Use case                                          |
-| ---------- | ------------------------------------------- | ------------------------------------------------- |
-| **entry**  | confident slight overshoot, settles quickly | primary element entry (default)                   |
-| **gentle** | soft slide-in, no overshoot                 | background elements, subtle motion                |
-| **snappy** | tight overshoot, nearly instant             | UI elements, small icons, buttons                 |
+| Intent     | Feel                                        | Use case                                        |
+| ---------- | ------------------------------------------- | ----------------------------------------------- |
+| **entry**  | confident slight overshoot, settles quickly | primary element entry (default)                 |
+| **gentle** | soft slide-in, no overshoot                 | background elements, subtle motion              |
+| **snappy** | tight overshoot, nearly instant             | UI elements, small icons, buttons               |
 | **heavy**  | weighted deceleration                       | large type blocks, diagram panels, hero visuals |
-| **slam**   | bouncy overshoot, intentionally loud        | logo / bell / impact moments                      |
+| **slam**   | bouncy overshoot, intentionally loud        | logo / bell / impact moments                    |
 
 **Consistency rule:** similar elements share the same intent. In one scene, all icons are `snappy`, all hero images are `heavy`. **Do not** invent a unique ease + duration for every element.
 
@@ -103,23 +103,43 @@ Archive signature repeated often: leave a **0.3-0.75s pause** between the major 
 
 **Plan must explicitly schedule this beat** - name `stillness-before-climax` in the prose "multi-phase choreography." A scene that jumps directly from action to result loses that dramatic comma.
 
-## Continuous Motion - Elements Must Keep Moving After Entry
+## Continuous Motion — Subtle by Default, Scale Down When Idle Stretches
 
-Static elements = dead video. Plan must name what keeps each element alive after entry (concrete formulas and code are build work):
+Static elements = dead video, but **over-amplitude ambient motion is the more common failure** — visible drift in every scene reads as "the whole video is shimmering," especially across 5+ consecutive scenes or any single scene whose idle phase runs > 6s. Default is **barely-perceptible**; amplitude only grows when the scene needs it.
 
-| Pattern                      | Use case                                                                     |
-| ---------------------------- | ---------------------------------------------------------------------------- |
-| **Slow drift**               | all elements (default)                                                       |
-| **Sine float**               | icons, decorative elements (counter-phase floats avoid sync)                 |
-| **Multiplicative breathing** | hero images, background (small ±2-5% breathing on final scale, **not yoyo**) |
-| **Rotational drift**         | 3D cards, hero logo                                                          |
-| **Orbit**                    | surrounding icons                                                            |
-| **Glow pulse**               | CTA, click target                                                            |
-| **Halftone breathing**       | atmospheric scenes (density deforms with beat)                               |
+| Pattern                      | Use case                                                                                                  |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Settle and hold**          | closing beats, post-climax tails, the final 25-40% of any scene > 12s (default when nothing else applies) |
+| **Slow drift**               | a single isolated hero element                                                                            |
+| **Sine float**               | one or two decorative elements (counter-phase to avoid sync; not three+ concurrent)                       |
+| **Multiplicative breathing** | the single focal hero (±1-2% scale on final transform, **not yoyo**)                                      |
+| **Rotational drift**         | 3D cards / hero logo (≤ ±0.5°)                                                                            |
+| **Orbit**                    | surrounding icons                                                                                         |
+| **Glow pulse**               | CTA / click target                                                                                        |
+| **Halftone breathing**       | atmospheric / background scenes (density deforms with beat)                                               |
 
-**Multiplicative breathing is the most repeated and most often missed technique** - by default, plan names "multiplicative breathing" for every hero. **Forbid** yoyo tweens (they overwrite entry scale). Concrete formula (`scale = final * (1 + Math.sin(t * freq) * amp)`, `onUpdate` reads `tl.time()`) is build work.
+**Default amplitude (the subtle floor — write this in prose unless a stronger amplitude is justified):**
 
-**Minimum amplitude ±6px or ±2-5% scale** - 3px micro-float does not count as motion.
+- Y translation: **±2-3 px**
+- Scale breath: **±1-2%**
+- Rotation: **±0.3-0.8°** (rarely needed)
+- Cycle period: **2.5-4s per breath** (slower = calmer; under 2s reads as fidgeting)
+
+**Reach for the higher end** (±4-6 px / ±3-5% / ±1-3°) **only when:**
+
+1. The element is **alone on canvas** (single hero, no competing motion).
+2. The scene is **short** (< 6s, finishes before idle fully settles in).
+3. The brief explicitly asks for "kinetic" / "playful" / "energetic" register.
+
+**Scaling rules (hard):**
+
+- **Idle phase > 30% of scene duration → halve every amplitude.** A 17-second scene with 6.5s of `sine-wave-loop` idle ≠ a 6-second scene with 1.5s of idle. Long idle at default amplitude = the eye exhausts and the viewer reads "the whole composition is fidgeting."
+- **N ≥ 2 concurrent drifting elements → per-element amplitude ≤ default / √N.** Three columns each at ±6px = effectively ±18px of competing motion. Three at ±2-3px reads as one collective breath.
+- **Across the film: ≤ 2 consecutive scenes carry sustained drift.** The third should `settle and hold` for ≥ 60% of its duration so drift reads as deliberate, not pervasive.
+
+**Multiplicative breathing is the most often missed technique** — by default name "multiplicative breathing ±1%" on the single focal hero. **Forbid** yoyo tweens (they overwrite entry scale). Concrete formula (`scale = final * (1 + Math.sin(t * freq) * amp)`, `onUpdate` reads `tl.time()`) is build work — the `/hyperframes-animation` `sine-wave-loop` rule has a ready-to-paste "settle and fade" envelope for long idle.
+
+**Anti-pattern: "fill the idle with drift."** When a scene runs much longer than the narrator estimated (audio drift > 50% — `prep.mjs` warns on these), the temptation is to stretch ambient motion across the entire tail. Don't. Add **one more active beat** (a glow re-pulse, a number tick, a chip reveal) at the 60-70% mark to give the eye somewhere new to land, then `settle and hold` until the transition.
 
 ## Transition Vocabulary - Use Only 2-3 Across the Film
 

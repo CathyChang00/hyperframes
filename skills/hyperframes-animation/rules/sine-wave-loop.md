@@ -143,6 +143,33 @@ const idleActive = entryProgress >= GATE_THRESHOLD;
 const scale = idleActive ? 1 + Math.sin((time - IDLE_START_TIME) / PERIOD) * SCALE_AMP : 1;
 ```
 
+### Settle and fade (long-idle gate — strongly recommended when `IDLE_DUR > 6s`)
+
+Drive amplitude through an envelope that fades to zero over the last ~20% of idle, so the scene visibly settles before the inter-scene transition lands:
+
+```js
+const phase = { p: 0 };
+const FADE_FRAC = 0.2; // last 20% of idle = amplitude ramps to 0
+tl.to(
+  phase,
+  {
+    p: Math.PI * 2 * CYCLES,
+    duration: IDLE_DUR,
+    ease: "none",
+    onUpdate: () => {
+      const t = phase.p / (Math.PI * 2 * CYCLES); // 0 → 1 across idle
+      const env = t < 1 - FADE_FRAC ? 1 : (1 - t) / FADE_FRAC; // 1 → 0 in tail
+      const scale = 1 + Math.sin(phase.p) * SCALE_AMP * env;
+      const y = Math.sin(phase.p) * Y_AMP_PX * env;
+      hero.style.transform = `translateY(${y}px) scale(${scale})`;
+    },
+  },
+  IDLE_START_TIME,
+);
+```
+
+The element is in motion for the first 80% of idle, then comes to rest in the last 20%. Pairs naturally with break-boundary Tier-B transitions (the outgoing visual is static when the crossfade/push begins).
+
 ### Period vs cycle math
 
 For an exact cycle of N seconds:
@@ -188,9 +215,12 @@ For HF (`onUpdate` doesn't expose frame directly), use the tween's `phase` value
 - **CYCLES** — number of full breath cycles across `IDLE_DUR`.
   - Range: `IDLE_DUR / 3s ≤ CYCLES ≤ IDLE_DUR / 1.5s` (cycle period 1.5-3s reads as natural breathing)
 - **SCALE_AMP** — sine amplitude on scale (hero).
-  - Range: 0.012-0.04 — see Key Principles for the "alive but resting" sweet spot
+  - **Default: 0.008-0.015** (barely-perceptible breath — the right answer for most scenes)
+  - Push to 0.02-0.04 only when the element is **alone on canvas**, the scene is **short (< 6s)**, or the brief explicitly calls for **kinetic / playful** register
+  - See Key Principles for the long-idle / concurrent-element scaling rules
 - **Y_AMP_PX** — sine amplitude on y translation (hero).
-  - Range: 2-6 px
+  - **Default: 2-3 px** (barely-perceptible — the right answer for most scenes)
+  - Push to 4-6 px only when isolated / short / kinetic — same gating as `SCALE_AMP`
 - **DOT_SCALE_AMP** — sine amplitude on dot scale (offset by π/2 for out-of-phase motion).
   - Range: 0.04-0.12 — larger than hero amplitude is fine because the dot is a small accent
 - **PERIOD** (conditional-activation variation) — seconds per cycle when using the `(time - IDLE_START_TIME) / PERIOD` form.
@@ -214,8 +244,10 @@ For HF (`onUpdate` doesn't expose frame directly), use the tween's `phase` value
 ## Key Principles
 
 - **`sin(0) = 0`** — at the moment idle begins, the offset must be zero so there's no visible jump from the entry's settled state to idle. Start the phase tween at `phase = 0`.
-- **Amplitude subtlety** — scale `0.012-0.04`, rotation `±1-3°`, translation `±2-6px`. Bigger and idle reads as "still animating" instead of "alive but resting."
-- **Cycle duration 1.5-3s per breath** — 2s is a typical comfortable breathing cadence; under 1s feels frantic, over 4s feels lifeless.
+- **Amplitude subtlety — default to the LOW end of the range.** Scale `0.008-0.015` (push to 0.02-0.04 only when isolated / short scene / kinetic brief), rotation `±0.3-0.8°` (rarely needed at all), translation `±2-3px` (push to 4-6px only when isolated). Bigger and idle reads as "still animating" instead of "alive but resting" — and a viewer watching 5+ consecutive scenes at the upper end will read the whole film as "shimmering."
+- **Cycle duration: 2.5-4s per breath when idle is long, 1.5-3s otherwise** — 2.5-3s is a comfortable breathing cadence; under 1.5s feels frantic in a long-idle window; over 4s feels lifeless in a short one.
+- **Long idle window (`IDLE_DUR > 6s` OR idle proportion > 30% of composition):** halve `SCALE_AMP` and `Y_AMP_PX`, slow `CYCLES` so each breath is 3-4s. Consider gating amplitude to fade to zero over the last ~20% of idle so the scene actually **settles before the transition**, instead of handing off mid-drift. This is the single biggest fix when finalize snapshots show "everything's still moving at the end."
+- **Concurrent idle on N elements** (triptych columns, card grid, multi-stat row, side-by-side panels): per-element amplitude ≤ default `/ √N`. Three columns each at `±6px` visually adds to `±18px+` of competing motion; three at `±2-3px` reads as one collective breath. Stagger the **period** between elements (2.1s / 1.9s / 2.4s) for organic feel — but the **amplitude** must also be smaller, not just the period.
 - **Different elements at different phases** — offset secondary elements by `Math.PI / 2` (90° offset) so they're not all moving in sync. Synced motion looks mechanical; out-of-phase looks alive.
 - **Compose, don't replace** — idle motion ADDS to the element's resting transform, not replace it. If the entry settled at `translateY(0)`, idle should produce `translateY(0 + sin*4)`. Don't overwrite the entry's final translation.
 - **❗ Don't use CSS `@keyframes` for the idle loop** — CSS animation runs on the browser's render clock, which is independent of the HF seek clock. HF seeks frame-by-frame and a CSS-driven idle will flicker/desync. Drive idle inside the GSAP timeline.

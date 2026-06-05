@@ -1,0 +1,5 @@
+{
+  "name": "hf-online",
+  "description": "ONLINE hyperframes: installs the published skills via `npx skills add heygen-com/hyperframes`. Set `ref` to pin a branch/tag (skills add supports owner/repo#<ref>). NOTE: the default branch (main) currently lacks 5/6 workflows + the router, so most routing cases will score `unavailable` until the new architecture merges — set `ref` to the feature branch to test real targets meanwhile.",
+  "install": [{ "source": "heygen-com/hyperframes", "ref": null, "skill": "*" }]
+}

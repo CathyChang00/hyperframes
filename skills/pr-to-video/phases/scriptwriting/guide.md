@@ -223,6 +223,43 @@ You **may** add a single closing scene that names the humans behind the change �
 
 This is **optional and tasteful, not mandatory**: a one-line hotfix doesn't need a credits roll; a feature or release the team rallied around earns one. When `people.json` has only the author (a solo PR with no reviews), a credits scene is usually overkill — skip it. The hook/body/payoff arc remains the spine; credits are a grace note at the end.
 
+## Per-Scene Length Budget — ≤ 9 s, Word Count Is the Real Measurement
+
+The single largest quality bug in PR videos is **scripts that talk too long**. The narrator agent tends to write 30-50 words per scene "because the change has nuance," then estimate `"7s"`. The actual TTS at the Phase 3 default voice (ElevenLabs Rachel for technical narration) is **~2.2 words/second (~130 wpm)** — so a 45-word script is a 20-second scene, not a 7-second one. The visual phase then has to fill 13 seconds of unplanned tail with `sine-wave-loop` idle drift, and the viewer reads the whole film as "shimmering."
+
+**Budget the script by word count, not by gut-feel seconds.** The validator (`scripts/validate.mjs narrator`) enforces these as machine checks; failing the hard cap is fatal.
+
+| Bound                             | Words (at 2.2 wps) | Duration  | When                                                                                                                                                                                      |
+| --------------------------------- | ------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Soft target — default**         | **≤ 19**           | **≤ 9 s** | Every scene aims for this; visual phase plans tight, idle phase stays short, the cut feels alive.                                                                                         |
+| **Exception budget — ≤ 2 scenes** | ≤ 26               | ≤ 12 s    | The main `feature_showcase` (the one change you really need to explain) or a complex causal-chain `product_intro`. Earn the extra seconds; don't spend them on hook / branding / credits. |
+| **Hard cap — fatal**              | > 26               | > 12 s    | The validator rejects. Trim or split the scene.                                                                                                                                           |
+| **Whole-film target**             | ≤ ~155             | ~70 s     | A PR-video sweet spot is 30-90 s; the body carries the load, the close is 5-8 s.                                                                                                          |
+
+**How to estimate while writing:**
+
+```
+estimatedDuration ≈ word_count / 2.2     // round up to the nearest whole second
+```
+
+29-word script → `"13s"` (over budget, trim). 17-word script → `"8s"`. 12-word script → `"6s"`. The agent's old habit of writing `"6s"` for a 29-word script is a 2.3× miscalculation that downstream cannot fix.
+
+**Trim pass — concrete techniques** (apply when a scene comes out 25+ words):
+
+1. **Cut the lead-in clause.** "Until now, the agent shipped …" → "The agent shipped …". The "until now" framing is implied by the hook composition; the words don't earn their seconds.
+2. **Compress two clauses into one noun phrase.** "an LLM plans per-scene asset needs, parallel search fans out to Google Images and Noun Project" → "plan, then parallel image search" — the diagram in scene 2 already shows the fan-out; narration shouldn't restate it.
+3. **Drop the qualifier that the visual makes obvious.** "a new Phase 1.5 sub-agent that finds and vets real images and icons for every scene" → "a new Phase 1.5 sub-agent" — the scene shows what it does; the script names it.
+4. **Move evidence off-script.** Numbers (`+2035 lines`, `23 files`, commit counts) belong as on-screen counters, not in narration. The visual phase animates them; the script gains 3-5 seconds.
+5. **Split into two scenes** only as the last resort — adds a transition and a worker; tightens nothing if the split is just "first half of the same sentence then the second half." Split only when the two halves carry **distinct emotional beats** (cause then effect, problem then fix).
+
+**Where exceptions are earned:**
+
+- The **single most complex `feature_showcase`** — e.g. a 4-step pipeline with a best-effort contract. Allow up to 12s / 26 words.
+- A **causal-chain `product_intro`** — e.g. "URL → role check → bg-remove → sha256 → durable URL" — the words have to land sequentially with the on-screen edges drawing.
+- Never the **hook**, the **branding/credits** close, or a single-fact `benefit_highlight`. These should be the shortest scenes in the film (5-8 s each).
+
+**Anti-pattern: "but the change is complex."** A complex change does not require a long script; it requires a careful one. If you cannot say the headline of a change in 19 words, the headline isn't sharp yet — write it again. Distillation (line 292) is the strongest persuasion technique in this catalog precisely because it forces this discipline.
+
 ## Validation Checklist
 
 - Does every scene have complete Narrative Intent (all 5 fields nested under `narrativeIntent`)?
@@ -237,6 +274,7 @@ This is **optional and tasteful, not mandatory**: a one-line hotfix doesn't need
 - Is there only one outer archetype (no splicing top-level frameworks)? Named inner-rhythm compounds are allowed.
 - Is the type-enum used per the repurposing table (≥1 `feature_showcase`/`product_intro`)?
 - Did you feature **2-4 real diff hunks** (named in transition `description`s), each a small legible snippet — not a whole file?
+- Did each scene's `script` fit the budget — **≤ 19 words / ≤ 9 s** as the default, with no more than 2 scenes claiming the ≤ 26 words / ≤ 12 s exception? Did you compute `estimatedDuration` as `ceil(word_count / 2.2)` for each, not guess? (See "Per-Scene Length Budget" above; `scripts/validate.mjs narrator` enforces the hard cap and warns on the soft target.)
 
 ## `narrator_scripts.json`: Canonical Schema
 
@@ -265,8 +303,8 @@ Downstream agents expect these **exact** field names. Wrong names (e.g. `scene_i
         "emotionalBeat": "Word or short compound phrase from the vocabulary"
       },
       "assetCandidates": [],
-      "script": "Plain-text narration. May include <em>/<brand>/<emph>/<cta> tags as authoring annotations (TTS strips them). Can be \"\" when visuals carry the information (e.g. a diff typing on).",
-      "estimatedDuration": "5-6s"
+      "script": "Plain-text narration ≤ 19 words for the soft target (≤ 9 s) — only the main feature_showcase / a causal-chain product_intro may push to ≤ 26 words. May include <em>/<brand>/<emph>/<cta> tags as authoring annotations (TTS strips them). Can be \"\" when visuals carry the information (e.g. a diff typing on).",
+      "estimatedDuration": "8s   // = ceil(word_count / 2.2). Realistic ElevenLabs Rachel TTS rate is 2.2 wps; do not guess by feel — the validator catches drift."
     }
   ]
 }

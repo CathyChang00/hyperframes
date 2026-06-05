@@ -1,0 +1,6 @@
+{"asset_id": "pdf.whitepaper", "type": "pdf", "name": "ai-notes-whitepaper.pdf", "path": "assets/pdf/ai-notes-whitepaper.pdf", "note": "topic whitepaper, no product pitch (r31)"}
+{"asset_id": "pdf.onepager", "type": "pdf", "name": "acme-product-onepager.pdf", "path": "assets/pdf/acme-product-onepager.pdf", "note": "product one-pager / brief (r32)"}
+{"asset_id": "pdf.research", "type": "pdf", "name": "dns-research-paper.pdf", "path": "assets/pdf/dns-research-paper.pdf", "note": "research paper to explain (r35)"}
+{"asset_id": "img.logo", "type": "image", "name": "acme-logo.png", "path": "assets/image/acme-logo.png", "note": "logo for reveal (r33)"}
+{"asset_id": "img.hero", "type": "image", "name": "saas-hero.png", "path": "assets/image/saas-hero.png", "note": "hero image for promo (r34)"}
+{"asset_id": "img.chart", "type": "image", "name": "q3-metrics-chart.png", "path": "assets/image/q3-metrics-chart.png", "note": "chart for data montage (r36)"}

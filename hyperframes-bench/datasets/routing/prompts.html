@@ -1,0 +1,1225 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Routing Prompt Visualizer</title>
+    <style>
+      :root {
+        --bg: #f6f7f9;
+        --surface: #ffffff;
+        --ink: #18181b;
+        --muted: #6b7280;
+        --line: #dfe3ea;
+        --line-strong: #c7ced8;
+        --soft: #eef1f5;
+        --focus: #0f766e;
+        --product: #0f766e;
+        --faceless: #7c3aed;
+        --footage: #db2777;
+        --pr: #2563eb;
+        --remotion: #ea580c;
+        --general: #52525b;
+        --clarify: #b45309;
+        --oos: #b91c1c;
+      }
+
+      * {
+        box-sizing: border-box;
+        letter-spacing: 0;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .app {
+        width: min(1440px, 100%);
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 20px;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--surface) 94%, transparent);
+        backdrop-filter: blur(16px);
+      }
+
+      .brand {
+        min-width: 0;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.15;
+        font-weight: 720;
+      }
+
+      .brand p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 260px;
+      }
+
+      .search {
+        position: relative;
+        width: min(360px, 36vw);
+      }
+
+      .search svg {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        width: 17px;
+        height: 17px;
+        color: var(--muted);
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+
+      .search input {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px 0 38px;
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
+        outline: none;
+        background: var(--surface);
+        color: var(--ink);
+      }
+
+      .search input:focus {
+        border-color: var(--focus);
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
+      }
+
+      .icon-button {
+        display: inline-grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
+        background: var(--surface);
+        color: var(--ink);
+      }
+
+      .icon-button:hover {
+        border-color: var(--ink);
+      }
+
+      .icon-button svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 0;
+      }
+
+      aside {
+        position: sticky;
+        top: 77px;
+        height: calc(100vh - 77px);
+        overflow: auto;
+        border-right: 1px solid var(--line);
+        background: #fbfcfd;
+      }
+
+      .filters {
+        display: grid;
+        gap: 22px;
+        padding: 20px;
+      }
+
+      .filter-block h2,
+      .panel h2 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #3f3f46;
+        text-transform: uppercase;
+      }
+
+      .filter-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .filter-button {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        min-height: 36px;
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--ink);
+        text-align: left;
+      }
+
+      .filter-button:hover {
+        background: var(--soft);
+      }
+
+      .filter-button.active {
+        border-color: var(--line-strong);
+        background: var(--surface);
+        box-shadow: inset 3px 0 0 var(--active-color, var(--focus));
+      }
+
+      .filter-label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .filter-count {
+        min-width: 26px;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: var(--soft);
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      main {
+        min-width: 0;
+        padding: 24px;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .stat {
+        min-height: 82px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 26px;
+        line-height: 1.1;
+      }
+
+      .stat span {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .insights {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .panel {
+        min-width: 0;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .route-bar {
+        display: flex;
+        width: 100%;
+        height: 24px;
+        overflow: hidden;
+        border-radius: 6px;
+        background: var(--soft);
+      }
+
+      .route-segment {
+        min-width: 2px;
+        height: 100%;
+        background: var(--segment-color);
+      }
+
+      .legend {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 14px;
+        margin-top: 14px;
+      }
+
+      .legend-item {
+        display: grid;
+        grid-template-columns: 10px minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        min-width: 0;
+        color: #3f3f46;
+        font-size: 13px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--dot-color);
+      }
+
+      .legend-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .matrix {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 12px;
+      }
+
+      .matrix th,
+      .matrix td {
+        border-bottom: 1px solid var(--line);
+        padding: 7px 6px;
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      .matrix th {
+        color: var(--muted);
+        font-weight: 650;
+      }
+
+      .matrix td:nth-child(n + 2),
+      .matrix th:nth-child(n + 2) {
+        text-align: center;
+      }
+
+      .matrix tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .matrix-route {
+        width: 38px;
+      }
+
+      .matrix-hit {
+        display: inline-grid;
+        place-items: center;
+        width: 25px;
+        height: 22px;
+        border-radius: 5px;
+        background: color-mix(in srgb, var(--hit-color) 18%, white);
+        color: color-mix(in srgb, var(--hit-color) 82%, black);
+        font-weight: 700;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 8px 0 12px;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .section-head span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .case-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .case-card {
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr);
+        gap: 14px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .case-card.hidden {
+        display: none;
+      }
+
+      .case-id {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 8px;
+        justify-items: start;
+        min-width: 0;
+      }
+
+      .id-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 46px;
+        min-height: 32px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: #111827;
+        color: #fff;
+        font-weight: 760;
+      }
+
+      .case-index {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .route-rail {
+        width: 5px;
+        min-height: 100%;
+        border-radius: 999px;
+        background: var(--route-color);
+      }
+
+      .case-main {
+        min-width: 0;
+      }
+
+      .case-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        max-width: 100%;
+        padding: 3px 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fafafa;
+        color: #3f3f46;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .route-badge {
+        border-color: color-mix(in srgb, var(--route-color) 46%, white);
+        background: color-mix(in srgb, var(--route-color) 13%, white);
+        color: color-mix(in srgb, var(--route-color) 74%, black);
+        font-weight: 700;
+      }
+
+      .category-badge {
+        font-weight: 650;
+      }
+
+      .prompt-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .prompt {
+        margin: 0;
+        color: #111827;
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 14px;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+      }
+
+      .copy-button {
+        display: inline-grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
+        background: var(--surface);
+        color: var(--muted);
+      }
+
+      .copy-button:hover,
+      .copy-button.copied {
+        border-color: var(--route-color);
+        color: var(--route-color);
+      }
+
+      .copy-button svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .input-flow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin: 13px 0 0;
+      }
+
+      .input-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
+        min-height: 26px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: var(--soft);
+        color: #3f3f46;
+        font-size: 12px;
+      }
+
+      .input-kind {
+        color: #111827;
+        font-weight: 700;
+      }
+
+      .input-value {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .notes {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+
+      .empty {
+        display: none;
+        padding: 34px 16px;
+        border: 1px dashed var(--line-strong);
+        border-radius: 8px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .empty.visible {
+        display: block;
+      }
+
+      .error {
+        margin: 24px;
+        padding: 16px;
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
+        background: #fff1f2;
+        color: #7f1d1d;
+      }
+
+      @media (max-width: 1080px) {
+        .topbar,
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        aside {
+          position: static;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .filters {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .toolbar,
+        .search {
+          width: 100%;
+          min-width: 0;
+        }
+
+        .insights {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .topbar,
+        main {
+          padding: 16px;
+        }
+
+        .filters {
+          grid-template-columns: 1fr;
+          padding: 16px;
+        }
+
+        .summary-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .legend {
+          grid-template-columns: 1fr;
+        }
+
+        .case-card {
+          grid-template-columns: 1fr;
+        }
+
+        .case-id {
+          grid-template-columns: auto auto 1fr;
+          grid-template-rows: auto;
+          align-items: center;
+        }
+
+        .route-rail {
+          width: 100%;
+          min-height: 5px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .summary-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .prompt-row {
+          grid-template-columns: 1fr;
+        }
+
+        .copy-button {
+          justify-self: end;
+        }
+
+        .matrix {
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <h1>Routing Prompt Visualizer</h1>
+          <p id="sourceLine">hyperframes-bench/datasets/routing</p>
+        </div>
+        <div class="toolbar">
+          <label class="search" aria-label="搜索 prompt">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <input id="searchInput" type="search" placeholder="Search prompts, tags, routes" />
+          </label>
+          <button
+            class="icon-button"
+            id="resetButton"
+            title="Reset filters"
+            aria-label="Reset filters"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="shell">
+        <aside>
+          <div class="filters">
+            <section class="filter-block">
+              <h2>Category</h2>
+              <div class="filter-list" id="categoryFilters"></div>
+            </section>
+            <section class="filter-block">
+              <h2>Route</h2>
+              <div class="filter-list" id="routeFilters"></div>
+            </section>
+          </div>
+        </aside>
+
+        <main>
+          <section class="summary-grid" id="summaryGrid"></section>
+
+          <section class="insights">
+            <div class="panel">
+              <h2>Route Mix</h2>
+              <div class="route-bar" id="routeBar"></div>
+              <div class="legend" id="routeLegend"></div>
+            </div>
+            <div class="panel">
+              <h2>Category Matrix</h2>
+              <div id="matrixWrap"></div>
+            </div>
+          </section>
+
+          <section>
+            <div class="section-head">
+              <h2>Prompts</h2>
+              <span id="resultCount"></span>
+            </div>
+            <div class="case-list" id="caseList"></div>
+            <div class="empty" id="emptyState">No matching prompts</div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const ROUTE_COLORS = {
+        "product-launch-video": "var(--product)",
+        "faceless-explainer": "var(--faceless)",
+        "footage-recut": "var(--footage)",
+        "pr-to-video": "var(--pr)",
+        "remotion-to-hyperframes": "var(--remotion)",
+        "general-video": "var(--general)",
+        clarify: "var(--clarify)",
+        "out-of-scope": "var(--oos)",
+      };
+
+      const CATEGORY_ORDER = [
+        "A-direct",
+        "B-real",
+        "C-adversarial",
+        "D-clarify",
+        "E-oos",
+        "F-fallback",
+        "G-multimodal",
+      ];
+
+      const FALLBACK_ASSETS = [
+        { asset_id: "pdf.whitepaper", name: "ai-notes-whitepaper.pdf" },
+        { asset_id: "pdf.onepager", name: "acme-product-onepager.pdf" },
+        { asset_id: "pdf.research", name: "dns-research-paper.pdf" },
+        { asset_id: "img.logo", name: "acme-logo.png" },
+        { asset_id: "img.hero", name: "saas-hero.png" },
+        { asset_id: "img.chart", name: "q3-metrics-chart.png" },
+      ];
+
+      const state = {
+        category: "all",
+        route: "all",
+        query: "",
+      };
+
+      const data = {
+        cases: [],
+        taxonomy: { categories: {}, expected_routes: [] },
+        registry: {},
+      };
+
+      const els = {
+        categoryFilters: document.querySelector("#categoryFilters"),
+        routeFilters: document.querySelector("#routeFilters"),
+        summaryGrid: document.querySelector("#summaryGrid"),
+        routeBar: document.querySelector("#routeBar"),
+        routeLegend: document.querySelector("#routeLegend"),
+        matrixWrap: document.querySelector("#matrixWrap"),
+        caseList: document.querySelector("#caseList"),
+        resultCount: document.querySelector("#resultCount"),
+        emptyState: document.querySelector("#emptyState"),
+        searchInput: document.querySelector("#searchInput"),
+        resetButton: document.querySelector("#resetButton"),
+        sourceLine: document.querySelector("#sourceLine"),
+      };
+
+      function parseJsonl(text) {
+        return text
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+      }
+
+      async function fetchText(path) {
+        const response = await fetch(path);
+        if (!response.ok) {
+          throw new Error(`${path}: ${response.status}`);
+        }
+        return response.text();
+      }
+
+      async function fetchOptionalJsonl(paths) {
+        for (const path of paths) {
+          try {
+            return parseJsonl(await fetchText(path));
+          } catch {
+            continue;
+          }
+        }
+        return [];
+      }
+
+      function renderPrompt(testCase) {
+        const parts = [];
+        for (const input of testCase.inputs || []) {
+          if (input.type === "text" || input.type === "link") {
+            if (input.value) {
+              parts.push(input.value);
+            }
+            continue;
+          }
+
+          if (input.type === "pdf" || input.type === "image" || input.type === "video") {
+            const entry = data.registry[input.asset_id] || {};
+            const name = input.value || entry.name || input.asset_id || "unknown";
+            const labels = {
+              pdf: "attached file",
+              image: "attached image",
+              video: "attached video",
+            };
+            parts.push(`[${labels[input.type]}: ${name}]`);
+          }
+        }
+        return parts.join(" ").trim();
+      }
+
+      function routeColor(route) {
+        return ROUTE_COLORS[route] || "var(--general)";
+      }
+
+      function countBy(items, selector) {
+        return items.reduce((acc, item) => {
+          const key = selector(item);
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {});
+      }
+
+      function uniqueTags(items) {
+        const tags = new Set();
+        for (const item of items) {
+          for (const tag of item.tags || []) {
+            tags.add(tag);
+          }
+        }
+        return tags;
+      }
+
+      function getFilteredCases() {
+        const query = state.query.trim().toLowerCase();
+        return data.cases.filter((testCase) => {
+          const route = testCase.expect?.route || "";
+          if (state.category !== "all" && testCase.category !== state.category) {
+            return false;
+          }
+          if (state.route !== "all" && route !== state.route) {
+            return false;
+          }
+          if (!query) {
+            return true;
+          }
+
+          const haystack = [
+            testCase.id,
+            testCase.category,
+            route,
+            testCase.intent,
+            testCase.notes,
+            renderPrompt(testCase),
+            ...(testCase.tags || []),
+          ]
+            .join(" ")
+            .toLowerCase();
+          return haystack.includes(query);
+        });
+      }
+
+      function button(label, count, active, color, onClick) {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = `filter-button${active ? " active" : ""}`;
+        el.style.setProperty("--active-color", color || "var(--focus)");
+        el.innerHTML = `
+          <span class="filter-label">${escapeHtml(label)}</span>
+          <span class="filter-count">${count}</span>
+        `;
+        el.addEventListener("click", onClick);
+        return el;
+      }
+
+      function renderFilters() {
+        const categoryCounts = countBy(data.cases, (testCase) => testCase.category);
+        const routeCounts = countBy(data.cases, (testCase) => testCase.expect?.route || "unknown");
+        const categoryOrder = [
+          "all",
+          ...CATEGORY_ORDER.filter((category) => categoryCounts[category]),
+          ...Object.keys(categoryCounts)
+            .filter((category) => !CATEGORY_ORDER.includes(category))
+            .sort(),
+        ];
+        const routeOrder = [
+          "all",
+          ...data.taxonomy.expected_routes.filter((route) => routeCounts[route]),
+          ...Object.keys(routeCounts)
+            .filter((route) => !data.taxonomy.expected_routes.includes(route))
+            .sort(),
+        ];
+
+        els.categoryFilters.replaceChildren(
+          ...categoryOrder.map((category) =>
+            button(
+              category === "all" ? "All categories" : category,
+              category === "all" ? data.cases.length : categoryCounts[category],
+              state.category === category,
+              "var(--focus)",
+              () => {
+                state.category = category;
+                render();
+              },
+            ),
+          ),
+        );
+
+        els.routeFilters.replaceChildren(
+          ...routeOrder.map((route) =>
+            button(
+              route === "all" ? "All routes" : route,
+              route === "all" ? data.cases.length : routeCounts[route],
+              state.route === route,
+              route === "all" ? "var(--focus)" : routeColor(route),
+              () => {
+                state.route = route;
+                render();
+              },
+            ),
+          ),
+        );
+      }
+
+      function renderSummary(filtered) {
+        const multimodal = filtered.filter((testCase) => (testCase.inputs || []).length > 1).length;
+        const routeCount = Object.keys(
+          countBy(filtered, (testCase) => testCase.expect?.route || "unknown"),
+        ).length;
+        const categoryCount = Object.keys(
+          countBy(filtered, (testCase) => testCase.category),
+        ).length;
+        const tagCount = uniqueTags(filtered).size;
+
+        const stats = [
+          ["Cases", filtered.length],
+          ["Routes", routeCount],
+          ["Categories", categoryCount],
+          ["Tags", tagCount],
+          ["Multimodal", multimodal],
+          ["Text only", filtered.length - multimodal],
+          ["Clarify", filtered.filter((testCase) => testCase.expect?.route === "clarify").length],
+          [
+            "Out of scope",
+            filtered.filter((testCase) => testCase.expect?.route === "out-of-scope").length,
+          ],
+        ];
+
+        els.summaryGrid.replaceChildren(
+          ...stats.slice(0, 4).map(([label, value]) => {
+            const div = document.createElement("div");
+            div.className = "stat";
+            div.innerHTML = `<strong>${value}</strong><span>${escapeHtml(label)}</span>`;
+            return div;
+          }),
+        );
+      }
+
+      function renderRouteMix(filtered) {
+        const counts = countBy(filtered, (testCase) => testCase.expect?.route || "unknown");
+        const routes = data.taxonomy.expected_routes.filter((route) => counts[route]);
+        const extra = Object.keys(counts)
+          .filter((route) => !data.taxonomy.expected_routes.includes(route))
+          .sort();
+        const allRoutes = [...routes, ...extra];
+        const total = Math.max(filtered.length, 1);
+
+        els.routeBar.replaceChildren(
+          ...allRoutes.map((route) => {
+            const div = document.createElement("div");
+            div.className = "route-segment";
+            div.title = `${route}: ${counts[route]}`;
+            div.style.width = `${(counts[route] / total) * 100}%`;
+            div.style.setProperty("--segment-color", routeColor(route));
+            return div;
+          }),
+        );
+
+        els.routeLegend.replaceChildren(
+          ...allRoutes.map((route) => {
+            const item = document.createElement("div");
+            item.className = "legend-item";
+            item.innerHTML = `
+              <span class="dot" style="--dot-color: ${routeColor(route)}"></span>
+              <span class="legend-name" title="${escapeAttr(route)}">${escapeHtml(route)}</span>
+              <strong>${counts[route]}</strong>
+            `;
+            return item;
+          }),
+        );
+      }
+
+      function renderMatrix(filtered) {
+        const categories = CATEGORY_ORDER.filter((category) =>
+          filtered.some((testCase) => testCase.category === category),
+        );
+        const routes = data.taxonomy.expected_routes.filter((route) =>
+          filtered.some((testCase) => testCase.expect?.route === route),
+        );
+
+        const table = document.createElement("table");
+        table.className = "matrix";
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Category</th>
+              ${routes.map((route) => `<th class="matrix-route" title="${escapeAttr(route)}">${escapeHtml(shortRoute(route))}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${categories
+              .map((category) => {
+                const cells = routes
+                  .map((route) => {
+                    const count = filtered.filter(
+                      (testCase) =>
+                        testCase.category === category && testCase.expect?.route === route,
+                    ).length;
+                    return `<td>${count ? `<span class="matrix-hit" style="--hit-color: ${routeColor(route)}">${count}</span>` : ""}</td>`;
+                  })
+                  .join("");
+                return `<tr><td title="${escapeAttr(data.taxonomy.categories[category] || "")}">${escapeHtml(category)}</td>${cells}</tr>`;
+              })
+              .join("")}
+          </tbody>
+        `;
+        els.matrixWrap.replaceChildren(table);
+      }
+
+      function shortRoute(route) {
+        const labels = {
+          "product-launch-video": "PLV",
+          "faceless-explainer": "FE",
+          "footage-recut": "FR",
+          "pr-to-video": "PR",
+          "remotion-to-hyperframes": "RM",
+          "general-video": "GEN",
+          clarify: "ASK",
+          "out-of-scope": "OOS",
+        };
+        return labels[route] || route.slice(0, 4).toUpperCase();
+      }
+
+      function inputLabel(input) {
+        if (input.type === "text") {
+          return input.value || "";
+        }
+        if (input.type === "link") {
+          return input.value || "";
+        }
+        const entry = data.registry[input.asset_id] || {};
+        return input.value || entry.name || input.asset_id || "";
+      }
+
+      function renderInputChip(input) {
+        const label = inputLabel(input);
+        const chip = document.createElement("span");
+        chip.className = "input-chip";
+        chip.title = label;
+        chip.innerHTML = `
+          <span class="input-kind">${escapeHtml(input.subtype || input.type)}</span>
+          <span class="input-value">${escapeHtml(label)}</span>
+        `;
+        return chip;
+      }
+
+      function renderCases(filtered) {
+        const cards = filtered.map((testCase, index) => {
+          const route = testCase.expect?.route || "unknown";
+          const prompt = renderPrompt(testCase);
+          const card = document.createElement("article");
+          card.className = "case-card";
+          card.style.setProperty("--route-color", routeColor(route));
+          card.innerHTML = `
+            <div class="case-id">
+              <span class="id-pill">${escapeHtml(testCase.id)}</span>
+              <span class="case-index">#${String(index + 1).padStart(2, "0")}</span>
+              <span class="route-rail" aria-hidden="true"></span>
+            </div>
+            <div class="case-main">
+              <div class="case-meta">
+                <span class="badge category-badge" title="${escapeAttr(data.taxonomy.categories[testCase.category] || "")}">
+                  ${escapeHtml(testCase.category)}
+                </span>
+                <span class="badge route-badge">${escapeHtml(route)}</span>
+                ${(testCase.tags || []).map((tag) => `<span class="badge">${escapeHtml(tag)}</span>`).join("")}
+              </div>
+              <div class="prompt-row">
+                <p class="prompt">${escapeHtml(prompt)}</p>
+                <button class="copy-button" title="Copy prompt" aria-label="Copy prompt" data-prompt="${escapeAttr(prompt)}">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 8h10v13H8zM6 16H4V3h10v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+              <div class="input-flow"></div>
+              <p class="notes">${escapeHtml(testCase.notes || "")}</p>
+            </div>
+          `;
+          const flow = card.querySelector(".input-flow");
+          flow.replaceChildren(...(testCase.inputs || []).map(renderInputChip));
+          const copy = card.querySelector(".copy-button");
+          copy.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(prompt);
+            copy.classList.add("copied");
+            window.setTimeout(() => copy.classList.remove("copied"), 900);
+          });
+          return card;
+        });
+
+        els.caseList.replaceChildren(...cards);
+        els.resultCount.textContent = `${filtered.length} / ${data.cases.length}`;
+        els.emptyState.classList.toggle("visible", filtered.length === 0);
+      }
+
+      function render() {
+        const filtered = getFilteredCases();
+        renderFilters();
+        renderSummary(filtered);
+        renderRouteMix(filtered);
+        renderMatrix(filtered);
+        renderCases(filtered);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function escapeAttr(value) {
+        return escapeHtml(value).replaceAll("`", "&#096;");
+      }
+
+      async function init() {
+        try {
+          const [casesText, taxonomyText, registryText] = await Promise.all([
+            fetchText("cases.jsonl"),
+            fetchText("taxonomy.json"),
+            fetchOptionalJsonl([
+              "../../fixtures/assets.registry.jsonl",
+              "/fixtures/assets.registry.jsonl",
+            ]),
+          ]);
+          data.cases = parseJsonl(casesText);
+          data.taxonomy = JSON.parse(taxonomyText);
+          data.registry = Object.fromEntries(
+            (registryText.length ? registryText : FALLBACK_ASSETS).map((item) => [
+              item.asset_id,
+              item,
+            ]),
+          );
+          els.sourceLine.textContent = `${location.pathname.replace(/\/prompts\.html$/, "") || "routing"} · ${
+            data.cases.length
+          } cases`;
+          render();
+        } catch (error) {
+          document.body.innerHTML = `
+            <div class="error">
+              <strong>Could not load routing dataset.</strong>
+              <p>${escapeHtml(error.message)}</p>
+            </div>
+          `;
+        }
+      }
+
+      els.searchInput.addEventListener("input", (event) => {
+        state.query = event.target.value;
+        render();
+      });
+
+      els.resetButton.addEventListener("click", () => {
+        state.category = "all";
+        state.route = "all";
+        state.query = "";
+        els.searchInput.value = "";
+        render();
+      });
+
+      init();
+    </script>
+  </body>
+</html>

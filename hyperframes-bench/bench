@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""bench — the hyperframes-bench CLI. Primary consumer: an agent.
+
+  bench list [datasets|envs|plans|models] [--json]
+  bench run  [--plan NAME] [--dataset D] [--models ...] [--envs ...]
+             [--cases r01 r06 | --tags adversarial] [--repeats N]
+             [--concurrency C] [--dry-run] [--force] [--keep] [--label L] [--out DIR]
+  bench score  <run-dir>      # re-run oracles over saved traces (no agent calls)
+  bench report <run-dir>      # regenerate report.md from results.jsonl
+  bench show   <run-dir> <cell-key>
+
+An unspecified axis falls back to the plan (or `default_plan` in bench.config.json); any
+explicit flag overrides that field. Cells with a matching content-hash are reused unless
+--force. Results are written under results/<run-id>/ as results.jsonl (machine), aggregate.json
+(summary), and report.md (human).
+"""
+import os
+import sys
+import json
+import argparse
+from datetime import datetime, timezone
+
+BENCH_ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BENCH_ROOT)
+
+from core import load_config, load_json, plan_file, dataset_dir  # noqa: E402
+from core import matrix, runner, score as score_mod              # noqa: E402
+
+
+def _flatten(values):
+    """Accept both `--models opus sonnet` and `--models opus,sonnet`."""
+    if not values:
+        return None
+    out = []
+    for v in values:
+        out.extend(p for p in v.split(",") if p)
+    return out
+
+
+def _ls(d, suffix=None):
+    if not os.path.isdir(d):
+        return []
+    if suffix:
+        return sorted(n[: -len(suffix)] for n in os.listdir(d) if n.endswith(suffix))
+    return sorted(n for n in os.listdir(d) if not n.startswith(".") and os.path.isdir(os.path.join(d, n)))
+
+
+def cmd_list(args):
+    cfg = load_config()
+    catalog = {
+        "datasets": _ls(os.path.join(BENCH_ROOT, "datasets")),
+        "envs": _ls(os.path.join(BENCH_ROOT, "envs"), ".json"),
+        "plans": _ls(os.path.join(BENCH_ROOT, "plans"), ".json"),
+        "models": list(cfg.get("models", {}).keys()),
+    }
+    if args.what and args.what != "all":
+        catalog = {args.what: catalog.get(args.what, [])}
+    if args.json:
+        # enrich plans/envs with their descriptions for an agent picking among them
+        detail = {}
+        for k, names in catalog.items():
+            if k == "plans":
+                detail[k] = [{"name": n, **{x: load_json(plan_file(n)).get(x)
+                              for x in ("description", "dataset", "models", "envs", "repeats")}} for n in names]
+            elif k == "envs":
+                detail[k] = [{"name": n, "description": load_json(os.path.join(BENCH_ROOT, "envs", n + ".json")).get("description")} for n in names]
+            else:
+                detail[k] = names
+        print(json.dumps(detail, indent=2, ensure_ascii=False))
+        return
+    for k, names in catalog.items():
+        print(f"{k}:")
+        for n in names:
+            if k == "plans":
+                print(f"  {n:16} {load_json(plan_file(n)).get('description', '')}")
+            else:
+                print(f"  {n}")
+
+
+def _resolve_selection(args, cfg):
+    plan_name = args.plan or (None if _has_axes(args) else cfg.get("default_plan"))
+    sel = load_json(plan_file(plan_name)) if plan_name else {
+        "dataset": "routing", "models": ["haiku"], "envs": ["hf-local"], "cases": None, "repeats": 1}
+    sel.setdefault("cases", None)
+    sel.setdefault("tags", None)
+    # explicit flags override the plan
+    if args.dataset:
+        sel["dataset"] = args.dataset
+    if _flatten(args.models):
+        sel["models"] = _flatten(args.models)
+    if _flatten(args.envs):
+        sel["envs"] = _flatten(args.envs)
+    if _flatten(args.cases):
+        sel["cases"] = _flatten(args.cases)
+    if _flatten(args.tags):
+        sel["tags"] = _flatten(args.tags)
+    if args.repeats is not None:
+        sel["repeats"] = args.repeats
+    return plan_name, sel
+
+
+def _has_axes(args):
+    return any([args.dataset, args.models, args.envs, args.cases, args.tags, args.repeats is not None])
+
+
+def cmd_run(args):
+    cfg = load_config()
+    plan_name, sel = _resolve_selection(args, cfg)
+    cells = matrix.expand(sel)
+    for c in cells:
+        c["dataset"] = sel["dataset"]
+    if not cells:
+        print("no cells matched the selection", file=sys.stderr)
+        sys.exit(1)
+
+    label = args.label or plan_name or "custom"
+    run_id = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ") + f"_{label}"
+    out_dir = args.out or os.path.join(BENCH_ROOT, "results", run_id)
+    os.makedirs(out_dir, exist_ok=True)
+
+    print(f"plan={plan_name or '(flags)'}  dataset={sel['dataset']}  "
+          f"models={sel['models']}  envs={sel['envs']}  repeats={sel['repeats']}  "
+          f"cells={len(cells)}{'  [DRY RUN]' if args.dry_run else ''}")
+    out = runner.run_matrix(cells, cfg, out_dir, label=label,
+                            concurrency=args.concurrency, dry_run=args.dry_run,
+                            force=args.force, keep=args.keep)
+    agg = out["aggregate"]
+    print(f"\n→ {out_dir}")
+    print(f"  route accuracy: {agg['route']['accuracy']}  "
+          f"({agg['route']['good']}/{agg['route']['scorable']})  "
+          f"router-first: {agg['router_first']['rate']}  cost: ${agg['cost_usd_total']}")
+    print(f"  report: {os.path.join(out_dir, 'report.md')}")
+
+
+def cmd_score(args):
+    cfg = load_config()
+    out = score_mod.rescore_run(args.run_dir, cfg)
+    print(f"re-scored {len(out['results'])} cells → {os.path.join(args.run_dir, 'results.jsonl')}")
+    print(f"route accuracy: {out['aggregate']['route']['accuracy']}")
+
+
+def cmd_report(args):
+    cfg = load_config()
+    results = [json.loads(l) for l in open(os.path.join(args.run_dir, "results.jsonl")) if l.strip()]
+    agg = load_json(os.path.join(args.run_dir, "aggregate.json"))
+    manifest = load_json(os.path.join(args.run_dir, "run_manifest.json"))
+    from core import report as report_mod
+    report_mod.write_report(args.run_dir, results, agg, cfg, manifest)
+    print(f"wrote {os.path.join(args.run_dir, 'report.md')}")
+
+
+def cmd_show(args):
+    cdir = os.path.join(args.run_dir, "cells", args.cell_key)
+    for fn in ("result.json", "trace.json", "prompt.rendered.txt"):
+        p = os.path.join(cdir, fn)
+        if os.path.exists(p):
+            print(f"=== {fn} ===")
+            print(open(p).read().rstrip())
+            print()
+
+
+def main():
+    p = argparse.ArgumentParser(prog="bench", description="hyperframes-bench — routing benchmark engine")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    pl = sub.add_parser("list", help="list datasets/envs/plans/models")
+    pl.add_argument("what", nargs="?", default="all",
+                    choices=["all", "datasets", "envs", "plans", "models"])
+    pl.add_argument("--json", action="store_true")
+    pl.set_defaults(fn=cmd_list)
+
+    pr = sub.add_parser("run", help="run a matrix of cells")
+    pr.add_argument("--plan")
+    pr.add_argument("--dataset")
+    pr.add_argument("--models", nargs="+")
+    pr.add_argument("--envs", nargs="+")
+    pr.add_argument("--cases", nargs="+")
+    pr.add_argument("--tags", nargs="+")
+    pr.add_argument("--repeats", type=int)
+    pr.add_argument("--concurrency", type=int)
+    pr.add_argument("--dry-run", action="store_true",
+                    help="install envs + render prompts but DON'T launch the agent (no cost)")
+    pr.add_argument("--force", action="store_true", help="ignore the cell cache")
+    pr.add_argument("--keep", action="store_true", help="keep each cell's cloned workspace")
+    pr.add_argument("--label")
+    pr.add_argument("--out")
+    pr.set_defaults(fn=cmd_run)
+
+    ps = sub.add_parser("score", help="re-run oracles over a finished run (no agent calls)")
+    ps.add_argument("run_dir")
+    ps.set_defaults(fn=cmd_score)
+
+    prp = sub.add_parser("report", help="regenerate report.md")
+    prp.add_argument("run_dir")
+    prp.set_defaults(fn=cmd_report)
+
+    psh = sub.add_parser("show", help="dump one cell's result/trace/prompt")
+    psh.add_argument("run_dir")
+    psh.add_argument("cell_key")
+    psh.set_defaults(fn=cmd_show)
+
+    args = p.parse_args()
+    args.fn(args)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,5 @@
+{
+  "name": "hf-local",
+  "description": "LOCAL hyperframes: installs the working-tree skills exactly like scripts/test-product-launch-video.sh (`npx skills add <repo> --skill '*' --agent claude-code`). This is what you test when you've edited the skills locally. The full new architecture (hyperframes-read-first router + 6 workflows) is present.",
+  "install": [{ "source": "self", "skill": "*" }]
+}

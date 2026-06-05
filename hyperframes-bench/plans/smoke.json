@@ -1,0 +1,9 @@
+{
+  "name": "smoke",
+  "description": "Fast sanity: 1 cheap model x local env x a few representative cases (one per family). ~30s of agent time. Run this after editing a skill or the engine.",
+  "dataset": "routing",
+  "models": ["haiku"],
+  "envs": ["hf-local"],
+  "cases": ["r01", "r03", "r06", "r08", "r23", "r27"],
+  "repeats": 1
+}

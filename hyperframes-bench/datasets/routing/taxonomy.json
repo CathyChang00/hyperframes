@@ -1,0 +1,29 @@
+{
+  "categories": {
+    "A-direct": "Unambiguous, textbook phrasing for one workflow. Low signal — strong models nail these; they exist as a floor.",
+    "B-real": "Conversational / messy phrasing a real user would type for the same intents.",
+    "C-adversarial": "Decoys: a keyword or URL fragment points one way, the true intent another (e.g. 'pull' in a marketing URL, 'explain' over a product). The highest-signal routing cases.",
+    "D-clarify": "Under-specified — the correct behaviour is to ASK, not to route. expect.route = 'clarify'.",
+    "E-oos": "Out of scope for any HyperFrames workflow (e.g. NLE trim/color-grade). Correct behaviour is to DECLINE. expect.route = 'out-of-scope'.",
+    "F-fallback": "Valid video work that no specialised workflow claims -> general-video.",
+    "G-multimodal": "Inputs combine modalities (pdf/image + text/url); tests which signal wins the route."
+  },
+  "expected_routes": [
+    "product-launch-video",
+    "faceless-explainer",
+    "footage-recut",
+    "pr-to-video",
+    "remotion-to-hyperframes",
+    "general-video",
+    "clarify",
+    "out-of-scope"
+  ],
+  "input_types": {
+    "text": "raw user text",
+    "link": "a URL; subtype in {website, github-pr}",
+    "pdf": "an attached document; references fixtures/assets.registry.jsonl via asset_id",
+    "image": "an attached image; via asset_id",
+    "video": "an attached video; via asset_id"
+  },
+  "tags": "Free-form slice labels (e.g. 'adversarial', 'multimodal', 'pr-url'). Select with `bench run --tags <tag>` or category names."
+}
