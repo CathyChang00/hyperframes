@@ -168,8 +168,8 @@ The DNA defaults prevent most ugly outcomes. But avoid in per-group CSS:
 ## When cinematic-cream is wrong
 
 This DNA assumes mid-to-dark backgrounds (luminance 60-180). For:
-- Bright white studios → switch `cap_color: "#3a2a18"` + `blend_mode:
-  "multiply"` for the "inverse" take
+- Bright white studios → cinematic-cream's cream + `screen` washes out, and the DNA is
+  **locked** (you cannot recolour it) → use **Standard mode** (opaque rail) instead
 - Documentary formal → Standard mode (documentary-dignified direction; see references/direction-catalog.md §1)
 - Energetic vlog hooks → future `kinetic-vlog` DNA (not yet shipped)
 
@@ -180,7 +180,7 @@ Same output as the canonical memory-wall.html, but using slot-free plan:
 ```json
 {
   "template": "cinematic-cream",
-  "caption_layer": "bg", "blend_mode": "screen",
+  "caption_layer": "bg",
   "groups": [
     { "id": "cg-0", "tone": "soft", "in": 0.2, "out": 4.85,
       "css": "top: 14%; right: 6%; left: auto; text-align: right; font-size: calc(0.09 * var(--h)); font-weight: 600; font-style: italic; letter-spacing: -0.01em;",

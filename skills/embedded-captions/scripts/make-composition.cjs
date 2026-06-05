@@ -81,7 +81,12 @@ function main() {
   }
   let src = fs.readFileSync(findTemplate(plan.template), "utf8");
   const plane = plan.plane || {}, header = plan.header || {}, crown = plan.crown || {};
-  const capColor = plan.cap_color ?? "#fff5df";
+  // LOCKED DNA — Cinematic mode does NOT let the plan override colour / blend / shadow /
+  // filter. Picking a template commits to its visual identity; only layout + per-group
+  // typography stay agent-authored. If a scene's luminance fights the look, pick a
+  // DIFFERENT template — never recolour this one. (plan.cap_color / blend_mode /
+  // text_shadow / text_filter are intentionally ignored.)
+  const capColor = "#fff5df";
   const g = (o, k, d) => (o && o[k] != null ? o[k] : d);
   const subs = {
     DURATION: `${plan.duration}`, FPS: `${plan.fps ?? 24}`, WIDTH: `${plan.width}`, HEIGHT: `${plan.height}`,
@@ -93,9 +98,9 @@ function main() {
     CROWN_TOP: `${g(crown, "top", plan.crown_top ?? g(plan.crown_position || {}, "top", 440))}`,
     CROWN_LEFT: `${g(crown, "left", 0)}`, CROWN_RIGHT: `${g(crown, "right", 0)}`,
     CROWN_ALIGN: `${g(crown, "align", "center")}`, CROWN_SCALE: `${g(crown, "scale", 1.0)}`,
-    BLEND_MODE: plan.blend_mode ?? "screen", CAP_COLOR: capColor,
-    TEXT_SHADOW: plan.text_shadow ?? defaultTextShadow(capColor),
-    TEXT_FILTER: plan.text_filter ?? defaultTextFilter(capColor),
+    BLEND_MODE: "screen", CAP_COLOR: capColor,
+    TEXT_SHADOW: defaultTextShadow(capColor),
+    TEXT_FILTER: defaultTextFilter(capColor),
     GROUPS_HTML: buildGroupsHtml(plan.groups, plan.planes), PLANES_CSS: buildPlanesCss(plan.planes),
     CUSTOM_CSS: buildPerGroupCss(plan.groups), GROUPS_JSON: buildGroupsJson(plan.groups),
   };
