@@ -1,13 +1,13 @@
 ---
 name: embedded-captions
-description: Add cinematic captions to a talking-head video that feel EMBEDDED in the scene — not overlaid on top. Text is occluded by the subject (head, shoulders, mic), picks up the background via mix-blend-mode, and sits on a surface with perspective when one exists. Use when the user asks for "embed/embedded/cinematic captions", "字幕嵌入/嵌到场景里", "captions that go behind the subject", or similar. The effect is podcast/interview-style — not bouncy TikTok captions, not plain subtitles. Pipeline: ElevenLabs transcription → RVM matting → hyperframes HTML composition render → ffmpeg overlay. Requires hyperframes (github.com/heygen-com/hyperframes) installed and a video with a single primary subject.
+description: Add captions to a talking-head video in TWO tracks — a clean lower-third RAIL (standard readable subtitle; the default that carries most text) plus selective EMBED moments where a peak phrase / climax is composited INTO the scene behind the subject (matte occlusion + mix-blend). Most explainer / 口播 text stays on the rail; only peaks are embedded — embedding everything is wrong for most talking-head content. Use when the user asks for "captions / 字幕", "embed/embedded/cinematic captions", "字幕嵌入/嵌到场景里", "captions behind the subject", or similar. Pipeline: transcription → RVM matting → hyperframes HTML render → ffmpeg overlay. Requires hyperframes (github.com/heygen-com/hyperframes) and a single-subject clip.
 metadata:
   tags: captions, embedded-captions, occlusion, matting, talking-head, rvm, elevenlabs, ffmpeg, cinematic
 ---
 
 # Embedded Captions
 
-Captions that look like they belong to the scene: subject body occludes them, blend mode picks up backdrop texture, emphasis lands on surfaces with perspective. This skill ships **two modes** — pick first, then plan.
+**Two presentation tracks:** a clean **rail** (standard lower-third subtitle — the default workhorse that carries most text) and selective **embed** moments where a peak phrase is composited *into* the scene behind the subject (matte occlusion + blend). Most text rides the rail; **embed is the scarce, earned hero treatment** — not the default for every word. (Authoring has two *modes* — **template** vs **custom** — which is orthogonal to the track.)
 
 ---
 
@@ -22,14 +22,39 @@ The craft prose below is long; the **pipeline itself is short**:
 
 Load-bearing rules people miss:
 
-- **The video is delivered UNTOUCHED** — captions are the only thing added; the matte just lets the subject occlude them. Never grade/recolor/scanline the footage.
+- **Two tracks: rail (default) + embed (promotion).** Render states are `drop` / `rail` / `embed`. **rail = clean lower-third subtitle, carries most text; embed = behind-the-subject hero, reserved for peaks.** Default is **rail-first** — for explainer / 口播, usually the whole clip is rail with only the climax(es) embedded. See **§ Caption model**.
+- **The video is delivered UNTOUCHED** — captions are the only thing added; the matte just lets the subject occlude the embed track. Never grade/recolor/scanline the footage.
 - Scripts auto-resolve `source.mp4` and the source's **native fps**; `ELEVENLABS_API_KEY` is **optional** (falls back to an existing transcript).
-- Custom mode can still render **fg** (captions on top, no occlusion) via `data-caption-layer="fg"` on `#root`; per-caption hybrid bg/fg is template-only.
-- Everything from **"Aesthetic decision"** down is craft detail, mirrored in `references/` (see Shared knowledge) — skim by need.
+- Two rulebooks: **rail → [references/rail.md](references/rail.md)** (thin), **embed craft → [references/composition-craft.md](references/composition-craft.md)** (rich, embed-only). Skim by need.
 
 ---
 
-## Step 0 — pick the mode
+## Caption model — two tracks
+
+Every spoken phrase resolves to one of **three render states**:
+
+| State | What it is | How it's shown |
+|---|---|---|
+| **drop** | filler — um/uh, exact stutters, self-corrections | not shown |
+| **rail** | the default — ordinary spoken content | clean lower-third subtitle, in front, readable → [references/rail.md](references/rail.md). Flag `emphasis` = active-word highlight (colour/weight) |
+| **embed** | a promoted peak | composited INTO the scene behind the subject (matte occlusion + blend, hero typography) → [references/composition-craft.md](references/composition-craft.md). Flag `apex` = the single biggest embed |
+
+**rail is the default; embed is a promotion you have to earn.** For an explainer / 口播 video the right output is usually *the whole transcript on the rail* with **only the climax(es) embedded** — embedding every word is wrong for most talking-head content.
+
+**Role is the selection input, not a render type.** Read the transcript and grade each phrase coarsely → that picks the state:
+
+- **drop** → drop
+- **normal** (ordinary content) → rail
+- **emphasis** (the 1–2 punch words in a phrase) → rail + `emphasis` highlight
+- **peak** (the payoff of a beat/section) → **promote to embed**
+
+**Embed scarcity (the discipline):** **≤1 embed per sentence/beat, never two adjacent or co-visible, spaced ≥ a beat apart, at most one `apex` size.** A short clip → usually one embed (its climax). A long/multi-section explainer → ~one per section. Count follows rhythm + structure — **not** a fixed "one climax per clip."
+
+> This replaces the old 5-role render taxonomy (drop/narrator/body/emphasis/climax) and the bg/fg/hybrid layer axis: **rail** subsumes old fg/announce, **embed** subsumes bg/in-scene, and old "hybrid" is just rail + embed coexisting (the normal state).
+
+---
+
+## Step 0 — pick the authoring mode
 
 | Mode | When | What agent does | Output consistency |
 |---|---|---|---|
@@ -42,6 +67,8 @@ default-ish, pick `template > champion` for landscape, `portrait-header` for 9:1
 **The mode determines which directory the agent works in:**
 - Template mode → [modes/template/](modes/template/) — `template.html` + `spec.md` per template
 - Custom mode → [modes/custom/](modes/custom/) — `skeleton.html` + `examples/`
+
+**Mode ≠ track.** Mode is *how you author* (template DNA vs hand-written HTML); track (§ Caption model) is *how each caption is presented* (rail vs embed). The shipped templates are **embed-track DNA** — a rail-first explainer mostly rides the rail spec and promotes only the climax into a template/custom embed.
 
 ---
 
@@ -65,6 +92,7 @@ Read the samples. Refuse if:
 1. **Shot-cut probe.** Sample frames at 20%, 50%, 80%. If a different subject/scene appears, **trim the clip** before the cut.
 2. **Letterbox / pillarbox probe.** Black bars on the first frame? Compute safe content rect and constrain caption placement inside it.
 3. **Luminance probe.** Sample the caption region's average luminance — `<60` → screen blend, `60-180` → overlay, `>180` → normal+opaque. (Templates have defaults; custom-mode you decide.)
+4. **Track default by tone.** Classify the content: **explainer / keynote / interview / 口播 → rail-first** (whole clip on the rail; embed only the climax(es)). **poetic / social / music-video / showcase → embed-heavy** is fine. When unsure, default **rail-first** — embedding everything is the more common mistake.
 
 ---
 
@@ -117,6 +145,8 @@ The bar is **"wow"** — not "tasteful template render with extra grain." If you
 | champion | 16:9 landscape | Side column + center-stage crown crossing subject (superseded by cinematic-cream) | [spec](modes/template/champion/spec.md) |
 | portrait-header | 9:16 portrait | Centered header strip + optional bottom crown (superseded by cinematic-cream) | [spec](modes/template/portrait-header/spec.md) |
 
+> **Two-track note:** these are **embed-track** looks — they composite text into the scene. The default **rail** subtitle track is specced in [references/rail.md](references/rail.md); a dedicated rail renderer is the next implementation step. Until then a rail-first explainer = the rail spec for the body + one of these (or custom) for the embedded climax only.
+
 To add a new template: see [modes/template/README.md § Adding a new template](modes/template/README.md).
 
 ---
@@ -136,13 +166,14 @@ Before picking a template, classify the clip on 3 axes:
 
 Cross-reference in [references/direction-catalog.md § Classification matrix](references/direction-catalog.md) → direction → shipped template OR custom-mode design.
 
-## Composition craft — read before authoring
+## Composition craft (embed track) — read before embedding
 
-The full per-scene playbook lives in **[references/composition-craft.md](references/composition-craft.md)**:
-bg/fg layering & hybrid, transcript role-annotation, phrase grouping, planes & clean-zone
-anchoring, zone coherence, climax pop & readability, edge-breathing, the occlusion 3-step
-judgement, and accumulation/persistence patterns. Read it before writing a `plan.json`
-(template) or a custom `index.html`. The granular references below drill into single topics.
+The full **embed-track** playbook lives in **[references/composition-craft.md](references/composition-craft.md)**:
+transcript role-annotation, phrase grouping, planes & clean-zone anchoring, zone coherence,
+climax pop & readability, edge-breathing, the occlusion 3-step judgement, and
+accumulation/persistence. It governs how a *promoted* phrase sits INTO the scene — read it
+before authoring any embed (template `plan.json` or custom `index.html`). The default **rail**
+track has its own, much simpler spec → **[references/rail.md](references/rail.md)**.
 
 ---
 
@@ -150,7 +181,8 @@ judgement, and accumulation/persistence patterns. Read it before writing a `plan
 
 | Doc | What |
 |---|---|
-| [references/composition-craft.md](references/composition-craft.md) | **The per-scene playbook** — bg/fg & hybrid, grouping, planes, climax pop, occlusion judgement, accumulation/persistence. Read before authoring. |
+| [references/rail.md](references/rail.md) | **The rail track** — standard lower-third subtitle spec (the default; carries most text). |
+| [references/composition-craft.md](references/composition-craft.md) | **The embed-track playbook** — grouping, planes, climax pop, occlusion judgement, accumulation/persistence. Read before embedding. |
 | [references/aesthetic-principles.md](references/aesthetic-principles.md) | **The 18 rules.** Beat Veed AI on taste. Read first. |
 | [references/motion-vocabulary.md](references/motion-vocabulary.md) | 10 named motion primitives + tone→timing lookup |
 | [references/direction-catalog.md](references/direction-catalog.md) | 10 ship-ready aesthetics + tone×shot×platform matrix |
@@ -172,6 +204,8 @@ judgement, and accumulation/persistence patterns. Read it before writing a `plan
 - **WCAG contrast** — final render lints; fix palette if it fails.
 - **Deterministic** — no `Math.random()`, no `Date.now()`, no `repeat:-1`.
 - **Never grade/recolor the video.** The footage ships untouched — captions are the only addition. No full-frame scanlines / duotone / darken / vignette over the a-roll. Cyberpunk/CRT texture belongs *inside* a caption element, not over the whole frame.
+- **Rail-first for talking-head / explainer.** Don't embed the whole transcript — most text is the rail; embed only peaks. Embedding everything is the default mistake.
+- **Embed is scarce + spaced.** ≤1 embed per sentence/beat, never two adjacent or co-visible, ≥ a beat apart, at most one `apex`. climax = per-beat peak, **not** "the single payoff of the entire clip."
 - **Matte = the subject (RVM person matting).** RVM segments people, not props — a gripped mic/cup is best-effort and may not be fully captured, and bright incidental objects can leak in. Sample `frames_fg/` and sanity-check before relying on tight prop occlusion.
 - **Captions stay on-frame.** Template mode hard-gates frame-overflow; custom mode runs `check-overflow.js` as a WARNING (intentional bleed is the only exception — read the warning).
 - **Each caption ≥ 0.5s on screen** — shorter = unreadable.
