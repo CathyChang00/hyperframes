@@ -1,10 +1,19 @@
-# Composition craft — per-scene caption playbook
+# Composition craft — EMBED track only
 
-Moved out of SKILL.md to keep the operational flow lean. This is the deep "how to lay
-captions into THIS scene" manual — read it before writing a `plan.json` (template mode) or
-a custom `index.html`. Topics: bg/fg layering & hybrid, transcript role annotation, phrase
-grouping, planes & clean-zone anchoring, zone coherence, climax pop, readability, edge
-breathing, the occlusion 3-step judgement, accumulation, and persistence.
+This is the deep "how to lay a caption INTO the scene" manual — it governs the **embed**
+track only (captions composited behind the subject). The default **rail** track (standard
+lower-third subtitle, where most text lives) has its own, much simpler spec → [rail.md](rail.md).
+Read this before authoring any **promoted** phrase, in either authoring mode (template
+`plan.json` or custom `index.html`).
+
+Topics: phrase grouping, planes & clean-zone anchoring, zone coherence, climax pop,
+readability, edge breathing, the occlusion 3-step judgement, accumulation, and persistence.
+
+> **Two-track model (SKILL.md § Caption model).** Render states are `drop` / `rail` / `embed`.
+> The `bg / fg / hybrid` axis used throughout the text below is **superseded**: read **"bg" as
+> embed** (behind subject / in-scene), **"fg" as rail or promote-out** (in front), and "hybrid"
+> as simply rail + embed coexisting. Everything here applies to the **embed** track — don't
+> apply this craft to the rail.
 
 (Granular sub-topics also have their own files — see SKILL.md § Shared knowledge.)
 
@@ -97,19 +106,18 @@ Common mistakes (debugged in real cases):
 
 ### Step 0 for ANY plan — transcript role annotation (mandatory)
 
-Before writing a single caption group, do a **pre-plan agentic pass** over the transcript. Read every word and assign it a role. This is judgment, not a lookup — context decides (e.g. "like" is content in "like this", filler in "like, um, yeah"). No hardcoded word lists; agent decides per token.
+Before writing a single caption group, do a **pre-plan agentic pass** over the transcript. Read every word and grade it. This is judgment, not a lookup — context decides (e.g. "like" is content in "like this", filler in "like, um, yeah"). No hardcoded word lists; agent decides per token.
 
-Roles (mark mentally or in a scratch buffer):
+**The grade is the SELECTION INPUT — it picks the render state** (`drop` / `rail` / `embed`); it is not itself a typography class (see SKILL.md § Caption model):
 
-| Role | What it is | Captioned? |
+| Grade | What it is | → render state |
 |---|---|---|
-| **drop** | Interjections and hesitation (um, uh, er, ah), self-corrections ("I think— I mean actually…" keep only final), pure repetition stutters ("the the the", "is is is is") collapse to one | NEVER |
-| **narrator** | Connective speech that carries rhythm — pronouns, prepositions, conjunctions, hedges ("sort of", "kind of", "you know" when it's genuinely conversational glue) | Optional small italic if density demands it; often droppable |
-| **body** | Content words that move the idea forward — subjects, verbs, objects, concrete nouns | Yes, upright mid-weight |
-| **emphasis** | The 1–2 words per phrase carrying the semantic punch | Yes, with a lift (weight 700+ or mild scale) |
-| **climax** | The single payoff word of the entire clip (the one you'd say out loud if paraphrasing it to a friend) | Yes, as the biggest thing on screen, uppercase 900, held 1.5s+ |
+| **drop** | Interjections/hesitation (um, uh, er, ah), self-corrections ("I think— I mean actually…" keep only final), pure stutters ("the the the") collapse to one | **drop** (not shown) |
+| **normal** | Ordinary spoken content — connective glue + the content words that carry the idea | **rail** (dense conversational glue may be trimmed for readability; content/structure words stay) |
+| **emphasis** | The 1–2 punch words in a phrase | **rail** + `emphasis` highlight (inline — stays on the rail) |
+| **peak** | The payoff of a beat/section — the line you'd say out loud paraphrasing it | **promote to embed** (apply the craft below); the single biggest of the whole piece = `apex` |
 
-Rule of thumb for a typical 10–20s clip: **1 climax, 2–4 emphasis, 4–10 body, 6–12 narrator, 2–8 drop.** Shorter clips compress every bucket.
+A **peak** is per-beat, **not** per-clip: a short clip usually has one (its climax); a long/multi-section explainer has ~one per section. **Embed is scarce + spaced** — ≤1 per sentence/beat, never two adjacent or co-visible, ≥ a beat apart, at most one `apex`. (The old "1 climax / 2–4 emphasis / 4–10 body / 6–12 narrator / 2–8 drop per 10–20s clip" was calibrated for short single-beat clips; it generalises to "one peak per beat, spaced — everything else rides the rail.")
 
 **This step replaces any filler-word list.** If you find yourself reaching for a regex, you're doing it wrong — go back and judge per-token.
 
