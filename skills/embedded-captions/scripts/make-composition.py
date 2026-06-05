@@ -53,7 +53,6 @@ import html as htmllib
 SCRIPT_DIR = pathlib.Path(__file__).parent
 SKILL_ROOT = SCRIPT_DIR.parent
 TEMPLATES_NEW = SKILL_ROOT / "modes" / "template"
-TEMPLATES_OLD = SKILL_ROOT / "templates"  # legacy fallback
 
 
 def _hex_luminance(hex_color: str) -> float:
@@ -91,14 +90,12 @@ def _default_text_filter(cap_color: str) -> str:
 
 
 def find_template(name: str) -> pathlib.Path:
-    """Locate <name>/template.html in modes/template/, with legacy fallback."""
+    """Locate <name>/template.html in modes/template/."""
     new_path = TEMPLATES_NEW / name / "template.html"
     if new_path.exists():
         return new_path
-    legacy = TEMPLATES_OLD / f"{name}.html"
-    if legacy.exists():
-        return legacy
-    sys.exit(f"[compile] unknown template: {name} (looked in {new_path} and {legacy})")
+    avail = sorted(p.name for p in TEMPLATES_NEW.iterdir() if (p / "template.html").exists())
+    sys.exit(f"[compile] unknown template: {name}. Available: {', '.join(avail)}")
 
 
 def _escape_with_br(text: str) -> str:
@@ -230,15 +227,6 @@ def main():
     plane = plan.get("plane", {})
     header = plan.get("header", {})
 
-    # Legacy: older plans used "wall_position" for both wall-embed and
-    # portrait-header. Map it to both plane and header so templates find it.
-    legacy = plan.get("wall_position", {})
-    if legacy and not plane:
-        plane = dict(legacy)
-    if legacy and not header:
-        header = {"top": legacy.get("top", 0),
-                  "height": legacy.get("height", 0)}
-
     subs = {
         "DURATION": f"{plan['duration']}",
         "FPS": f"{plan.get('fps', 24)}",
@@ -267,15 +255,6 @@ def main():
         "CROWN_RIGHT":   f"{(plan.get('crown') or {}).get('right', 0)}",
         "CROWN_ALIGN":   f"{(plan.get('crown') or {}).get('align', 'center')}",
         "CROWN_SCALE":   f"{(plan.get('crown') or {}).get('scale', 1.0)}",
-
-        # Legacy alias support — old plans used wall_position
-        "WALL_TOP":      f"{plane.get('top', plan.get('wall_position', {}).get('top', 0))}",
-        "WALL_LEFT":     f"{plane.get('left', plan.get('wall_position', {}).get('left', ''))}",
-        "WALL_RIGHT":    f"{plane.get('right', plan.get('wall_position', {}).get('right', ''))}",
-        "WALL_WIDTH":    f"{plane.get('width', plan.get('wall_position', {}).get('width', 0))}",
-        "WALL_HEIGHT":   f"{plane.get('height', plan.get('wall_position', {}).get('height', 0))}",
-        "WALL_ROTATE_Y": f"{plane.get('rotateY', plan.get('wall_position', {}).get('rotateY', 0))}",
-        "WALL_ROTATE_X": f"{plane.get('rotateX', plan.get('wall_position', {}).get('rotateX', 0))}",
 
         # Default blend / color / text-shadow.
         # text_shadow auto-adapts if cap_color is dark (luminance < 0.4) —

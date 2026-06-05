@@ -10,10 +10,10 @@ font scale, caption grouping, slot assignment, crown enable/disable).
 
 | Template | Best for | Frame | Has crown? | Look |
 |---|---|---|---|---|
+| `cinematic-cream` | **Default** — any tone; agent composes planes + per-group typography | 16:9 + 9:16 | Optional (crown plane) | DNA-only: Inter + soft/present motion, warm-cream palette, block accumulation |
 | `memory-wall` | Introspective monologue, side wall visible | 16:9 landscape | No (right-aligned cascade is the climax) | Italic poem, bone-white, screen blend |
 | `champion` | Podcast/interview, cluttered backdrop | 16:9 landscape | Yes (center-stage OR clean-zone) | 5-slot upper-left column + WIMBLEDON-style crown |
 | `portrait-header` | 9:16 talking head, single subject | Portrait | Optional bottom | Centered top header strip, screen blend |
-| `documentary-dignified` | Documentary interview, formal setting, long-form | 16:9 / 9:16 / 1:1 | No (speaker name card instead) | Errol Morris feel — burn-in, gradient bar, 2-line max |
 
 Each template directory contains:
 - `template.html` — the locked HTML/CSS/GSAP shell with `{{PLACEHOLDERS}}`

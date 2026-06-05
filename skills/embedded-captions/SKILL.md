@@ -11,6 +11,24 @@ Captions that look like they belong to the scene: subject body occludes them, bl
 
 ---
 
+## Operational flow (TL;DR)
+
+The craft prose below is long; the **pipeline itself is short**:
+
+1. **Decision gate** (refuse bad clips) → **pick mode** (template vs custom)
+2. `hyperframes init` → `matte-rvm.py` (subject matte) → `transcribe.py` (words)
+3. **author**: template → write `plan.json` → `make-composition.py`; custom → hand-write `index.html`
+4. `render-and-composite.sh` → `final.mp4`
+
+Load-bearing rules people miss:
+
+- **The video is delivered UNTOUCHED** — captions are the only thing added; the matte just lets the subject occlude them. Never grade/recolor/scanline the footage.
+- Scripts auto-resolve `source.mp4` and the source's **native fps**; `ELEVENLABS_API_KEY` is **optional** (falls back to an existing transcript).
+- Custom mode can still render **fg** (captions on top, no occlusion) via `data-caption-layer="fg"` on `#root`; per-caption hybrid bg/fg is template-only.
+- Everything from **"Aesthetic decision"** down is craft detail, mirrored in `references/` (see Shared knowledge) — skim by need.
+
+---
+
 ## Step 0 — pick the mode
 
 | Mode | When | What agent does | Output consistency |
@@ -605,37 +623,27 @@ Rule of thumb: if you flattened your plan to just the climax chunks, the result 
 - **Face must never be 100%-covered continuously** — every 0.3s window, face bbox ≥30% uncovered.
 - **WCAG contrast** — final render lints; fix palette if it fails.
 - **Deterministic** — no `Math.random()`, no `Date.now()`, no `repeat:-1`.
-- **Matte must be person + gripped objects** (mic in hand, cup) — without full foreground, occlusion looks wrong.
+- **Never grade/recolor the video.** The footage ships untouched — captions are the only addition. No full-frame scanlines / duotone / darken / vignette over the a-roll. Cyberpunk/CRT texture belongs *inside* a caption element, not over the whole frame.
+- **Matte = the subject (RVM person matting).** RVM segments people, not props — a gripped mic/cup is best-effort and may not be fully captured, and bright incidental objects can leak in. Sample `frames_fg/` and sanity-check before relying on tight prop occlusion.
+- **Captions stay on-frame.** Template mode hard-gates frame-overflow; custom mode runs `check-overflow.js` as a WARNING (intentional bleed is the only exception — read the warning).
 - **Each caption ≥ 0.5s on screen** — shorter = unreadable.
 - **Word timings must match transcript.json within 80ms** — a caption firing 500ms off-beat destroys the scene illusion. `render-and-composite.sh` runs `check-timing.py --strict` before rendering; fix drift before the gate. Never pack multiple transcript words into one entry (e.g. `"FUTURE OF"` or `"IT<br>ALL"` with one start/end) — the second word inherits the first's timestamp and fires early. Split them into separate word entries with their own timings, even if you want them on the same visual line (use CSS `white-space` / natural wrap instead of `<br>`). Creative substitutions where caption text ≠ transcript (e.g. `"15%"` replacing `"fifteen percent"`) are supported — register them in `CREATIVE_SUBS` inside `check-timing.py`.
 - **Group windows must envelop their words** — `group.in ≤ min(word.start)` and `group.out ≥ max(word.end)` for every group. If `group.in` is later than a word's start, the word is silently delayed until the container mounts (we've shipped 800ms lag bugs from this). The validator enforces this.
 - **No two caption groups may overlap in both time AND screen region** — overlapping-in-time captions create text-on-text pileups. Options: (a) **spatial separation** — place each group in a non-overlapping vertical band so they can coexist (memory-wall cascade style); (b) **handoff** — set the earlier group's `out` ≤ the next group's `in` so only one is on screen; (c) **deliberate layered typography** — add `"allow_overlap": true` on one of the groups to silence the validator. The validator estimates each group's vertical bbox from its CSS and flags collisions. Pick (a) by default — it's what makes cinematic-cream feel like a poem accumulating, not a subtitle track replacing itself.
 - **Screen-blend fails on bright backgrounds** — if region luminance > 180, switch to `mix-blend-mode: normal` + opaque color.
 - **Don't animate `letter-spacing` or `filter:blur` on word entrance** — inline-block reflow causes line-jumps.
-- **CoreML banned for RVM matting** — corrupts face alpha. CPU only.
+- **CoreML banned for RVM matting** — it corrupts face alpha, so matting is CPU-only (~3 fps @1080p ≈ 1 min per 10s clip; budget for it on long clips).
 
 ---
 
 ## Dependencies
 
-This skill ships **inside the hyperframes repo** (`skills/embedded-captions/`), so the
-renderer is the repo's own CLI — no separate clone. Build it once from the repo root:
+- **hyperframes**, built (`packages/cli/dist/cli.js`). Scripts auto-resolve the checkout: `HYPERFRAMES_ROOT` env → repo root if this skill ships *inside* hyperframes → `~/Downloads/hyperframes`. Build with `bun install && bun run build`.
+- **Python venv** with `onnxruntime`, `pillow`, `numpy` (matting) + `elevenlabs` (transcription) — see `requirements.txt`.
+- `ffmpeg` available.
+- **`ELEVENLABS_API_KEY` — optional.** With it, `transcribe.py` runs Scribe v2 (tightest word timings). Without it, the skill reuses an existing word-level `transcript.json` (the one `hyperframes init` writes, or one you drop in).
+- **Source video** — `matte-rvm.py` / `transcribe.py` auto-resolve `source.mp4` (or glob the clip / read `hyperframes.json`), so `hyperframes init --video X.mp4` needs no manual rename.
+- **fps** — `matte-rvm.py` extracts at the source's native rate and records `matte.fps`; `render-and-composite.sh` uses that so the matte stays frame-aligned with the render.
+- `assets/rvm_mobilenetv3_fp32.onnx` (14 MB) — auto-downloaded on first matte run.
 
-```bash
-bun install && bun run build          # produces packages/cli/dist/cli.js (the renderer)
-```
-
-The scripts auto-locate that CLI three directories up; set `HYPERFRAMES_ROOT` only to
-target a different checkout.
-
-- Python venv with `elevenlabs`, `onnxruntime`, `pillow`, `numpy` (pinned in `requirements.txt`):
-  ```bash
-  cd skills/embedded-captions
-  python3 -m venv .venv && source .venv/bin/activate
-  pip install -r requirements.txt
-  ```
-- `ELEVENLABS_API_KEY` set in env
-- `ffmpeg` available
-- `assets/rvm_mobilenetv3_fp32.onnx` (14 MB) — **not committed** (gitignored); auto-downloaded on first matte run
-
-If any missing, STOP and ask the user — don't silently skip steps.
+If a hard dependency is missing, STOP and ask the user — don't silently skip steps.

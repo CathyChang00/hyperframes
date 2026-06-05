@@ -15,7 +15,7 @@ Reads:
 Writes:
   <project-dir>/frames_fg/f_%04d.png   (RGBA, subject opaque, bg transparent)
 """
-import os, sys, glob, time, subprocess, pathlib
+import os, sys, glob, time, json, shutil, subprocess, pathlib
 import numpy as np
 import onnxruntime as ort
 from PIL import Image
@@ -38,6 +38,58 @@ def downsample_for_height(h: int) -> float:
     return round(min(1.0, 512.0 / max(h, 1)), 3)
 
 
+def ensure_source(project: pathlib.Path) -> pathlib.Path:
+    """Resolve the input clip to <project>/source.mp4 (creating a symlink).
+
+    `hyperframes init --video X.mp4` copies the clip under its own name, but the
+    rest of the pipeline (this script, transcribe.py, and the rendered a-roll
+    <video src="source.mp4">) expects source.mp4. Bridge that here so no manual
+    rename is needed. Idempotent.
+    """
+    src = project / "source.mp4"
+    if src.exists():
+        return src
+    EXCL = {"final", "bg_plus_caps", "fg_caps", "audio"}
+    cands = []
+    for ext in ("mp4", "mov", "webm", "mkv", "m4v"):
+        cands += [pathlib.Path(x) for x in glob.glob(str(project / f"*.{ext}"))]
+    cands = [c for c in cands if c.stem not in EXCL and not c.name.startswith("index")]
+    found = None
+    if cands:
+        found = max(cands, key=lambda c: c.stat().st_size)   # largest = the source clip
+    else:
+        hj = project / "hyperframes.json"
+        if hj.exists():
+            try:
+                v = (json.load(open(hj)).get("video") or "")
+                if v and (project / v).exists():
+                    found = project / v
+            except Exception:
+                pass
+    if found:
+        try:
+            src.symlink_to(found.name)
+        except OSError:
+            shutil.copy(found, src)
+        print(f"[matte] resolved source.mp4 -> {found.name}", flush=True)
+    return src
+
+
+def probe_fps(src: pathlib.Path) -> int:
+    """Native integer fps of the source, so the matte stays frame-aligned with it
+    (and with the hyperframes render, which reads the same value via matte.fps)."""
+    try:
+        out = subprocess.check_output(
+            ["ffprobe", "-v", "0", "-select_streams", "v:0", "-show_entries",
+             "stream=r_frame_rate", "-of", "default=nk=1:nw=1", str(src)]
+        ).decode().strip()
+        num, den = (out.split("/") + ["1"])[:2]
+        f = float(num) / float(den or 1)
+        return max(1, round(f)) if f > 0 else 24
+    except Exception:
+        return 24
+
+
 def extract_frames(src_mp4: str, dst_dir: str, fps: int = 24):
     os.makedirs(dst_dir, exist_ok=True)
     existing = sorted(glob.glob(os.path.join(dst_dir, "*.png")))
@@ -55,14 +107,24 @@ def main():
     if len(sys.argv) < 2:
         sys.exit("usage: matte-rvm.py <project-dir>")
     project = pathlib.Path(sys.argv[1]).resolve()
-    src = project / "source.mp4"
+    src = ensure_source(project)
     frames_bg = project / "frames_bg"
     frames_fg = project / "frames_fg"
+
+    if not src.exists() and not frames_bg.exists():
+        sys.exit(f"[matte] no source video found in {project} "
+                 f"(looked for source.mp4 / *.mp4 / hyperframes.json)")
 
     ensure_model()
 
     if src.exists() and not frames_bg.exists():
-        extract_frames(str(src), str(frames_bg))
+        fps = probe_fps(src)
+        (project / "matte.fps").write_text(str(fps))
+        print(f"[matte] source fps={fps} (native) → extracting frames_bg", flush=True)
+        extract_frames(str(src), str(frames_bg), fps)
+    elif not (project / "matte.fps").exists():
+        # frames already present from a prior run — best-effort fps record
+        (project / "matte.fps").write_text(str(probe_fps(src) if src.exists() else 24))
 
     files = sorted(glob.glob(str(frames_bg / "*.png")))
     if not files:
