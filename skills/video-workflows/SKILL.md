@@ -26,12 +26,14 @@ Two axes pick the workflow: **INPUT type** and **OUTPUT length**. Inside the 30-
 | --------------- | ----------------------- | ----------------------- | -------------------------------------------- | ---------------- |
 | < 15s hook      | —                       | —                       | —                                            | —                |
 | 15-30s ad       | —                       | —                       | —                                            | —                |
-| **30-90s**      | `/product-launch-video` | `/product-launch-video` | `/faceless-explainer`                        | —                |
+| **30-90s**      | `/product-launch-video` | `/product-launch-video` | `/faceless-explainer`                        | `/embedded-captions` † |
 | 2-5min tutorial | —                       | —                       | —                                            | —                |
 | 5min+ deep dive | —                       | —                       | —                                            | —                |
 | Static / loop   | —                       | —                       | —                                            | —                |
 
-Only the **30-90s** row is covered today — by two workflows split on subject. Empty cells mean **no workflow exists for that combination**: say so directly (the generic / "通用" outcome) rather than forcing a near-fit.
+Only the **30-90s** _creation_ row is covered today — by two workflows split on subject. Empty cells mean **no workflow exists for that combination**: say so directly (the generic / "通用" outcome) rather than forcing a near-fit.
+
+† **Existing footage is a post-process, not creation, and is length-agnostic.** If the user has a finished single-subject talking-head clip and wants **captions** added (not a new video built), route to `/embedded-captions` regardless of length — the output length follows the source clip. It is shown in the 30-90s cell only for table placement.
 
 ## Routing procedure
 
@@ -61,6 +63,13 @@ Only the **30-90s** row is covered today — by two workflows split on subject. 
 - **Output:** 60-90s faceless explainer video as a HyperFrames composition rendered to MP4. Every visual is LLM-invented per scene (typography / abstract graphics / diagram / data-viz); ships the `pin-and-paper` style preset
 - **Triggers:** "make a faceless explainer about X", "explain how DNS works as a video", "turn this article into an explainer video", "video explaining [concept], no product", "topic → short educational video", "explainer from my notes"
 - **Do NOT use for:** anything centered on a specific product / company being marketed, or any request that supplies a URL (→ `/product-launch-video`); tutorials over 2 min; social ads under 30s; videos that need real screenshots or scraped brand assets
+
+### `/embedded-captions`
+
+- **Input:** An **existing** single-subject talking-head / 口播 video clip (the footage already exists — not a brief, URL, or topic to build from)
+- **Output:** That clip with captions, rendered to MP4 — **Standard** (a clean verbatim lower-third rail + the peak word embedded behind the subject via matte occlusion) or **Cinematic** (pure embed, every caption composited behind the subject)
+- **Triggers:** "add captions / 加字幕 / 字幕", "embed / embedded / cinematic captions", "字幕嵌入 / 嵌到场景里", "captions behind the subject", "caption this talking-head / 口播"
+- **Do NOT use for:** building a video from scratch (→ the creation workflows above); a caption track inside a composition you're authoring in this project (→ `/hyperframes-media`); multi-speaker or non-talking-head footage
 
 ## Out of scope for this router
 

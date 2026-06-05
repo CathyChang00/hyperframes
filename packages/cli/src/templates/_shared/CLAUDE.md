@@ -15,7 +15,8 @@
 | **hyperframes-creative**     | `/hyperframes-creative`  | Creative direction: `design.md`, palettes, typography, narration, beat planning, audio-reactive, composition patterns                         |
 | **hyperframes-animation**    | `/hyperframes-animation` | All motion: atomic rules, scene blueprints, transitions, and runtime adapters (GSAP default; Lottie, Three.js, Anime.js, CSS, WAAPI, TypeGPU) |
 | **hyperframes-cli**          | `/hyperframes-cli`       | Dev-loop CLI: init, lint, validate, inspect, preview, render, doctor                                                                          |
-| **hyperframes-media**        | `/hyperframes-media`     | Asset preprocessing: TTS, BGM, transcribe, remove-background, and caption authoring                                                           |
+| **hyperframes-media**        | `/hyperframes-media`     | Asset preprocessing: TTS, BGM, transcribe, remove-background; caption tracks _inside a composition you're authoring_ (subtitles / lyrics / karaoke / per-word, SRT/VTT). _Captioning an existing talking-head clip → embedded-captions._ |
+| **embedded-captions**        | `/embedded-captions`     | An **existing talking-head / 口播 clip** → captioned MP4. **Standard** = clean verbatim lower-third rail + a peak word embedded behind the subject; **Cinematic** = pure embed. Use for "add captions / 加字幕 / 字幕", "embed/cinematic captions", "字幕嵌入/嵌到场景里", "captions behind the subject". |
 | **hyperframes-registry**     | `/hyperframes-registry`  | Installing registry blocks and components via `hyperframes add`                                                                               |
 
 > **Tailwind v4 projects** (`hyperframes init --tailwind`): see `/hyperframes-core` → `references/tailwind.md`.

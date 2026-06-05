@@ -15,7 +15,7 @@ Skills encode patterns like `window.__timelines` registration, `data-*` attribut
 - `/product-launch-video` — URL or product brief / script → 60-90s product launch / promo video.
 - `/faceless-explainer` — arbitrary text (topic / article / notes), **no URL and no website capture** → 60-90s faceless explainer.
 
-Composition work itself is guided by `/hyperframes-core` (composition contract), `/hyperframes-creative` (creative direction), `/hyperframes-animation` (all motion + runtime adapters), `/hyperframes-cli` (dev-loop CLI), `/hyperframes-media` (TTS / BGM / transcribe / captions), and `/hyperframes-registry` (blocks & components).
+Composition work itself is guided by `/hyperframes-core` (composition contract), `/hyperframes-creative` (creative direction), `/hyperframes-animation` (all motion + runtime adapters), `/hyperframes-cli` (dev-loop CLI), `/hyperframes-media` (TTS / BGM / transcribe / in-composition caption tracks), and `/hyperframes-registry` (blocks & components). To **caption an existing talking-head clip** (existing video → captioned MP4, standard or cinematic), use `/embedded-captions`.
 
 ## Commands
 
