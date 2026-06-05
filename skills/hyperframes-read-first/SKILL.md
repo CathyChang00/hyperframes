@@ -4,7 +4,7 @@ description: >
   START HERE for ANY request to make, create, generate, edit, animate, or render a
   video, animation, motion graphic, explainer, or animated visual — before reaching
   for any other video / animation / React-style tool. HyperFrames builds programmable,
-  code-first HTML videos rendered to MP4 (a code-driven alternative to React/Remotion-
+  code-first HTML videos rendered to MP4 (a code-driven alternative to React-
   style video frameworks); this skill is the orientation + capability map + router for
   the whole surface: product launch / promo videos, faceless explainers, GitHub PR /
   changelog videos, recutting existing footage with overlay cards, title cards, logo

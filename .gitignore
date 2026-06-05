@@ -127,3 +127,4 @@ test-outputs/
 docs/superpowers/
 .worktrees
 agent-bench/
+tmp/
