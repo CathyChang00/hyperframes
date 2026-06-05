@@ -106,7 +106,7 @@ Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **n
     // Build EVERY line up-front as its own stacked container. Do NOT swap flow.innerHTML
     // per line — that runs synchronously at construction, leaving only the last line in the
     // DOM (earlier FLOW_IN tweens point at detached nodes). Separate containers = seek-safe.
-    WORDS.forEach((line)=>{
+    WORDS.forEach((line,li)=>{
       const div=document.createElement('div'); div.className='line';
       div.innerHTML=line.words.map((w,i)=>`<span class="w" data-i="${i}">${w.text}</span>`).join(' ');
       flow.appendChild(div);
@@ -115,7 +115,12 @@ Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **n
         tl.add(FLOW_IN(el), w.start);
         tl.set(spans,{className:'w'}, w.start);
         tl.set(el,{className:'w act'}, w.start);});
-      tl.to(spans,{opacity:0,y:-10,duration:.35,ease:'power2.in'}, line.end);   // hard exit, ends opacity:0
+      // The exit must COMPLETE before the next line's first word or the two lines
+      // overlap on continuous speech (no natural gap). Pre-empt: fire a fast exit
+      // ending just before nextStart. Last line exits at line.end.
+      const nextStart = WORDS[li+1] ? WORDS[li+1].words[0].start : null;
+      const exitAt = nextStart!=null ? Math.max(line.words[line.words.length-1].start, nextStart-0.30) : line.end;
+      tl.to(spans,{opacity:0,y:-10,duration:.22,ease:'power2.in'}, exitAt);     // ends opacity:0
     });
     window.__timelines["main"]=tl;
   </script>
@@ -136,3 +141,9 @@ Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **n
   template still drives the climax font, the palette (`--cfill`/`--cacc`), the motion, and the scene mood.
 - 16:9 climax base `44cqh`; long words bleed off-frame (intended cinematic); a 3-char climax behind a centred
   subject needs the stroke (above) so it peeks.
+- **Keep the climax crisp.** A blur entrance (`deblur` / blur-in from `_motion.md`) leaves a big hero word soft
+  for a large fraction of a short (~2s) dwell — it reads as a defect, not a move. Prefer a crisp scale/rise
+  entrance unless the dwell is long. The settled hold must be sharp.
+- **Rail lines must not overlap.** On continuous speech the next line's first word lands ~immediately after the
+  previous line ends, so a line's exit has to *complete before* the next begins (the skeleton pre-empts it at
+  `nextStart − dur`). Group at clause/breath boundaries to give the swap room; never let two lines co-exist.
