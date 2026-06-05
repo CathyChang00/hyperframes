@@ -147,8 +147,9 @@ HF_TIMEOUT_S="${HF_TIMEOUT_S:-240}"
 # watches for the Chromium-shutdown-hang; if output file exists and is >1MB
 # past timeout, treats as success and kills the zombie.
 hf_render_dir() {
-  local out="$1" label="$2" proj="$3"
-  node "$HF_CLI" render --dir "$proj" --fps "$FPS" -o "$out" &
+  local out="$1" label="$2" proj="$3" fmt="${4:-}"
+  local fmtarg=(); [[ -n "$fmt" ]] && fmtarg=(--format "$fmt")
+  node "$HF_CLI" render --dir "$proj" --fps "$FPS" "${fmtarg[@]}" -o "$out" &
   local pid=$! start=$SECONDS elapsed
   while kill -0 "$pid" 2>/dev/null; do
     elapsed=$((SECONDS - start))
@@ -205,6 +206,41 @@ fi
 # Probe render dims for ffmpeg scale
 W="$(ffprobe -v error -select_streams v:0 -show_entries stream=width  -of default=nw=1:nk=1 "$BG")"
 H="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=nw=1:nk=1 "$BG")"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STANDARD mode (rail + embed) — detected by rail.html.
+#   $BG = index.html rendered (source video + the embed climax).
+#   (1) overlay the RVM matte so the subject occludes the climax (embed = behind).
+#   (2) render rail.html → transparent WebM (the verbatim rail).
+#   (3) alpha-composite the rail IN FRONT so it is never occluded (rail = on top).
+# The existing Cinematic paths below are untouched.
+if [[ -f "$PROJECT/rail.html" ]]; then
+  echo "[render] STANDARD (rail + embed) — embed behind subject, rail alpha-overlaid in front (${W}x${H})"
+  MATTED="$PROJECT/_matted.mp4"
+  ffmpeg -y -i "$BG" \
+    -framerate "$FPS" -i "$PROJECT/frames_fg/f_%04d.png" \
+    -filter_complex "[1:v]scale=${W}:${H},format=yuva420p[m];[0:v][m]overlay=format=auto[v]" \
+    -map "[v]" -map 0:a -r "$FPS" -c:v libx264 -crf 16 -preset medium -c:a copy "$MATTED"
+
+  # render rail.html (transparent) via a shadow dir (same trick as the fg hybrid)
+  RAIL_SHADOW="$PROJECT/_rail_shadow"; rm -rf "$RAIL_SHADOW"; mkdir -p "$RAIL_SHADOW"
+  for item in source.mp4 audio.mp3 transcript.json hyperframes.json package.json frames_bg frames_fg; do
+    [[ -e "$PROJECT/$item" ]] && ln -sf "$PROJECT/$item" "$RAIL_SHADOW/$item"
+  done
+  cp "$PROJECT/rail.html" "$RAIL_SHADOW/index.html"
+  RAIL_WEBM="$PROJECT/rail.webm"
+  hf_render_dir "$RAIL_WEBM" "rail" "$RAIL_SHADOW" "webm" || { echo "[render] rail render failed" >&2; rm -rf "$RAIL_SHADOW"; exit 1; }
+  rm -rf "$RAIL_SHADOW"
+
+  # alpha-overlay the transparent rail in front of the matted video (force vp9
+  # decode so the WebM alpha plane is honoured by overlay)
+  ffmpeg -y -i "$MATTED" -c:v libvpx-vp9 -i "$RAIL_WEBM" \
+    -filter_complex "[0:v][1:v]overlay=format=auto[v]" \
+    -map "[v]" -map 0:a -r "$FPS" -c:v libx264 -crf 16 -preset medium -c:a copy "$FINAL"
+  rm -f "$MATTED"
+  echo "[render] done → $FINAL"
+  exit 0
+fi
 
 # Decide composite mode:
 #  - If make-composition emitted index_fg.html (any group has layer:fg),

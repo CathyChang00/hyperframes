@@ -20,7 +20,7 @@ Classification matrix — pick direction by intersection:
 
 ## Direction specs
 
-### 1. documentary-dignified  *(Errol Morris / PBS Frontline)*  — custom-mode direction (no prebuilt template)
+### 1. documentary-dignified  *(Errol Morris / PBS Frontline)*  — Standard-mode direction (no prebuilt Cinematic template)
 
 - **Family**: Söhne Mono OR GT Sectra for name cards; Inter for body
 - **Weights**: 500 body, 700 name card
@@ -134,4 +134,4 @@ Priority ship order based on competitive gap:
 4. Translate spec into plan.json parameters OR clone the canonical HTML from `examples/`
 5. Tune layout per scene (agent judgment, see `aesthetic-principles.md §1–18`)
 
-If no direction fits cleanly → **custom mode**. Don't fake-fit an ill-matched direction.
+If no direction fits cleanly → **Standard mode**. Don't fake-fit an ill-matched direction.

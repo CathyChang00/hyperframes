@@ -1,0 +1,128 @@
+# Standard mode — how this skill runs these templates
+
+The 54 files in `templates/` (+ `_anatomy.md`, `_motion.md`) are the **design library** for Standard mode:
+a flowing verbatim **rail** (their "flow") + one **embed** climax (their "climax"), matted speaker, one
+paused seek-safe GSAP timeline. **This file is the one override you must read** — it adapts that library
+to THIS skill's pipeline. Where this file and `_anatomy.md` disagree, **this file wins.**
+
+## 3 things differ from `_anatomy.md` (read this, then use the library freely)
+
+1. **Matte = RVM, not `remove-background`.** Ignore the `hyperframes remove-background` / `person.webm` /
+   `.cut` layer in `_anatomy.md`. This skill mattes with `scripts/matte.cjs` (RVM → `frames_fg/*.png`) and
+   composites the subject **in post** via `render-and-composite.sh`. **Never put the person in the HTML.**
+2. **Contract = ours.** Not `.stage` / `window.__timelines['cap-{id}']`. Use `#root[data-composition-id="main"]`
+   + `#a-roll` (the source video = their z0 background plate) + `#stage` + `#a-roll-audio` +
+   `window.__timelines["main"]`. Same seek-safe rules (no `Math.random`/`Date.now`/CSS-keyframes/`repeat:-1`).
+3. **Two files, not one** (this is how the rail ends up *in front* of the subject while the climax sits *behind*):
+   - **`index.html`** — the source video + the **embed climax** in `#stage`. The RVM matte overlays this, so
+     the subject occludes the climax (their z1 "behind the speaker").
+   - **`rail.html`** — the **rail** (flow) only, transparent background, no video, no climax. Rendered to a
+     transparent WebM and alpha-composited **on top of** the matte, so the rail is never occluded
+     (their z6 "in front, lower third"). `render-and-composite.sh` does this automatically when `rail.html` exists.
+
+Everything else in the library carries over **unchanged**: the per-template **style tokens**
+(`--ff` / `--cfill` / `--cacc`, climax fill/stroke), the named **FLOW_*/CLIMAX_* motion recipes** in `_motion.md`,
+`cqh` sizing, exit ≈ 75% of entry, **climax dwell ≥ 1 s**, and the restraint rule (effects only at the climax;
+the rail stays clean + active-word accent).
+
+## Pipeline (Standard)
+
+```
+1. hyperframes init <project> --non-interactive --video <video.mp4> --skip-skills
+2. node scripts/matte.cjs <project>          # RVM → frames_fg/*.png  (KEEP RVM)
+3. node scripts/transcribe.cjs <project>     # Whisper → transcript.json (verbatim word timings)
+4. [AGENT] pick 3 templates by transcript fit (their `## Triggers`), read those 3 + the 2-3 motion
+   recipes they name + this file; then author <project>/index.html (climax) + <project>/rail.html (rail)
+5. bash scripts/render-and-composite.sh <project>   # renders both, RVM-mattes, alpha-overlays rail → final.mp4
+```
+
+## `index.html` — video + embed climax (matte puts it behind the subject)
+
+```html
+<!doctype html><html lang="en"><head><meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:{{W}}px;height:{{H}}px;overflow:hidden;background:#000;font-family:var(--ff)}
+  #a-roll{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%;z-index:1}
+  #stage{position:absolute;inset:0;z-index:2;container-type:size;pointer-events:none}   /* cqh works off this */
+  /* CLIMAX — big, behind the subject (RVM matte occludes it in post). _anatomy §3 base + the template's tokens */
+  .climax{position:absolute;left:50%;top:37%;transform:translate(-50%,-50%);white-space:nowrap;
+    line-height:1.18;font-weight:900;font-size:44cqh;text-transform:uppercase;
+    color:var(--cfill);text-shadow:0 2px 13px rgba(0,0,0,.6),0 0 48px rgba(0,0,0,.42);
+    -webkit-text-stroke:1px rgba(0,0,0,.5);paint-order:stroke fill}     /* stroke for lit scenes (_anatomy §3) */
+  .climax span{display:inline-block;opacity:0}
+  .stage-tokens{--ff:'Inter';--cfill:#fff;--cacc:#10A37F}               /* ← replace with the chosen template's tokens */
+</style></head><body class="stage-tokens">
+  <div id="root" data-composition-id="main" data-start="0" data-duration="{{DUR}}" data-width="{{W}}" data-height="{{H}}">
+    <video id="a-roll" src="source.mp4" muted playsinline data-duration="{{DUR}}" data-track-index="0" style="z-index:1"></video>
+    <div id="stage"><div class="climax"><span>{{CLIMAX_WORD}}</span></div></div>
+    <audio id="a-roll-audio" src="source.mp4" data-start="0" data-duration="{{DUR}}" data-track-index="3" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines=window.__timelines||{};
+    const tl=gsap.timeline({paused:true});
+    const climax=document.querySelector('.climax span');
+    const T={{CLIMAX_AT}}, HOLD={{CLIMAX_HOLD}};            // HOLD ≥ entranceDur + 1s
+    tl.add(()=>{}, 0);                                       // ensure t=0 state
+    tl.add(CLIMAX_IN(climax), T);                            // _motion.md recipe (e.g. deblur)
+    tl.add(CLIMAX_OUT(climax), T+HOLD);                      // ends opacity:0
+    window.__timelines["main"]=tl;
+  </script>
+</body></html>
+```
+
+## `rail.html` — the rail only, transparent (alpha-composited in front)
+
+Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **no climax**. Words injected from
+`transcript.json`, revealed at each word's `start`, active word gets `.act` (→ `--cacc`). Lower third.
+
+```html
+<!doctype html><html lang="en"><head><meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:{{W}}px;height:{{H}}px;overflow:hidden;background:transparent;font-family:var(--ff)}
+  #stage{position:absolute;inset:0;container-type:size}
+  .flow{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);width:90%;text-align:center;
+    line-height:1.15;font-weight:700;font-size:7.5cqh;color:var(--cfill);
+    text-shadow:0 2px 8px rgba(0,0,0,.55)}                  /* glyph-local scrim; NEVER a full-frame bar/grade */
+  .flow .w{display:inline-block;opacity:0;margin:0 .1em;color:var(--cfill)}
+  .flow .w.act{color:var(--cacc)}
+  .stage-tokens{--ff:'Inter';--cfill:#fff;--cacc:#10A37F}   /* ← same tokens as index.html */
+</style></head><body class="stage-tokens">
+  <div id="root" data-composition-id="main" data-start="0" data-duration="{{DUR}}" data-width="{{W}}" data-height="{{H}}">
+    <div id="stage"><div class="flow"></div></div>
+  </div>
+  <script>
+    window.__timelines=window.__timelines||{};
+    const tl=gsap.timeline({paused:true});
+    const flow=document.querySelector('.flow');
+    // WORDS = transcript grouped into lines [{words:[{text,start,end}], end}] in scene-local seconds (2–4 words/line).
+    const WORDS={{WORDS_JSON}};
+    const FLOW_IN=(w)=>gsap.fromTo(w,{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power3.out'}); // _motion.md
+    WORDS.forEach(line=>{
+      flow.innerHTML=line.words.map((w,i)=>`<span class="w" data-i="${i}">${w.text}</span>`).join(' ');
+      const spans=[...flow.querySelectorAll('.w')];
+      spans.forEach((el,i)=>{const w=line.words[i];
+        tl.add(FLOW_IN(el), w.start);
+        tl.set(spans,{className:'w'}, w.start);
+        tl.set(el,{className:'w act'}, w.start);});
+      tl.to(spans,{opacity:0,y:-10,duration:.4,ease:'power2.in'}, line.end);
+      tl.set(flow,{autoAlpha:0}, line.end+0.4); tl.set(flow,{autoAlpha:1}, line.end+0.401);
+    });
+    window.__timelines["main"]=tl;
+  </script>
+</body></html>
+```
+
+## Notes
+
+- **No `plan.json` in Standard mode** → the template-mode gates (`check-timing`, `check-occlusion`) don't run.
+  Self-check: rail words verbatim & on the beat (≤80ms), one embed per beat, climax holds ≥1s, exit ends at
+  `opacity:0`. `check-overflow.js` still runs as a warning.
+- **Rail legibility** is glyph-local only — a soft shadow or a text-box scrim. **Never grade/recolor the video**
+  and never lay a full-frame bar (this skill's hard rule).
+- **One embed at a time**, spaced ≥ a beat apart; the rail can briefly dim/clear under the embed if they'd collide.
+- 16:9 climax base `44cqh`; long words bleed off-frame (intended cinematic); a 3-char climax behind a centred
+  subject needs the stroke (above) so it peeks.
