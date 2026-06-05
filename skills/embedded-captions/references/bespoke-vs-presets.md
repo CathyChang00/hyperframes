@@ -41,8 +41,6 @@ You'll reach for presets like `"style": "emph"` when what the scene really needs
 ```json
 {
   "template": "wall-embed",
-  "blend_mode": "screen",
-  "cap_color": "#fff4dc",
   "custom_css": "
     .cap-1 { font-size: 78px; font-weight: 600; font-style: italic;
              letter-spacing: -0.01em; }
@@ -62,22 +60,19 @@ You'll reach for presets like `"style": "emph"` when what the scene really needs
 
 The `"style": "1"` field becomes `class="cap-1"` on the element — any string works, no validation.
 
-### "Blend mode default is wrong for this backdrop"
+### "The template's blend doesn't suit this backdrop" → pick a different template, do NOT override
 
-Template defaults:
-- `wall-embed.html` → `overlay` (tuned for mid-tone acoustic foam)
-- `corner-column-crown.html` → `screen` (tuned for dark bookshelves)
-- `portrait-header.html` → `screen` (tuned for generic dark-ish zones)
+**Cinematic mode does not override colour or blend.** A template's `mix-blend-mode` + fill are **locked DNA** — `make-composition.cjs` ignores `plan.cap_color` / `blend_mode` / `text_shadow` / `text_filter`. Selecting a template commits to its look; the only agent-authored things are layout (planes/positions) and per-group typography.
 
-**Verify the average luminance** of the caption region in a sampled frame:
+So use the caption-region luminance to **choose** a template that already fits — never to recolour one:
 
-| Region luminance | Blend mode | Why |
+| Region luminance | What fits | Why |
 |---|---|---|
-| < 60 (dark: bookshelf, dark wall) | `screen` | adds text brightness |
-| 60–180 (mid-tone: foam, plaster) | `overlay` | text picks up texture |
-| > 180 (bright: window light, pale wall) | `normal` + opaque color | blends drop out entirely |
+| < 60 (dark / low-key) | a cream + `screen` template (`cinematic-cream`, `memory-wall`, `champion`, `portrait-header`) | light text glows, picks up the scene |
+| 60–180 (mid-tone) | a cream + `screen` template still reads (add a scrim via Standard if marginal) | text picks up texture |
+| > 180 (bright: window, pale wall) | **none of the cream/`screen` Cinematic templates — they wash out** | → use **Standard mode** (opaque rail, set per the chosen template) instead |
 
-Override via `"blend_mode": "screen"` in plan.json — no need to edit the template.
+If the scene is bright and the cream/`screen` look washes out, that's the signal to switch to **Standard mode** (which sets opaque colour in the HTML), not to recolour a Cinematic template into something it isn't.
 
 ### "Hanging indent / outdent / letter-width tweak"
 

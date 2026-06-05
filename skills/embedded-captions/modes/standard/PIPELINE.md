@@ -43,16 +43,20 @@ the rail stays clean + active-word accent).
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:{{W}}px;height:{{H}}px;overflow:hidden;background:#000;font-family:var(--ff)}
+  html,body{width:{{W}}px;height:{{H}}px;overflow:hidden;background:#000}
   #a-roll{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%;z-index:1}
   #stage{position:absolute;inset:0;z-index:2;container-type:size;pointer-events:none}   /* cqh works off this */
-  /* CLIMAX — big, behind the subject (RVM matte occludes it in post). _anatomy §3 base + the template's tokens */
+  /* CLIMAX — big, behind the subject (RVM matte occludes it in post). _anatomy §3 base + the template's tokens.
+     ⚠ font-family MUST be the template's LITERAL name (hyperframes maps it to a bundled OFFLINE font). A CSS
+     var (var(--ff)) is NOT resolved by the font compiler → it silently falls back to a generic sans and the
+     whole look dies. Use a name from hyperframes' mapped list (oswald, inter, poppins, playfair display, …). */
   .climax{position:absolute;left:50%;top:37%;transform:translate(-50%,-50%);white-space:nowrap;
+    font-family:'Oswald',sans-serif;          /* ← the template's font, LITERAL (never var()) */
     line-height:1.18;font-weight:900;font-size:44cqh;text-transform:uppercase;
     color:var(--cfill);text-shadow:0 2px 13px rgba(0,0,0,.6),0 0 48px rgba(0,0,0,.42);
     -webkit-text-stroke:1px rgba(0,0,0,.5);paint-order:stroke fill}     /* stroke for lit scenes (_anatomy §3) */
   .climax span{display:inline-block;opacity:0}
-  .stage-tokens{--ff:'Inter';--cfill:#fff;--cacc:#10A37F}               /* ← replace with the chosen template's tokens */
+  .stage-tokens{--cfill:#e9e6dd;--cacc:#e3c06a}                         /* ← the template's fill/accent (colours only) */
 </style></head><body class="stage-tokens">
   <div id="root" data-composition-id="main" data-start="0" data-duration="{{DUR}}" data-width="{{W}}" data-height="{{H}}">
     <video id="a-roll" src="source.mp4" muted playsinline data-duration="{{DUR}}" data-track-index="0" style="z-index:1"></video>
@@ -74,31 +78,39 @@ the rail stays clean + active-word accent).
 
 ## `rail.html` — the rail only, transparent (alpha-composited in front)
 
-Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **no climax**. Words injected from
-`transcript.json`, revealed at each word's `start`, active word gets `.act` (→ `--cacc`). Lower third.
+Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **no climax** — plus the `.grade`
+vignette. Words injected from `transcript.json`, revealed at each word's `start`; the active word is recoloured to
+`--cacc` via a `color` set (not a class — className isn't seek-safe). Lower third.
 
 ```html
 <!doctype html><html lang="en"><head><meta charset="UTF-8">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:{{W}}px;height:{{H}}px;overflow:hidden;background:transparent;font-family:var(--ff)}
-  #stage{position:absolute;inset:0;container-type:size}
-  .flow{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);width:90%;height:14%}
+  html,body{width:{{W}}px;height:{{H}}px;overflow:hidden;background:transparent}
+  /* .grade — the anatomy's z5 vignette (depth + legibility). Composites over the matte, under the flow.
+     KEEP IT — dropping it makes the result look flat/washed. A soft radial darken, NOT a full-frame solid bar. */
+  .grade{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(130% 100% at 50% 28%, transparent 42%, rgba(0,0,0,.6))}
+  #stage{position:absolute;inset:0;z-index:2;container-type:size}
+  .flow{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);width:90%;height:16%}
   .line{position:absolute;left:0;right:0;bottom:0;text-align:center;
-    line-height:1.15;font-weight:700;font-size:7.5cqh;color:var(--cfill);
-    text-shadow:0 2px 8px rgba(0,0,0,.55)}                  /* glyph-local scrim; NEVER a full-frame bar/grade */
-  .line .w{display:inline-block;opacity:0;margin:0 .1em;color:var(--cfill)}
-  .line .w.act{color:var(--cacc)}
-  .stage-tokens{--ff:'Inter';--cfill:#fff;--cacc:#10A37F}   /* ← same tokens as index.html */
+    font-family:'Oswald',sans-serif;          /* ← the template's font, LITERAL (never var(); see climax note) */
+    line-height:1.15;font-weight:700;font-size:6.4cqh;color:var(--cfill);
+    text-shadow:0 2px 10px rgba(0,0,0,.65)}                 /* glyph-local scrim; NEVER a full-frame bar */
+  .line .w{display:inline-block;opacity:0;margin:0 .12em;color:var(--cfill)}
+  .stage-tokens{--cfill:#e9e6dd;--cacc:#e3c06a}             /* ← same fill/accent as index.html */
 </style></head><body class="stage-tokens">
   <div id="root" data-composition-id="main" data-start="0" data-duration="{{DUR}}" data-width="{{W}}" data-height="{{H}}">
+    <div class="grade"></div>
     <div id="stage"><div class="flow"></div></div>
   </div>
   <script>
     window.__timelines=window.__timelines||{};
     const tl=gsap.timeline({paused:true});
     const flow=document.querySelector('.flow');
+    const _cs=getComputedStyle(document.body);
+    const CFILL=(_cs.getPropertyValue('--cfill').trim()||'#fff'), CACC=(_cs.getPropertyValue('--cacc').trim()||'#10A37F');
     // WORDS = transcript grouped into lines [{words:[{text,start}], end}] in scene-local seconds
     // (2–4 words/line; non-overlapping windows — line.end ≤ next line's first word.start).
     const WORDS={{WORDS_JSON}};
@@ -113,14 +125,15 @@ Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **n
       const spans=[...div.querySelectorAll('.w')];
       spans.forEach((el,i)=>{const w=line.words[i];
         tl.add(FLOW_IN(el), w.start);
-        tl.set(spans,{className:'w'}, w.start);
-        tl.set(el,{className:'w act'}, w.start);});
-      // The exit must COMPLETE before the next line's first word or the two lines
-      // overlap on continuous speech (no natural gap). Pre-empt: fire a fast exit
-      // ending just before nextStart. Last line exits at line.end.
+        tl.set(spans,{color:CFILL}, w.start);   // reset prior active word — set COLOR, not className
+        tl.set(el,{color:CACC}, w.start);});     // current word = accent (className sets aren't seek-safe)
+      // Clear the line by fading its CONTAINER (not the spans). The container sits
+      // at opacity 1 until here, so the tween can't degenerate into a 0→0 no-op the
+      // way a span exit colliding with that span's own reveal would (which leaves a
+      // word stuck on). Completes before the next line's first word → never two at once.
       const nextStart = WORDS[li+1] ? WORDS[li+1].words[0].start : null;
-      const exitAt = nextStart!=null ? Math.max(line.words[line.words.length-1].start, nextStart-0.30) : line.end;
-      tl.to(spans,{opacity:0,y:-10,duration:.22,ease:'power2.in'}, exitAt);     // ends opacity:0
+      const exitAt = nextStart!=null ? Math.max(line.words[0].start+0.1, nextStart-0.22) : line.end;
+      tl.to(div,{opacity:0,duration:.22,ease:'power2.in'}, exitAt);             // line gone, stays gone
     });
     window.__timelines["main"]=tl;
   </script>
@@ -135,10 +148,16 @@ Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **n
 - **Rail legibility** is glyph-local only — a soft shadow or a text-box scrim. **Never grade/recolor the video**
   and never lay a full-frame bar (this skill's hard rule).
 - **One embed at a time**, spaced ≥ a beat apart; the rail can briefly dim/clear under the embed if they'd collide.
-- **The rail font follows the template ONLY if it's a legible sans.** Many templates use display faces
-  (Monoton, Press Start 2P, Special Elite, Anton, Cinzel) — those belong on the **climax only**. Keep the
-  **rail a clean sans** (Inter / Helvetica Now) regardless, so the verbatim subtitle stays readable. The
-  template still drives the climax font, the palette (`--cfill`/`--cacc`), the motion, and the scene mood.
+- **⚠ Fonts are deterministic + must be LITERAL.** hyperframes ships the template fonts as OFFLINE fonts, but
+  only applies one when `font-family` is a literal mapped name (`'Oswald'`, `'Inter'`, `'Poppins'`,
+  `'Playfair Display'`, `'Anton'`, …). A CSS `var(--ff)` logs `No deterministic font mapping` and silently
+  falls back to a generic sans — **the single biggest way a Standard render ends up looking nothing like the
+  template.** Never put the font in a var; never rely on a Google-Fonts `<link>` (it's a flaky network dep).
+- **Carry the template's design — don't sanitise it into generic defaults.** A small white Inter rail with a
+  plain fade is NOT the template; next to the standalone it looks broken. The rail uses the **template's** font,
+  size, palette (`--cfill`/`--cacc`) and `FLOW_IN`, and keeps the **`.grade`** vignette. Swap the rail font to a
+  clean sans (Inter) ONLY for a truly decorative display face (Monoton / Press Start 2P / Special Elite / Arcade)
+  that can't carry a running line — the climax keeps the display face.
 - 16:9 climax base `44cqh`; long words bleed off-frame (intended cinematic); a 3-char climax behind a centred
   subject needs the stroke (above) so it peeks.
 - **Keep the climax crisp.** A blur entrance (`deblur` / blur-in from `_motion.md`) leaves a big hero word soft
