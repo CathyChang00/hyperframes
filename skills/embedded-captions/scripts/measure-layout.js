@@ -47,6 +47,30 @@ if (!puppeteer) {
   process.exit(3);
 }
 
+// Resolve hyperframes' bundled GSAP. The templates load GSAP from a CDN
+// (cdn.jsdelivr.net), but in headless Chromium that request can be slow or
+// blocked — the page's inline `gsap.timeline()` then throws "gsap is not
+// defined" and the occlusion gate hard-fails. We inject this local copy on
+// every new document (before any page script runs) so window.gsap always
+// exists, and abort the CDN request so the parser never stalls on it. The
+// render path is unaffected — this is measurement-only.
+let gsapSource = null;
+for (const root of HF_ROOTS) {
+  const cands = [path.join(root, "node_modules", "gsap", "dist", "gsap.min.js")];
+  const bunDir = path.join(root, "node_modules", ".bun");
+  try {
+    if (fs.existsSync(bunDir)) {
+      for (const d of fs.readdirSync(bunDir)) {
+        if (d.startsWith("gsap@")) cands.push(path.join(bunDir, d, "node_modules", "gsap", "dist", "gsap.min.js"));
+      }
+    }
+  } catch (e) { /* ignore */ }
+  for (const p of cands) {
+    try { if (fs.existsSync(p)) { gsapSource = fs.readFileSync(p, "utf8"); break; } } catch (e) { /* try next */ }
+  }
+  if (gsapSource) break;
+}
+
 async function main() {
   const projectDir = process.argv[2];
   if (!projectDir) {
@@ -98,8 +122,21 @@ async function main() {
     await page.setViewport({ width: W, height: H, deviceScaleFactor: 1 });
     page.on("pageerror", (err) => console.error(`[browser-error] ${err.message}`));
 
+    // Inject local GSAP before any page script + abort the CDN <script> so the
+    // page never depends on network for GSAP (see resolver note above). Falls
+    // back to the page's own CDN load if no local copy was found.
+    if (gsapSource) {
+      await page.evaluateOnNewDocument(gsapSource);
+      await page.setRequestInterception(true);
+      page.on("request", (req) => {
+        const u = req.url();
+        if (req.resourceType() === "script" && /gsap/i.test(u) && /^https?:/i.test(u)) req.abort();
+        else req.continue();
+      });
+    }
+
     await page.goto(`file://${indexPath}`, { waitUntil: "load", timeout: 15000 });
-    // GSAP loads from CDN; poll for timeline registration
+    // GSAP is injected locally above; poll for the page's timeline registration.
     const start = Date.now();
     let ready = false;
     while (Date.now() - start < 15000) {

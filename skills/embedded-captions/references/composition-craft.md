@@ -327,7 +327,7 @@ Two placement tweaks that separate "looks like a caption sitting in the scene" f
 
 **Why measure the real DOM, not estimate a bbox.** An earlier heuristic estimated each word's box from `char_ratio × font × text_length` and was wrong in both directions. Startup_Host case: it reported `cg-1 "podcast." OK at 9%/12%` because it guessed y=134 (above the subject's head), but the rendered DOM was at y=209 (mid-head) → actually `FAIL 54%/60%`. Same case, it reported `cg-3 "diving deep" FAIL at 76%/77%` while the real measurement was `WARN 36%/40%` (the box is wider than the head — most pixels clear, only descenders dip into the silhouette). Estimation is retired; `check-occlusion.cjs` measures the rendered pixels.
 
-**Frame-edge overflow** — the checker also flags when a measured bbox extends outside the canvas (text clipped by ffmpeg). A single 10-char uppercase word at 0.15h on a 720-wide portrait clips the frame edges — surfaced as `[overflow] cg-N: Npx wide, cropped left by Xpx and right by Ypx`.
+**Frame-edge overflow** — the checker also flags when a measured word bbox extends past the canvas (text the ffmpeg crop would clip), reported as `cg-N  [overflow] "word" off-frame: left Xpx, right Ypx (@Ts)`. Because cropped body text is always wrong, a clear glyph clip (>8px past an edge) **fails `--strict`**; a sub-glyph graze (≤8px — the first/last-letter crop the climax is allowed) is a non-blocking `[overflow-warn]`.
 
 **The checker reports facts, the agent applies judgment.** A FAIL is NOT an automatic "must re-layout" signal — it's evidence to interpret. Two competing goals coexist:
 1. **Readability** — every sentence must remain comprehensible to the viewer

@@ -55,6 +55,8 @@ async function main() {
   const planPath = path.join(project, "plan.json");
   const plan = fs.existsSync(planPath) ? JSON.parse(fs.readFileSync(planPath, "utf8")) : {};
   const planLayer = plan.caption_layer || "bg";
+  const M = 2; // frame-edge tolerance (px) — matches check-overflow.js
+  const frameW = layout.width, frameH = layout.height;
 
   const capStats = {};
   for (const sample of layout.samples) {
@@ -67,6 +69,11 @@ async function main() {
       for (const w of (cap.words || [])) {
         if ((w.opacity ?? 1) < 0.3) continue;
         wordsData.push({ text: w.text, occlusion: occlusionForRect(mask, w.x, w.y, w.w, w.h) });
+        // Frame-edge overflow — clipped text is always wrong; track worst per cap.
+        const off = { left: Math.max(0, Math.round(-w.x - M)), right: Math.max(0, Math.round(w.x + w.w - frameW - M)),
+                      top: Math.max(0, Math.round(-w.y - M)), bottom: Math.max(0, Math.round(w.y + w.h - frameH - M)) };
+        const score = off.left + off.right + off.top + off.bottom;
+        if (score > 0 && (!entry.overflow || score > entry.overflow.score)) entry.overflow = { text: w.text, off, score, t: sample.t };
       }
       const capOccl = occlusionForRect(mask, cap.cap_bbox.x, cap.cap_bbox.y, cap.cap_bbox.w, cap.cap_bbox.h);
       entry.samples.push({ t: sample.t, cap_occl: capOccl, words: wordsData });
@@ -76,7 +83,19 @@ async function main() {
   const failures = [];
   console.log(`[v2] ${path.basename(project)}  word-fail≥${(wordFail * 100).toFixed(0)}%  cap-fail≥${(capFail * 100).toFixed(0)}%`);
   for (const [gid, entry] of Object.entries(capStats)) {
-    if (entry.layer === "fg") { console.log(`  ${gid}  fg    (skipped — fg renders above matte)`); continue; }
+    // Frame-edge overflow applies to every layer (fg too). The skill allows the
+    // climax a few-px graze on the first/last letter, so only a clear glyph clip
+    // (>8px past an edge) is a hard FAIL; a sub-glyph graze is a WARN.
+    if (entry.overflow) {
+      const o = entry.overflow;
+      const maxOff = Math.max(o.off.left, o.off.right, o.off.top, o.off.bottom);
+      const sides = Object.entries(o.off).filter(([, v]) => v > 0).map(([s, v]) => `${s} ${v}px`).join(", ");
+      const hard = maxOff >= 8;
+      console.log(`  ${gid}  [overflow${hard ? "" : "-warn"}] "${o.text}" off-frame: ${sides} (@${o.t}s)`
+        + (hard ? " — cropped text is always wrong" : " (graze — within climax tolerance)"));
+      if (hard && !failures.includes(gid)) failures.push(gid);
+    }
+    if (entry.layer === "fg") { console.log(`  ${gid}  fg    (occlusion skipped — fg renders above matte)`); continue; }
     const capOccls = entry.samples.map((s) => s.cap_occl);
     const avgCap = capOccls.length ? capOccls.reduce((a, b) => a + b, 0) / capOccls.length : 0;
     const peakCap = capOccls.length ? Math.max(...capOccls) : 0;
@@ -93,8 +112,9 @@ async function main() {
     console.log(`  ${gid}  ${entry.layer}  avg ${(avgCap * 100).toFixed(0)}%  peak ${(peakCap * 100).toFixed(0)}%  ${status}  ${s}`);
   }
   if (failures.length) {
-    console.error(`\n[v2] ${failures.length} cap(s) FAIL: ${failures.join(", ")}`);
-    console.error("  → likely fixes: set that cap's layer to fg, OR shrink/reposition");
+    const uniq = [...new Set(failures)];
+    console.error(`\n[v2] ${uniq.length} cap(s) FAIL: ${uniq.join(", ")}`);
+    console.error("  → occlusion: set that cap's layer to fg, OR shrink/reposition;  overflow: shrink/reposition (fg won't help)");
   }
   process.exit(strict && failures.length ? 2 : 0);
 }
