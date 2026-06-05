@@ -130,5 +130,9 @@ Same `#root`/timeline contract, but **transparent**, **no `#a-roll` video**, **n
 - **Rail legibility** is glyph-local only — a soft shadow or a text-box scrim. **Never grade/recolor the video**
   and never lay a full-frame bar (this skill's hard rule).
 - **One embed at a time**, spaced ≥ a beat apart; the rail can briefly dim/clear under the embed if they'd collide.
+- **The rail font follows the template ONLY if it's a legible sans.** Many templates use display faces
+  (Monoton, Press Start 2P, Special Elite, Anton, Cinzel) — those belong on the **climax only**. Keep the
+  **rail a clean sans** (Inter / Helvetica Now) regardless, so the verbatim subtitle stays readable. The
+  template still drives the climax font, the palette (`--cfill`/`--cacc`), the motion, and the scene mood.
 - 16:9 climax base `44cqh`; long words bleed off-frame (intended cinematic); a 3-char climax behind a centred
   subject needs the stroke (above) so it peeks.
