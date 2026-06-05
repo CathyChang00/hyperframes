@@ -14,6 +14,17 @@ DEFAULT_ORACLES = ["route", "router_first", "intent"]
 GOOD = {"correct", "clarify_ok", "oos_ok"}          # "the agent did the right thing"
 EXCLUDE_FROM_ACC = {"unavailable"}                  # capability absent — not the agent's fault
 
+# Bin's scope view: project route verdicts onto "did the agent correctly decide to
+# accept / ask / decline, vs the request's true scope" — a DIFFERENT question from
+# "did it pick the right workflow" (that stays in route.accuracy). A workflow being
+# invoked at all = "accept", regardless of which one.
+_VERDICT_TO_RESPONSE = {
+    "correct": "accept", "miss": "accept", "competitor": "accept",
+    "clarify_ok": "clarify", "soft": "clarify",
+    "oos_ok": "refuse",
+    # unavailable / unparsed -> no scope decision observed (excluded)
+}
+
 
 def run_oracles(parsed, case, installed, cfg):
     names = case.get("oracles") or DEFAULT_ORACLES
@@ -22,6 +33,64 @@ def run_oracles(parsed, case, installed, cfg):
 
 def _route_verdict(row):
     return (row.get("oracles", {}).get("route", {}) or {}).get("verdict")
+
+
+def _scope_truth(expected_route, workflows):
+    if expected_route in workflows:
+        return "in-scope"      # the agent SHOULD take it on
+    if expected_route == "clarify":
+        return "ambiguous"     # the agent SHOULD ask first
+    if expected_route == "out-of-scope":
+        return "can't"         # the agent SHOULD decline
+    return None
+
+
+def scope_matrix(results, cfg):
+    """Bin/Wenbo confusion view, derived (no re-run) from each cell's expect + route verdict.
+    Rows = true scope; cols = observed response. The diagonal of correctness is TP/guide_ok/TN."""
+    workflows = set(cfg["workflow_skills"])
+    rows = ["in-scope", "ambiguous", "can't"]
+    cols = ["accept", "clarify", "refuse"]
+    grid = {t: {c: 0 for c in cols} for t in rows}
+    excluded = 0
+    for r in results:
+        rv = (r.get("oracles", {}).get("route", {}) or {})
+        truth = _scope_truth((r.get("expected") or {}).get("route"), workflows)
+        # capability absent (skill not installed) is not a fair scope decision → exclude
+        if rv.get("verdict") == "unavailable":
+            excluded += 1
+            continue
+        # prefer the behaviour-derived response; fall back to the verdict map for old runs
+        resp = rv.get("response") or _VERDICT_TO_RESPONSE.get(rv.get("verdict"))
+        if resp == "none":
+            resp = None
+        if truth is None or resp is None:
+            excluded += 1
+            continue
+        grid[truth][resp] += 1
+    confusion = {
+        "TP": grid["in-scope"]["accept"],          # could do, took it on        ✓
+        "FN": grid["in-scope"]["refuse"],           # could do, declined          ✗
+        "over_clarify": grid["in-scope"]["clarify"],# clear request, still asked   ✗-ish
+        "guide_ok": grid["ambiguous"]["clarify"],   # ambiguous, asked            ✓ (Wenbo's "guide")
+        "premature_accept": grid["ambiguous"]["accept"],   # ambiguous, committed ✗
+        "refused_ambiguous": grid["ambiguous"]["refuse"],  # ambiguous, declined  ✗
+        "FP": grid["can't"]["accept"],              # can't do, took it on        ✗
+        "TN": grid["can't"]["refuse"],              # can't do, declined          ✓
+        "weak_clarify": grid["can't"]["clarify"],   # can't do, asked (should decline)
+    }
+    scored = sum(sum(c.values()) for c in grid.values())
+    good = confusion["TP"] + confusion["TN"] + confusion["guide_ok"]
+    return {
+        "truth_x_response": grid,
+        "confusion": confusion,
+        "scored": scored,
+        "excluded": excluded,
+        "scope_accuracy": round(good / scored, 3) if scored else None,
+        "caveat": ("accept/refuse decision only — ignores WHICH workflow (see route.accuracy). "
+                   "FP = accepted an out-of-scope request; 'accepted but botched' needs the E2E "
+                   "oracle. excluded = unavailable/unparsed cells (no scope decision observed)."),
+    }
 
 
 def aggregate(results, cfg):
@@ -74,6 +143,7 @@ def aggregate(results, cfg):
             "true": rf_true, "applicable": rf_total,
         },
         "by_category": {k: dict(v) for k, v in by_category.items()},
+        "scope_matrix": scope_matrix(results, cfg),
         "consistency": consistency,
         "cost_usd_total": round(cost, 4),
         "turns_avg": round(sum(turns) / len(turns), 2) if turns else None,

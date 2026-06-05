@@ -97,14 +97,27 @@ heygen-com/hyperframes[#<ref>]`. `ref` pins a branch/tag. ⚠️ default branch 
 ```
 
 `aggregate.json` — `route.accuracy`, `route.verdicts`, `router_first.rate`, `by_category`,
-per-case `consistency` (majority verdict + agreement across repeats), cost/turns.
+`scope_matrix` (see below), per-case `consistency` (majority verdict + agreement across
+repeats), cost/turns.
 
 ### route verdicts
 
 `correct` · `clarify_ok` (asked, as expected) · `oos_ok` (declined, as expected) · `soft`
 (clarified a clear request) · `miss` (wrong route) · `competitor` (a rival skill won) ·
 `unavailable` (expected skill not installed) · `unparsed`. Accuracy = (correct + clarify_ok +
-oos_ok) / scorable, where scorable excludes `unavailable`.
+oos_ok) / scorable, where scorable excludes `unavailable`. Each verdict also carries a
+behaviour-derived `response` ∈ `accept | clarify | refuse | none`.
+
+### scope_matrix (the can-do / accept-clarify-refuse view)
+
+A second projection of the **same** run — answers "did the agent correctly decide to **accept /
+ask / decline** vs the request's true scope", which is **different** from "did it pick the right
+workflow" (that's `route.accuracy`). True scope comes from `expect.route` (a workflow →
+`in-scope`, `clarify` → `ambiguous`, `out-of-scope` → `can't`); response is behaviour-derived.
+A 3×3 `truth_x_response` grid plus `confusion` (`TP` in-scope+accept · `FN` in-scope+refuse ·
+`guide_ok` ambiguous+clarify · `FP` can't+accept · `TN` can't+refuse · …) and `scope_accuracy`.
+Note: `FP` here = accepted an out-of-scope request; **"accepted but botched" needs the E2E
+oracle** (not in routing MVP). `bench score <run>` recomputes this over old runs.
 
 ## Layout
 

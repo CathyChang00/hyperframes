@@ -79,6 +79,29 @@ def write_report(out_dir, results, agg, cfg, manifest):
           "failure). Cases: " + ", ".join(cases))
         a("")
 
+    sm = agg.get("scope_matrix")
+    if sm and sm.get("scored"):
+        a("## Scope — accept / clarify / refuse vs. true scope")
+        a("")
+        a(f"- scope accuracy: **{sm['scope_accuracy']}**  "
+          f"(TP + TN + guide_ok = {sm['confusion']['TP'] + sm['confusion']['TN'] + sm['confusion']['guide_ok']}"
+          f" / {sm['scored']} scored; {sm['excluded']} excluded)")
+        a("")
+        g = sm["truth_x_response"]
+        labels = {"in-scope": "in-scope (can do)", "ambiguous": "ambiguous (ask)", "can't": "can't (decline)"}
+        a("| true scope ↓ \\ response → | accept | clarify | refuse |")
+        a("|---|---|---|---|")
+        for t in ("in-scope", "ambiguous", "can't"):
+            r = g[t]
+            a(f"| {labels[t]} | {r['accept']} | {r['clarify']} | {r['refuse']} |")
+        a("")
+        c = sm["confusion"]
+        a(f"- **TP** {c['TP']} · **TN** {c['TN']} · **FP** {c['FP']} · **FN** {c['FN']} · "
+          f"guide_ok {c['guide_ok']} · over_clarify {c['over_clarify']} · "
+          f"premature_accept {c['premature_accept']}")
+        a(f"- _{sm['caveat']}_")
+        a("")
+
     a(f"_cost: ${agg['cost_usd_total']}  ·  avg turns: {agg['turns_avg']}_")
     with open(os.path.join(out_dir, "report.md"), "w") as f:
         f.write("\n".join(lines) + "\n")

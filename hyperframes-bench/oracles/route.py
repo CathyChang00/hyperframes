@@ -57,51 +57,59 @@ def _looks_like_decline(parsed):
     return any(c in tl for c in cues)
 
 
+def _response(route, parsed):
+    """Behaviour-derived scope decision: did the agent accept (route a workflow), ask, or
+    decline? Independent of WHICH workflow and of the verdict — this is the axis Bin's
+    confusion matrix needs (so a doable request that's flatly declined reads as 'refuse')."""
+    if route is not None:
+        return "accept"
+    if _looks_like_question(parsed):
+        return "clarify"
+    if _looks_like_decline(parsed):
+        return "refuse"
+    return "none"
+
+
 def score(parsed, expect, installed, cfg):
     workflows = set(cfg["workflow_skills"])
     expected = expect.get("route")
     route, how = observed_route(parsed, workflows)
+    response = _response(route, parsed)
+
+    def out(verdict, observed, note):
+        return {"verdict": verdict, "observed": observed, "how": how,
+                "response": response, "note": note}
 
     if parsed.get("env_setup_failed"):
-        return {"verdict": "unavailable", "observed": None, "how": "env_setup_failed",
-                "note": "env template failed to install"}
+        return out("unavailable", None, "env template failed to install")
 
     # A workflow was expected but is not installed in this env → capability absent.
     if expected in workflows and expected not in set(installed):
-        return {"verdict": "unavailable", "observed": route, "how": how,
-                "note": f"expected skill '{expected}' not installed in this env"}
+        return out("unavailable", route, f"expected skill '{expected}' not installed in this env")
 
     if expected == "clarify":
-        if route is None and _looks_like_question(parsed):
-            return {"verdict": "clarify_ok", "observed": None, "how": how,
-                    "note": "asked a clarifying question instead of routing (expected)"}
+        if route is None and response == "clarify":
+            return out("clarify_ok", None, "asked a clarifying question instead of routing (expected)")
         if route is not None:
-            return {"verdict": "miss", "observed": route, "how": how,
-                    "note": "routed when the request was under-specified"}
-        return {"verdict": "unparsed", "observed": None, "how": how,
-                "note": "no route and no clear clarifying question"}
+            return out("miss", route, "routed when the request was under-specified")
+        return out("unparsed", None, "no route and no clear clarifying question")
 
     if expected == "out-of-scope":
-        if route is None and _looks_like_decline(parsed):
-            return {"verdict": "oos_ok", "observed": None, "how": how,
-                    "note": "declined / flagged out of scope (expected)"}
+        if route is None and response == "refuse":
+            return out("oos_ok", None, "declined / flagged out of scope (expected)")
         if route is not None:
-            return {"verdict": "miss", "observed": route, "how": how,
-                    "note": "routed an out-of-scope request"}
-        return {"verdict": "unparsed", "observed": None, "how": how,
-                "note": "no route and no clear decline"}
+            return out("miss", route, "routed an out-of-scope request")
+        return out("unparsed", None, "no route and no clear decline")
 
     # expected is a concrete workflow
     if route is None:
-        if _looks_like_question(parsed):
-            return {"verdict": "soft", "observed": None, "how": how,
-                    "note": "clarified instead of routing a clear request"}
-        return {"verdict": "unparsed", "observed": None, "how": how,
-                "note": "no workflow invoked or named"}
+        if response == "clarify":
+            return out("soft", None, "clarified instead of routing a clear request")
+        if response == "refuse":
+            return out("miss", None, "declined a request it should handle")
+        return out("unparsed", None, "no workflow invoked or named")
     if how == "competitor":
-        return {"verdict": "competitor", "observed": route, "how": how,
-                "note": "a competitor skill won the route"}
+        return out("competitor", route, "a competitor skill won the route")
     if route == expected:
-        return {"verdict": "correct", "observed": route, "how": how, "note": ""}
-    return {"verdict": "miss", "observed": route, "how": how,
-            "note": f"routed to {route}, expected {expected}"}
+        return out("correct", route, "")
+    return out("miss", route, f"routed to {route}, expected {expected}")
