@@ -1,13 +1,13 @@
 ---
 name: embedded-captions
-description: Add captions to a talking-head video. Two modes — **Standard** (default): a clean verbatim lower-third RAIL carries the transcript plus an EMBED climax composited behind the subject at the peak; **Cinematic**: pure embed — every caption composited INTO the scene behind the subject (matte occlusion + mix-blend). Most explainer / 口播 is Standard; embedding every word is wrong for most talking-head content. Use when the user asks for "captions / 字幕", "embed/embedded/cinematic captions", "字幕嵌入/嵌到场景里", "captions behind the subject", or similar. Pipeline: transcription → RVM matting → hyperframes HTML render → ffmpeg overlay. Requires hyperframes (github.com/heygen-com/hyperframes) and a single-subject clip.
+description: Add captions to a talking-head video. Two modes — **Standard** (default): a clean verbatim lower-third RAIL carries the transcript plus an EMBED climax composited behind the subject at the peak; **Cinematic**: pure embed — every caption composited INTO the scene behind the subject (matte occlusion + mix-blend). Most explainer / voiceover is Standard; embedding every word is wrong for most talking-head content. Use when the user asks for "captions / subtitles", "embed/embedded/cinematic captions", "embed captions into the scene", "captions behind the subject", or similar. Pipeline: transcription → RVM matting → hyperframes HTML render → ffmpeg overlay. Requires hyperframes (github.com/heygen-com/hyperframes) and a single-subject clip.
 metadata:
   tags: captions, embedded-captions, occlusion, matting, talking-head, rvm, whisper, ffmpeg, cinematic
 ---
 
 # Embedded Captions
 
-**Two modes, picked up front.** **Standard** (default) builds a clean verbatim **rail** (lower-third subtitle carrying most text) + an **embed** climax composited *into* the scene behind the subject at the peak. **Cinematic** is pure embed — no rail, every caption composited behind the subject (hero typography, accumulation, occlusion as the effect). Most explainer / 口播 is **Standard**; **embed is the scarce, earned peak** — embedding every word is the common mistake.
+**Two modes, picked up front.** **Standard** (default) builds a clean verbatim **rail** (lower-third subtitle carrying most text) + an **embed** climax composited *into* the scene behind the subject at the peak. **Cinematic** is pure embed — no rail, every caption composited behind the subject (hero typography, accumulation, occlusion as the effect). Most explainer / voiceover is **Standard**; **embed is the scarce, earned peak** — embedding every word is the common mistake.
 
 ---
 
@@ -41,18 +41,20 @@ Every spoken phrase is one of three things:
 
 **The rail carries most of the text; embed is the scarce, earned peak** — ≤1 per beat, never two adjacent/co-visible, spaced ≥ a beat apart. A short clip → usually one embed; a long explainer → ~one per section. Embedding every word is the common mistake.
 
-This is exactly what **Standard mode** builds (rail = `rail.html`, embed = the climax in `index.html`). **Cinematic mode** drops the rail and makes everything embed-style — use it only for pure-cinematic asks, never for explainer / 口播 where the words must read.
+This is exactly what **Standard mode** builds (rail = `rail.html`, embed = the climax in `index.html`). **Cinematic mode** drops the rail and makes everything embed-style — use it only for pure-cinematic asks, never for explainer / voiceover where the words must read.
 
 ---
 
 ## Step 0 — pick the mode
 
-Two modes. **Ask once if unspecified; default Standard.**
+**Mode is the user's choice — always present both options with your recommendation and let the user pick before you author.** Don't silently default. Probe the clip + content, recommend the fitting mode, state your pick + why in one line, then confirm with the user.
 
-| Mode | What it is | When | Author in |
+| Mode | What it is | Recommend it for | Author in |
 |---|---|---|---|
-| **Standard** (default) | **rail + embed** — a verbatim lower-third **rail** carries the whole transcript; only the peak(s) promote to an **embed** climax behind the subject | explainer / 口播 / interview / keynote — anything where the words must read; the default for "add captions / 加字幕" | [modes/standard/](modes/standard/) — 54-template design library |
-| **Cinematic** (pure embed) | **embed only** — no rail; every caption is composited into the scene behind the subject. Hero typography, accumulation, occlusion as the effect | "make it cinematic / 酷炫 / wow", poetic / social / showcase, or the user names a Cinematic template | [modes/template/](modes/template/) — `champion` · `cinematic-cream` · `memory-wall` · `portrait-header` |
+| **Standard** (rail + embed) | a verbatim lower-third **rail** carries the whole transcript; only the peak(s) promote to an **embed** climax behind the subject | **explainer · voiceover / talking-head · interview · keynote · tutorial · product walkthrough · news · podcast clip** — anything where the spoken words must be fully read; accessibility; dense / information-heavy speech | [modes/standard/](modes/standard/) — 54-template library |
+| **Cinematic** (pure embed) | **embed only** — no rail; every caption is composited into the scene behind the subject (hero typography, accumulation, occlusion as the effect) | **brand film · hype / teaser · social reel · music video · showcase · motivational · trailer** — short & punchy, few words, mood over comprehension; or the user says "make it cinematic / flashy / wow" or names a Cinematic template | [modes/template/](modes/template/) — `champion` · `cinematic-cream` · `memory-wall` · `portrait-header` |
+
+**Recommendation heuristic** (you suggest, the user decides): dense speech / must-read words / longer clip → **Standard**; short, stylish, few words, mood over comprehension → **Cinematic**; bright backdrop (caption-region luminance > 180) → **Standard** (the cream/`screen` Cinematic templates wash out).
 
 - **Standard** → read [modes/standard/PIPELINE.md](modes/standard/PIPELINE.md) (the contract — it overrides the library's `_anatomy.md` for this skill), pick the **3** templates that best fit the transcript (each file's `## Triggers`), then author `index.html` (embed climax) + `rail.html` (verbatim rail).
 - **Cinematic** → write `plan.json` for a locked template, compiled by `make-composition.cjs`.
@@ -79,7 +81,7 @@ Read the samples. Refuse if:
 1. **Shot-cut probe.** Sample frames at 20%, 50%, 80%. If a different subject/scene appears, **trim the clip** before the cut.
 2. **Letterbox / pillarbox probe.** Black bars on the first frame? Compute safe content rect and constrain caption placement inside it.
 3. **Luminance probe.** Sample the caption region's average luminance — `<60` → light text reads as-is, `60-180` → add the glyph scrim, `>180` → opaque text + scrim (never bare light text). **Cinematic templates are cream+`screen` and LOCKED** — use this probe to *pick a fitting template* (or switch to Standard for bright scenes), never to recolour one; **Standard** you set in the HTML per the chosen template.
-4. **Mode default by tone.** **explainer / keynote / interview / 口播 → Standard** (rail carries the words; embed only the peak(s)). **poetic / social / music-video / showcase / "make it cinematic" → Cinematic.** When unsure, default **Standard** — pure-embed on explainer content is the more common mistake.
+4. **Mode recommendation by tone (you recommend; the user picks — see Step 0).** **explainer / keynote / interview / voiceover → recommend Standard** (rail carries the words; embed only the peak(s)). **poetic / social / music-video / showcase / "make it cinematic" → recommend Cinematic.** When unsure, recommend **Standard** (pure-embed on explainer content is the common mistake) — but present both and let the user choose.
 
 ---
 
@@ -124,7 +126,7 @@ Step 4 differs by mode:
 | champion | 16:9 landscape | Side column + center-stage crown crossing subject (superseded by cinematic-cream) | [spec](modes/template/champion/spec.md) |
 | portrait-header | 9:16 portrait | Centered header strip + optional bottom crown (superseded by cinematic-cream) | [spec](modes/template/portrait-header/spec.md) |
 
-> **Note:** these are the **Cinematic** (pure-embed) templates — they composite text into the scene with no rail. For **rail + embed** (most explainer / 口播), use **Standard mode** → the 54-template design library in [modes/standard/](modes/standard/).
+> **Note:** these are the **Cinematic** (pure-embed) templates — they composite text into the scene with no rail. For **rail + embed** (most explainer / voiceover), use **Standard mode** → the 54-template design library in [modes/standard/](modes/standard/).
 
 To add a new template: see [modes/template/README.md § Adding a new template](modes/template/README.md).
 

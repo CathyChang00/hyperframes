@@ -49,7 +49,7 @@ For 9:16 aspect where the subject inevitably fills the middle.
 
 ### What to watch
 - Subject's head top often approaches y=40 — top banner captions at `top: 30px` will get partially occluded by hair. Accept the partial occlusion (it reads as embed) or bump the caption size down to clear the hair.
-- If the subject already has **baked-in captions** (like the "新加坡奇迹" test case with yellow subtitles burned in), the skill should refuse — two caption systems compete.
+- If the subject already has **baked-in captions** (like the burned-in subtitles test case with yellow subtitles burned in), the skill should refuse — two caption systems compete.
 
 ## Quick decision flow
 
