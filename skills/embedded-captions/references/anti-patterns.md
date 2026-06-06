@@ -114,7 +114,7 @@ TV archive clips cut to B-roll mid-sentence. Interview clips insert cutaways to 
 Sample frames at 20%, 50%, 80% BEFORE planning. If the scene changes, trim to the largest single-subject segment.
 
 ### You ignore baked-in captions / pillarbox / watermarks.
-You saw black bars on the sides and didn't computing the safe-zone. Your captions cross the pillarbox. Or: the source already has burned-in subtitles ("新加坡奇迹") and you added more — two caption systems fighting for attention.
+You saw black bars on the sides and didn't computing the safe-zone. Your captions cross the pillarbox. Or: the source already has burned-in subtitles and you added more — two caption systems fighting for attention.
 
 Run the **letterbox probe** first. If the source has existing captions, refuse with: "source already captioned, adding more would conflict."
 

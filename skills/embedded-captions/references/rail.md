@@ -5,7 +5,7 @@ front** of everything (never occluded by the matte) in the lower third. It carri
 of the transcript. It is deliberately **plain** — the cinematic craft (planes, occlusion,
 Vogue-masthead, accumulation) lives in the *embed* track only ([composition-craft.md](composition-craft.md)).
 
-For talking-head / explainer / 口播, the typical output is **the whole transcript on the rail**
+For talking-head / explainer / voiceover, the typical output is **the whole transcript on the rail**
 with only the climax(es) promoted to embed. Rail is not a fallback — it's the baseline.
 
 > **Implementation note.** A dedicated rail renderer is the next build step. The rail is a
