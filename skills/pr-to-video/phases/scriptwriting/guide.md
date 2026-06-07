@@ -1,12 +1,6 @@
 # Story-Design (PR → narrative)
 
-The story layer for a pr-to-video. Read the PR's facts + diff, choose one **PR archetype**, turn the change into a scene sequence, define each scene's narrative intent, choose a transition for every seam, and write narrator scripts. Output: `narrator_scripts.json`.
-
-> The output file and schema are identical to the shared engine's `narrator_scripts.json` (validated by `validate.mjs narrator`). This guide only changes the _domain_: the source is a code change, not arbitrary text.
-
 ## Core Principles
-
-The video narrative is independent from the diff's file order. A PR is a set of file changes + a description; a video is a guided act of understanding **what shipped and why**.
 
 - Scene sequence comes from narrative design, not from the diff's file order or the commit list order.
 - A PR's files may be touched in any order; a video runs `hook → the change → why it matters → ship`, or `bug → root cause → fix → result`, or `what's new (×N) → wrap`, depending on the archetype.
@@ -193,17 +187,6 @@ Group adjacent scenes that share a continuous stage into a `continue` run (≤3 
 
 ## Faceless Visuals — assetCandidates is `[]` by Default
 
-pr-to-video is **faceless**: no screenshots, no captured assets. Downstream (visual-design + scene workers) invents the visuals from each scene's `narrativeRole` / `keyMessage` / `script` + the diff hunk you named:
-
-- **code-window** (the claude preset's signature navy terminal) — the diff, the new function, a before→after pair. **Keep it tiny**: ≥24px mono means ~6-10 lines per frame; show the smallest snippet that proves the point.
-- **before/after split** — two code panels, or old-shape vs new-shape diagrams.
-- **file-tree reveal** — which files/areas the PR touches (great for refactors / large PRs).
-- **+/- stat counters** — `+84 / −12`, files changed, perf delta, lines removed.
-- **kinetic typography** — the thesis / the one-line takeaway.
-- **abstract diagrams** — the request flow, the call graph, the before→after architecture.
-
-Therefore:
-
 - **`assetCandidates` is `[]` for every scene by default.** It tells downstream "this scene is invented from the brief + diff."
 - **Exception 1 — a user-provided image:** the user explicitly placed a real image in `public/` (e.g. an architecture diagram). Then add `{ "path": "public/<basename>", "description": "<≤25 words>" }`. Do not invent paths; do not reference `capture/`.
 - **Exception 2 — the credits / shipped-by close (contributor avatars):** see below.
@@ -246,11 +229,9 @@ estimatedDuration ≈ word_count / 2.2     // round up to the nearest whole seco
 
 **Trim pass — concrete techniques** (apply when a scene comes out 25+ words):
 
-1. **Cut the lead-in clause.** "Until now, the agent shipped …" → "The agent shipped …". The "until now" framing is implied by the hook composition; the words don't earn their seconds.
-2. **Compress two clauses into one noun phrase.** "an LLM plans per-scene asset needs, parallel search fans out to Google Images and Noun Project" → "plan, then parallel image search" — the diagram in scene 2 already shows the fan-out; narration shouldn't restate it.
-3. **Drop the qualifier that the visual makes obvious.** "a new Phase 1.5 sub-agent that finds and vets real images and icons for every scene" → "a new Phase 1.5 sub-agent" — the scene shows what it does; the script names it.
-4. **Move evidence off-script.** Numbers (`+2035 lines`, `23 files`, commit counts) belong as on-screen counters, not in narration. The visual phase animates them; the script gains 3-5 seconds.
-5. **Split into two scenes** only as the last resort — adds a transition and a worker; tightens nothing if the split is just "first half of the same sentence then the second half." Split only when the two halves carry **distinct emotional beats** (cause then effect, problem then fix).
+1. **Cut the lead-in clause.** "Until now, the agent shipped …" → "The agent shipped …". Lead-in framing is implied by the hook; the words don't earn their seconds.
+2. **Move evidence off-script.** Numbers (`+2035 lines`, `23 files`, commit counts) belong as on-screen counters, not narration. The visual phase animates them; the script gains 3-5 seconds.
+3. **Split into two scenes** only as the last resort — split only when the two halves carry **distinct emotional beats** (cause then effect, problem then fix).
 
 **Where exceptions are earned:**
 
@@ -326,17 +307,8 @@ Strong PR-video scripts are clear, voiced, and technical-but-human. The failure 
 **Strong:**
 
 - _Before/after_: "Before, a 500 just threw. Now the client waits, backs off, and tries again." — names the exact change.
-- _Worked example_: "One flaky request used to crash the page. Watch it recover." — concrete, single instance.
 - _Distillation_: "Eighty-four lines added, one real idea: retry, don't give up." — compresses the diff to its point.
-- _Callback_: "Remember that timeout? It's gone." — pays off the hook.
 
 **Weak (avoid):**
 
 - _Diff-paraphrase in order_: "This PR modifies request.js, adds backoff.js, and updates package-lock.json." — that's reading, not explaining.
-- _Noun-phrase bullets_: "Resilience. Reliability. Retries." — slide bullets, not narration.
-- _Vague claims_: "This makes everything better." — say _what_ changed for _whom_.
-
-## See Also
-
-- `phases/visual-design/guide.md` — visual treatment for each scene (downstream; consumes `transition`, `narrativeIntent`, `assetCandidates`; invents code/typography/diagram visuals).
-- `<SKILL_DIR>/SKILL.md` — the pr-to-video orchestrator, which dispatches this guide during Phase 2.

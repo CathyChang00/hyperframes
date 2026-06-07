@@ -2,7 +2,7 @@
 <!-- The signature treatment: a centered serif word framed by two stacked
      4px horizontal rules on each side (3px gap). 19th-century playbill
      bracket. Drop this between two display lines around a connector word.
-     TODO: swap the literal "of" for the scene's actual connector word
+     Swap the literal "of" for the scene's actual connector word
      ("and", "for", "in", etc.) per copy. -->
 <div class="ee-ornament-double-rule">
   <span class="ee-ornament-double-rule-lines"></span>

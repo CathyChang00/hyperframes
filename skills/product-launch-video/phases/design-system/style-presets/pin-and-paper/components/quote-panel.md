@@ -16,8 +16,6 @@
 
     The mark is rendered as a literal ASCII left double-quote in Caveat at
     360px — at this size the character functions as a decorative shape.
-    Could be replaced with an SVG path if the OS Caveat rendering varies,
-    but the live-character approach matches the source template exactly.
   */
   .pp-quote-panel {
     position: relative;

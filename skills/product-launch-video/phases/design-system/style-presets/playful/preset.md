@@ -27,21 +27,19 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Syne + Space Grotesk + Space Mono — instead of the brand DNA fonts. Playful is a two-face system: Syne does every display/numeric/headline moment, Space Grotesk does body and labels; the `script` slot also points at Syne because Playful refuses a third face (Syne 700 carries the script-adjacent voice via the vertical-spine label gesture). The brand fonts still apply to §6 component code (paste-ready for Phase 4b). §T type-role atlas uses `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Playful is a two-face system: Syne does every display/numeric/headline moment, Space Grotesk does body and labels; the `script` slot also points at Syne because Playful refuses a third face.
 
 ## §A Director's intent
 
-Hand-crafted studio editorial on warm paper. Syne display (700-800 weight, negative tracking -0.01 to -0.03em) carries every headline, statement, and numeral; Space Grotesk runs body and labels. The voice is independent studio, not corporate — confident but warm, structured but loose.
+Syne display (700-800 weight, negative tracking -0.01 to -0.03em) carries every headline, statement, and numeral; Space Grotesk runs body and labels.
 
 Depth is **double-stroke offset borders** — a 3px charcoal outline plus a 6-8px offset ghost border via `::before`. No `box-shadow` blur, no `drop-shadow`. Cards, blocks, and statistics carry small ±0.5deg to ±3deg rotations that alternate across neighbors so nothing reads as snapped to a grid.
 
-**Warm-paper-on-ink contract via hue-anchor tokens (§8.2 exception).** Playful's character is "ink on warm paper" — collapses to mud if brand DNA is cool-toned (blue/green/violet). Three hex anchors (`--anchor-peach`, `--anchor-peach-alt`, `--anchor-cream`) are declared in §B so warm surfaces mix brand-primary at low % with the anchor, preserving the studio register across any brand palette. Brand DNA still flows through for hero text, chip fills, focal accents — the anchors only stabilize the canvas, surface, and image-placeholder slots.
+**Warm-paper-on-ink contract via hue-anchor tokens (§8.2 exception).** Collapses to mud if brand DNA is cool-toned (blue/green/violet). Three hex anchors (`--anchor-peach`, `--anchor-peach-alt`, `--anchor-cream`) are declared in §B so warm surfaces mix brand-primary at low % with the anchor, preserving the studio register across any brand palette. Brand DNA still flows through for hero text, chip fills, focal accents — the anchors only stabilize the canvas, surface, and image-placeholder slots.
 
 Decoration vocabulary: **asymmetric organic blobs** (border-radius like `40% 60% 70% 30% / 40% 50% 60% 50%`), **pebble shapes** (alternating long/short radii), **inline 2px-stroke SVG scribbles** (squiggle, star, circle, arrow) with rounded line-caps, **doodle circles and rectangles** anchored to slide corners. Every scene gets at least one scribble mark in a corner — punctuation, not content.
 
 Motion is **back-overshoot** — `back.out(1.4)` on entry, `back.out(1.7)` on emphasis. Hand-placed, not gliding. Ambient layers (ghost-blob drift, scribble pen-on drift) use `sine.inOut`. Scene transitions cross-fade gently (0.6s opacity) — never blur, never slide.
-
-**Best for** indie product launches, creator portfolios, lifestyle / community brands, friendly research or tech that wants human warmth. **Avoid for** contexts where institutional credibility outweighs warmth — the warm-paper register is intentionally informal.
 
 **Density philosophy: medium-low.** One dominant element per scene plus one or two scribbles. Crowding the canvas with simultaneous cards, doodles, and copy collapses the hand-touched feeling into clutter.
 
@@ -101,9 +99,7 @@ Playful forces Syne display + Space Grotesk body regardless of site DNA — the 
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `number-hero` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the Playful type scale (Syne 700/800 + Space Grotesk 400/500/600) ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `statement` block that isn't covered by §6 components, the worker reads role `statement` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Playful's character collapses if Syne drifts below weight 700 at display scale or if negative tracking is dropped.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — Playful's character collapses if Syne drifts below weight 700 at display scale or if negative tracking is dropped.
 
 ```type-roles
 [
@@ -194,8 +190,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits `rough-box`, `blob-frame`, `ghost-blob`, `step-node`, `scribble-svg` (those are structural decoration, not text roles) and the double-stroke ghost border (it's a depth signature declared in §B / the §6 components). It also drops the old `caption` (fine print / footnote) and `tag` (pill-tag text) roles: long-form fine print and 11–12px tag text do not survive at video scale, so the tag-pill register lives inside the `tag-pill` §6 component (sized for the deck), not in the atlas.
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -223,27 +217,7 @@ const DUR = {
 
 ### §E.5 Motion choreography
 
-**Allowed primitives**
-
-- Back-overshoot snap-in on cards, blocks, stats, and step nodes (back.out 1.4 entry, back.out 1.7 emphasis). Short overshoot, hand-placed final pose.
-- Cross-fade scene transitions (0.6s opacity) — soft, never blur, never slide.
-- Scribble pen-on: stroke-dashoffset 1 → 0 over DUR.slow with EASE.drift. Use on hero-tier scenes only; secondary scribbles snap visible with the card they accompany.
-- Ghost-blob drift: 12-20s sine.inOut on translate + rotate (max ±1deg over the loop, max ±20px translate).
-- Rotation rest pose: every card/block/stat enters with a fixed micro-tilt (±0.5deg to ±3deg), randomized per-instance but alternating sign across neighbors.
-
-**Forbidden**
-
-- box-shadow blur on entry or rest (system has no blurred shadows).
-- drop-shadow / filter: drop-shadow() at any time.
-- Rotation beyond ±3deg on content; vertical-spine label is the only exception (it's anchored at 90deg).
-- Slide / dissolve / blur scene transitions. Stick to cross-fade.
-- Italic tweens on text emphasis. Switch face or weight instead.
-- Uniform same-sign rotation across more than two consecutive elements (reads as tilted canvas).
-- Smooth `ease-in-out` on numerics — use EASE.emphasis (back.out 1.7) for stat reveals so the numeral pops with overshoot.
-
-**Stagger budget**
-
-180-260ms between elements (deliberate, studio-paced). Slower than 8-bit-orbit's 80-120ms, faster than editorial's 200-280ms. Total scene-in stagger ≤ 700ms.
+Scribble pen-on: hero-tier scenes only; secondary scribbles snap visible with their card. Ghost-blob drift: 12-20s sine.inOut, max ±1deg / ±20px translate. Stagger: 180-260ms between elements; total scene-in stagger ≤ 700ms.
 
 ## §G Voice transform recipe (apply to brand's voice from §1 DNA)
 
@@ -296,8 +270,8 @@ Take the brand's product description / value prop. Transform with:
 - Scribble SVG mark in a corner (squiggle, star, circle, arrow). 2px stroke, rounded line-caps, ink color.
 - Doodle circle or rect anchored in a corner (3px outlined, rotated).
 - Blob-frame with solid blob-fill inside (portrait stand-in for hero / contact scenes).
-- Ghost-blob (0.08 opacity oversized organic) as atmospheric wallpaper when negative space feels heavy. Max one per scene, in a corner the content does not occupy.
-- Vertical-spine label on the right edge — magazine spine register, reserve for hero / chapter scenes.
+- Ghost-blob (0.08 opacity oversized organic). Max one per scene, in a corner the content does not occupy.
+- Vertical-spine label on the right edge — reserve for hero / chapter scenes.
 
 **Border + shape discipline**
 
@@ -318,15 +292,7 @@ Take the brand's product description / value prop. Transform with:
 ## §I Page-level CSS (overrides design.html's neutral chrome — makes the doc itself read as playful)
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Syne / Space Grotesk / Space Mono regardless
- * of which brand DNA the preset is applied to. The §6 component preview
- * and §T type-role atlas also read these via .preset-native-scope.
- *
- * Playful has no dedicated script face — the script slot points at Syne 700 because
- * the preset refuses a third face (the vertical-spine label gesture carries the
- * script-adjacent voice via rotated Syne). Fallback chains end in faces that still
- * carry the studio vibe (Fraunces / Recoleta for display; Inter for body). */
+/* ── Preset-native typography vars — doc chrome + .preset-native-scope (Syne / Space Grotesk / Space Mono). */
 :root {
   --f-disp-native:
     "Syne", "Fraunces", "Recoleta", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -339,12 +305,7 @@ Take the brand's product description / value prop. Transform with:
     "Space Mono", "JetBrains Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and the §T type-role atlas so
- * var(--font-*) resolves to Syne / Space Grotesk / Space Mono regardless of the
- * brand DNA tokens emitted in :root. The paste-ready component source is
- * untouched — Phase 4b still grep + paste original `var(--font-display)` tokens,
- * which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: rebinds var(--font-*) to native families for §6 previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -443,12 +404,7 @@ h2 {
   font-family: "Space Mono", monospace;
 }
 
-/* ── §T Type-role atlas. Container = single-column outlined card (paper surface).
- * Single-column padding-only rows so each role gets its own breath. Each .t-trole-*
- * class encodes the role's family / size / weight / leading / tracking / case /
- * decoration. Family selectors use var(--font-*) tokens so the atlas renders in
- * BRAND DNA fonts; only the recipe is preset-declared. Color decisions follow
- * Playful's monochrome contract — var(--ink) everywhere, no third color. */
+/* ── §T Type-role atlas container. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -475,10 +431,7 @@ h2 {
   }
 }
 
-/* ── Type-role samples. var(--font-display/body/script/mono) resolves to brand DNA.
- * Color uses Playful's monochrome contract — ink-on-paper for every text role.
- * The peach-on-ink inversion lives in the tag-pill / filled-block §6 components,
- * not in the atlas. No third color. */
+/* ── Type-role samples. var(--font-*) resolves to brand DNA; ink-on-paper monochrome contract. */
 .t-trole-display-hero {
   font-family: var(--font-display);
   font-weight: 800;

@@ -6,13 +6,11 @@ category: visual-design
 
 # Video Typography - Design-Judgment Layer
 
-Video typography ≠ web typography: no scrolling, no reflow. Every text element must read at a glance in a 1-5s window and do emotional work — text is usually the emotional anchor, not decoration.
-
-**Plan-layer judgment only** — roles, hierarchy intent, pairing logic, negative constraints. Concrete values (px, letter-spacing em, CJK fallback, `tabular-nums`) are build-agent territory (`/hyperframes-core` + `chunks/tokens.css`); plan does not copy them.
+Plan-layer only — roles, hierarchy intent, pairing logic, negative constraints. Concrete values (px, letter-spacing em, CJK fallback) are build-agent territory (`chunks/tokens.css`).
 
 ## Font Source
 
-**Font families come from `chunks/tokens.css`** (`--font-display` / `--font-body` / `--font-mono`, already inlined into Phase 3 dispatch `## Design chunks`). Name fonts by **use** ("display for hero headline", "mono for eyebrow / metadata"); do not invent or copy concrete font names — the build agent reads them from `chunks/tokens.css` (not design.html).
+**Font families come from `chunks/tokens.css`**. Name fonts by **use** ("display for hero headline", "mono for eyebrow / metadata"); do not copy concrete font names.
 
 A **second font** used for contrast (serif italic emphasis, mono labels) must be named as a design decision. Homogeneous pairing (two geometric sans faces) is not allowed — tension without hierarchy benefit.
 

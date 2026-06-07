@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Inter + Space Grotesk — instead of the brand DNA fonts. Block Frame is a two-face system: heavy uppercase Inter does display + body, wide-tracked Space Grotesk carries chrome / mono / labels. The `script` slot also points at Inter because Block Frame refuses a third face. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). §T type-role atlas uses `.preset-native-scope` so `var(--font-display/body/script/mono)` re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Block Frame refuses a third face — the `script` slot points at Inter.
 
 ## §A Director's intent
 
@@ -46,10 +46,7 @@ saturated pastels — pink, blue, green, yellow, cream — plus off-white and
 ink. Display is heavy uppercase Inter with negative tracking; chrome is
 wide-tracked Space Grotesk in caps. Decorative tilts (±2° to ±12°),
 star-bursts, stripe blocks, and dot grids puncture the grid intentionally.
-The system reads as confident, joyful, slightly chaotic — zine layout meets
-toy packaging. Density is the rule, not the exception: empty surfaces feel
-timid. Best for: indie SaaS launch, agency credentials, creative reviews,
-brand redesigns. Avoid for: regulated disclosures, formal legal briefs.
+Density is the rule, not the exception.
 
 Brand-aware color contract: `--brand-primary` is the dominant pastel
 ground, `--brand-secondary` is the colored-shadow accent (replaces the
@@ -105,9 +102,7 @@ is the CTA fill. Class prefix is `bf-` (block-frame initials).
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `stat-number` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the Block Frame typography scale, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `quote-text` block that isn't covered by §6 components, the worker reads role `quote-text` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Block Frame's identity depends on the heavy-uppercase + negative-tracking + sentence-body + wide-tracked-label ladder.
+Sole authoring source for non-component text; do NOT invent ad-hoc sizes — Block Frame's identity depends on the heavy-uppercase + negative-tracking + sentence-body + wide-tracked-label ladder.
 
 ```type-roles
 [
@@ -191,8 +186,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits `nav-btn` / `slide-counter` chrome shells (declared in §B / template chrome) and the decorative `star-burst` / `stripe-block` / `dot-grid` patterns (decorative patterns, not text roles).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -222,16 +215,7 @@ const DUR = {
 
 ### §E.5 Motion choreography
 
-- **Allowed primitives:** snap-translate (-8/-8 → 0/0 with shadow grow),
-  punch-scale (0.92 → 1.0 with back.out), stagger-reveal (children appear
-  at 0.06s offset), shadow-grow (0/0 → 8/8 in DUR.med), tilt-rest (tilt
-  applied at rest, not tweened).
-- **Forbidden gestures:** rotation tweens, blur interpolation, ease-in-out
-  on primary motion (only on `drift`), cross-fade between cards (use
-  punch-translate or hard cut).
-- **Transition defaults:** hard cut between scenes is the spiritual default
-  (the template has no slide transitions). If a transition is needed,
-  punch-translate the incoming hero element with DUR.med + EASE.emphasis.
+- **Transition defaults:** hard cut between scenes is the spiritual default. If a transition is needed, punch-translate the incoming hero element with DUR.med + EASE.emphasis.
 - **Type-in-motion:** display headlines reveal as a single unit (no per-
   character split). Sub-headline reveals at +0.12s with `power2.out` +
   DUR.snap. Label-pills always emphasis-pop, never linear-fade.
@@ -281,12 +265,7 @@ const DUR = {
     "Space Grotesk", "JetBrains Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Inter / Space Grotesk regardless of brand DNA.
- * Paste-ready component source is untouched — Phase 4b still grep + paste the
- * original `var(--font-display)` tokens, which resolve to brand DNA at
- * scene-render time. */
+/* .preset-native-scope: re-bind font tokens to preset-native families for §6 previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -329,10 +308,7 @@ pre {
   box-shadow: var(--bf-shadow-sm, 4px 4px 0 #000);
 }
 
-/* ── §T Type-role atlas. Container = bordered + shadowed canvas card.
- * Each .t-trole-* class encodes the role's family / size / weight / leading /
- * tracking / case. Family selectors use var(--font-*) tokens so the atlas
- * renders in BRAND DNA fonts; only the recipe is preset-declared. */
+/* ── §T Type-role atlas. Container = bordered + shadowed canvas card. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -360,10 +336,7 @@ pre {
   }
 }
 
-/* ── Type-role samples. var(--font-display/body/mono) resolves to brand DNA.
- * Decoration (color, border, shadow, tracking, case, tilt) is preset-native
- * and stays declared with Block Frame tokens (--ink, --brand-primary,
- * --brand-accent, --bf-shadow-sm). */
+/* ── Type-role samples. var(--font-*) resolves to brand DNA; decoration is preset-native. */
 .t-trole-heading-xl {
   font-family: var(--font-display);
   font-weight: 900;

@@ -33,13 +33,11 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Bodoni Moda + Space Grotesk + Space Mono — instead of the brand DNA fonts. Capsule is a two-face system: Bodoni does every display moment, Space Grotesk does every body / pill / label moment. The `script` slot points back at Bodoni Moda because Capsule refuses a third face — italic emphasis lives inside `<em>` on the Bodoni axis, not on a separate script family. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component previews and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts — Bodoni Moda + Space Grotesk + Space Mono — instead of brand DNA fonts; brand fonts still apply to §6 components. Capsule has no script face — the `script` slot points at Bodoni Moda because italic emphasis rides the Bodoni axis inside `<em>`, not a third family.
 
 ## §A Director's intent
 
-Capsule is a playful editorial system: every text container is a pill (border-radius 9999px for small, 2rem for cards), every shape carries a 2px ink outline, every elevated surface casts a low-opacity hard-offset shadow at 4/6/8/12px. The voice is Memphis-meets-magazine — confident didone serifs (Bodoni-class) for every display moment, geometric grotesque (Space-Grotesk-class) for body and small uppercase tracked text. Color is a candy palette used as flat pill fills; serifs stay ink, color lives inside pills and on stat numerals. Motion is gentle and Material-eased — opacity-led, never bouncy, never elastic.
-
-Best for: lifestyle brands, creator portfolios, DTC product launches, beauty / wellness pitches, playful tech demos. Avoid for: institutional gravitas, enterprise security, anything that wants edges or weight rather than rounded warmth.
+Capsule is a playful editorial system: every text container is a pill (border-radius 9999px for small, 2rem for cards), every shape carries a 2px ink outline, every elevated surface casts a low-opacity hard-offset shadow at 4/6/8/12px. Bodoni-class serifs for every display moment, Space-Grotesk-class for body and small uppercase tracked text. Color is a candy palette used as flat pill fills; serifs stay ink, color lives inside pills and on stat numerals. Motion is opacity-led, never bouncy, never elastic.
 
 The class prefix is `cap-` across all components.
 
@@ -93,9 +91,7 @@ The class prefix is `cap-` across all components.
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case. Phase 4b scene workers may cite roles by `id` ("use a `stat-number` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas Capsule ships in its Typography section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `stat-number` numeral that isn't covered by §6 components, the worker reads role `stat-number` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Capsule's identity collapses if Bodoni drops below weight 700 at display scale or if small Space Grotesk text loses its uppercase + tracked treatment.
+The atlas is the **sole authoring source** for non-component text; do NOT invent ad-hoc sizes — Capsule's identity collapses if Bodoni drops below weight 700 at display scale or if small Space Grotesk text loses its uppercase + tracked treatment.
 
 ```type-roles
 [
@@ -165,8 +161,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the floating decorative pill positions and the orbit-numeral (both expressed by §6 components, not text roles). It also drops the old paragraph-`body` / `body-sm` / `subtitle` roles: long-form body copy below 24px does not survive at video scale, so any running text lives inside a §6 component (e.g. `pillar-card`, `quote-highlight`) where it is sized for the deck, not in the atlas.
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -191,7 +185,7 @@ const DUR = {
 ### §E.5 Motion choreography
 
 - Allowed primitives: opacity fade, vertical translate ≤ 24px on entry, scale 0.96 → 1.0 on emphasis pills, width tween on bar fills, count-up on numerals, slow rotation drift (±2deg) on decorative pills.
-- Forbidden gestures: back/elastic/bounce overshoots, horizontal sliding entrances, blur transitions, rotation entries above 8deg, anything that resembles a "spring".
+- Forbidden gestures: back/elastic/bounce overshoots, horizontal sliding entrances, blur transitions, rotation entries above 8deg.
 - Scene transitions default to 0.6s cross-fade (matches the template's `cubic-bezier(0.4, 0, 0.2, 1)` slide-to-slide).
 - Stagger budget: 0.06s between sibling pills, 0.12s between cards in a grid, 0.18s between timeline steps. Keep total reveal under 1.2s per scene.
 - Type-in-motion: headlines fade + translateY(16px → 0). Never word-by-word reveal — Bodoni is meant to be read as a single fashioned line, not assembled.
@@ -216,16 +210,8 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Bodoni Moda / Space Grotesk / Space Mono
- * regardless of which brand DNA the preset is applied to. The §6 component preview
- * and §T type-role atlas also read these via .preset-native-scope.
- *
- * Capsule has no script face — the script slot points at Bodoni Moda because
- * italic emphasis rides the Bodoni opsz/italic axis inside <em>, not a third
- * family. Fallback chains end in a serif / sans / mono that still carries the
- * editorial-pill register. Falling all the way to generic should never happen
- * in practice. */
+/* ── Preset-native typography vars — let doc chrome render in Bodoni Moda / Space Grotesk / Space Mono
+ * regardless of brand DNA; also read by .preset-native-scope / §T atlas. */
 :root {
   --f-disp-native: "Bodoni Moda", "Playfair Display", "Fraunces", "Didot", "Georgia", serif;
   --f-body-native:
@@ -235,12 +221,7 @@ const DUR = {
     "Space Mono", "JetBrains Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and the §T type-role atlas so
- * var(--font-*) resolves to Bodoni Moda / Space Grotesk / Space Mono
- * regardless of the brand DNA tokens emitted in :root. The paste-ready
- * component source is untouched — Phase 4b still grep + paste original
- * `var(--font-display)` tokens, which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families for previews. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -276,14 +257,7 @@ pre.ds-code {
   background: var(--canvas);
 }
 
-/* ── §T Type-role atlas. Container = a single 2rem-radius pill-card with 2px
- * ink outline and 8px offset shadow; rows separated by 2px ink hairlines
- * (Capsule has no thinner stroke). Each .t-trole-* class encodes the role's
- * family / size / weight / leading / tracking / case. Family selectors use
- * var(--font-*) tokens so the atlas renders in BRAND DNA fonts; only the
- * recipe is preset-declared. Color decisions follow Capsule's contract —
- * ink on Bodoni headlines, brand-primary on stat numerals, ink + uppercase
- * tracking on the small Space Grotesk label / pill text. */
+/* ── §T Type-role atlas. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -311,11 +285,7 @@ pre.ds-code {
   }
 }
 
-/* ── Type-role samples. Each .t-trole-* class mirrors a Capsule type-scale
- * entry but uses var(--font-display/body/mono/script) so the actual typeface
- * comes from brand DNA. Decoration (color, tracking, case) is preset-native
- * and stays declared with Capsule's contract — Bodoni ink on display roles,
- * brand-primary on stat numerals, uppercase + tracked on small Space Grotesk. */
+/* ── Type-role samples. var(--font-*) resolves to brand DNA; decoration is preset-native. */
 .t-trole-display {
   font-family: var(--font-display);
   font-weight: 800;

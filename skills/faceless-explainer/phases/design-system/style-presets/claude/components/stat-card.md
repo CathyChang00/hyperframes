@@ -12,7 +12,7 @@
     elevation language). Big Fraunces figure with a JetBrains Mono unit suffix —
     the signature mix of a serif numeral and a mono unit. For a 3-up row, render
     the middle instance with .center (navy ground, cream text, larger figure) so
-    the row has one clear focal. Swap the literal "M" unit for %, ×, K, etc.
+    the row has one clear focal.
   */
   .cl-stat-card {
     background: var(--cl-tile);
@@ -37,7 +37,9 @@
     text-transform: uppercase;
     color: var(--cl-ink-muted);
   }
-  .cl-stat-card.center .cl-stat-badge { color: var(--brand-accent); }
+  .cl-stat-card.center .cl-stat-badge {
+    color: var(--brand-accent);
+  }
   .cl-stat-num {
     font-family: "Fraunces", "Tiempos Headline", Garamond, serif;
     font-weight: 400;
@@ -47,7 +49,9 @@
     margin-top: 16px;
     color: var(--brand-primary);
   }
-  .cl-stat-card.center .cl-stat-num { color: var(--cl-on-dark); }
+  .cl-stat-card.center .cl-stat-num {
+    color: var(--cl-on-dark);
+  }
   .cl-stat-unit {
     font-family: "JetBrains Mono", ui-monospace, monospace;
     font-weight: 500;
@@ -58,7 +62,9 @@
     margin-left: 0.18em;
     vertical-align: 0.6em;
   }
-  .cl-stat-card.center .cl-stat-unit { color: var(--cl-on-dark-soft); }
+  .cl-stat-card.center .cl-stat-unit {
+    color: var(--cl-on-dark-soft);
+  }
   .cl-stat-title {
     font-family: "Inter", sans-serif;
     font-weight: 500;
@@ -68,7 +74,9 @@
     margin: auto 0 0;
     color: var(--brand-primary);
   }
-  .cl-stat-card.center .cl-stat-title { color: var(--cl-on-dark); }
+  .cl-stat-card.center .cl-stat-title {
+    color: var(--cl-on-dark);
+  }
   .cl-stat-body {
     font-family: "Inter", sans-serif;
     font-weight: 400;
@@ -77,6 +85,8 @@
     margin: 0;
     color: var(--cl-ink-body);
   }
-  .cl-stat-card.center .cl-stat-body { color: var(--cl-on-dark-soft); }
+  .cl-stat-card.center .cl-stat-body {
+    color: var(--cl-on-dark-soft);
+  }
 </style>
 ```

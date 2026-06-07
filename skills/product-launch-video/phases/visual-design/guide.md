@@ -1,9 +1,3 @@
-# Visual Design (Phase 3)
-
-Input story (Phase 2 - `narrator_scripts.json`) + brand design system (Phase 1b - `design-system/chunks/`). Design visual treatment and animation choreography for each scene, outputting `section_plan.md`.
-
-This guide describes **creative intent**, not code. The downstream build agent (`/hyperframes-core` + `/hyperframes-animation`) translates it into HTML composition + GSAP timeline.
-
 ## Flow Overview
 
 1. **All inputs are already inlined in dispatch** (`## Effects catalog` / `## Blueprints index` / `## SFX library` / `## Design rules` [full text of 4 rules] / `## Design chunks` [`index.json` + actually present hints/voice/tokens/easings] / `## Narrator scripts` / `## Audio meta`) - **use them directly; do not Read from disk**
@@ -216,7 +210,7 @@ Machine rules (kebab-case, must pair with `Continuity: continue`, worker places 
 
 ## 3. Design Principles (inlined in `## Design rules`)
 
-Four rule files cover plan-layer design judgment - all organized by **role / intent / decision**, with no hex / px / ms / code. They are **already inlined in dispatch `## Design rules`; read them there, not from disk**. Concrete values are looked up by the build agent in `/hyperframes-core` + `/hyperframes-animation` + chunks, and **plan does not copy them** (see §4 item 4 and the "Name this vs do not copy" table in §1).
+Four rule files cover plan-layer design judgment - all organized by **role / intent / decision**, with no hex / px / ms / code. Already inlined in dispatch `## Design rules`; do not read from disk.
 
 Four rule files:
 
@@ -224,24 +218,6 @@ Four rule files:
 - `rules/color-system.md` - 7 palette roles / 60-30-10 / cross-scene consistency / dangerous combinations / background layering
 - `rules/composition.md` - four canvas zones / 7 templates (film >=3 templates) / density rules / depth techniques
 - `rules/motion-language.md` - 5 spring intents / duration tiers / beat structure / stillness-before-climax / continuous motion / transition vocabulary (film 2-3 types)
-
-<blueprints>
-13 multi-phase scene skeletons (roles covered: opening-hook / social-proof / brand-reveal / cta / demo / comparison / metric / messaging / takeover / workflow / concept-demo / problem). Each blueprint provides role + triggers + phases + uses rules + ~2-sentence emotional arc description.
-
-**Usage:** scan the `## Blueprints index` section in dispatch for triggers / role fields, matching this scene's `narrativeIntent.narrativeRole` and `keyMessage`. After a match, use **only index information** - fill `**Effects:**` directly from `uses`, let the phases summary inspire prose item 5 (multi-phase choreography), and emotional arc description inspire prose item 1 (emotion/rhythm footnote). **Do not Read blueprint full text** (`blueprints/<id>.md`) - it contains GSAP code, DOM topology, and exact timing tables; build agent owns it.
-
-**If adopted, you must mark `**Blueprint:**` anchor** (see §2): `based-on <id>` or `extended <id>` when used, `composed` or omitted when not used.
-
-**Hard matching threshold:** `role` + `triggers` + emotional arc must all fit **naturally** to adopt. If any part requires "creative bending" -> **reject that blueprint and fall back to free composition from effects catalog**. Free composition is not a second-class fallback - it is the correct path for atypical scenes (pain narration / concept explanation / list reveal / quote / pricing / FAQ). Archive's strongest playground-launch plan runs 5+ visual universes across 8 beats, all free-composed + glued by shared cut-the-curve.
-
-**Improve:** blueprint `uses` usually has 3-4 effects; when `uses` is sparse, add effects from the "what to add" list below to reach 2-5. Duration / palette / asset / phase ratios all adapt to this film; **do not copy blueprint concrete timing values**.
-
-**What to add** (when blueprint `uses` is sparse):
-
-- First add `sine-wave-loop` by default (continuous / ambient layer) - nearly every scene should have it, and most blueprints do not list it explicitly.
-- If still sparse, add by emotional beat: transition glue `scale-swap-transition` / `card-morph-anchor`, SVG life `svg-icon-enrichment` / `svg-path-draw`, data beats `counting-dynamic-scale` / `asr-keyword-glow`, depth reinforcement `3d-text-depth-layers` / `split-tilt-cards`.
-- Final 2-5 effect order follows timeline layering semantics: background -> primary entry -> continuous -> emphasis -> transition.
-  </blueprints>
 
 ---
 
@@ -277,14 +253,10 @@ Then write one free-prose paragraph in the following 8-item order. This prose is
 Beat 2b — the spiral (frustrated, slightly-off comma). Centered chat-app composition: ...
 ```
 
-`**Blueprint:** composed` means this scene uses **no blueprint** (free composition). If using a blueprint:
-
 ```markdown
 **Effects:** [`counting-dynamic-scale`, `center-outward-expansion`, `multi-phase-camera`, `svg-icon-enrichment`, `sine-wave-loop`]
 **Blueprint:** extended `hook-counter-burst`
 ```
-
-`extended` means the scene adopts all 4 `uses` from `hook-counter-burst` (first 4 effects) and adds `sine-wave-loop` for sustained motion.
 
 ### Prose Example (read before writing)
 

@@ -30,13 +30,7 @@ The curve is **shallower than PAS** (the before state is real but not catastroph
 | 7     | benefit_highlight  | Crystallize the After: outcome metric or business value                 | 8-12%    |
 | 8     | cta                | Direct action — book demo, sign up                                      | 8-15%    |
 
-**Reveal timing** — BAB is the **early-to-mid reveal** archetype. Product names land at:
-
-- Kyvos: scene 5 of 13 (38%) — sells category concept ("Cloud BI Acceleration") for 4 scenes, then names brand
-- DeskLog: scene 2 of 7 (29%) — single friction scene, then product reveal
-- AgentGPT: scene 2 of 12 (17%) — vision hook, then product
-
-The pattern: brief before-state setup (1-4 scenes) → product reveal → bridge walk dominates the runtime. Don't extend the before state past 4 scenes — that turns BAB into PAS.
+**Reveal timing** — BAB is the **early-to-mid reveal** archetype; product lands at 17–38% across samples. Brief before-state setup (1-4 scenes) → product reveal → bridge walk dominates the runtime. Don't extend the before state past 4 scenes — that turns BAB into PAS.
 
 ## When to Use
 
@@ -56,27 +50,17 @@ The pattern: brief before-state setup (1-4 scenes) → product reveal → bridge
 
 ## Hook strategies that work for BAB
 
-- **Category announcement (with friction implied)** — Kyvos "Cloud BI Acceleration" (category + the implication that current cloud BI is not accelerated)
-- **Poetic pain validation** — DeskLog "The heart of your dealership is the showroom experience... Every step must flow seamlessly. Because when it doesn't, things can get messy..." (establishes the before state via _what should be_ before naming what isn't)
-- **Imagine + future-pacing** — AgentGPT "Imagine next generation AI for the enterprise" (hybrid with Future Pacing)
-- **Metaphorical framing** — name the friction state through a metaphor for the workflow being broken
+- **Category announcement with implied friction** and **Poetic pain validation** are the archetype-native moves — they establish the before state without sinking into an emotional valley.
 
-Don't open BAB with a shocking statistic or visceral pain metaphor — those belong to PAS, where extended agitation does the heavy lifting. BAB's before state is a _quick setup_, not an emotional valley.
+Don't open BAB with a shocking statistic or visceral pain metaphor — those belong to PAS, where extended agitation does the heavy lifting. BAB's before state is a quick setup, not an emotional valley.
 
 ## Persuasion techniques that recur
 
-- **Contrast (chaos → clean)** — DeskLog: messy floating process tags morph into clean green logo — visual proof of the before → after delta in the _transition itself_
-- **Process efficiency / step-by-step proof** — show the workflow operating end-to-end, not just describing capability
-- **Visual proof of mechanics** — `ui_morphing` transitions through each bridge step (most BAB samples chain 4-6 consecutive `ui_morphing` or `camera_zoom_pan` transitions)
-- **Risk and effort reversal** — Kyvos: "We Plug. You Play." — names the _delta_ in effort allocation
-- **Authority by association with logos** — Kyvos: integrations with major BI tools (Tableau, Power BI, etc.)
-- **Empirical proof and concrete numbers** — Kyvos: "Analyze trillions of rows in sub-seconds," "reduce cloud costs by 50%"
-- **Cutting-edge innovation** — DeskLog scene 6: Vision AI as the wow capability that elevates the bridge from "organized" to "predictive"
-- **Familiarity and ecosystem compatibility** — explicitly mention which existing tools the product slots into ("Any BI Tool")
+- **Contrast (chaos → clean)**, **Process efficiency / step-by-step proof**, **Visual proof of mechanics**, **Risk and effort reversal** ("We Plug. You Play."), **Authority by association with logos**, **Empirical proof and concrete numbers**, **Cutting-edge innovation** as wow climax, **Familiarity and ecosystem compatibility**.
 
 ## Common compound
 
-BAB very often runs **Feature-Benefit Cascade as its bridge-walk rhythm** — the middle 3-6 scenes alternate feature_showcase ↔ benefit_highlight at high pace. AgentGPT in the reverse-engineered archive is labeled exactly this way: `"Before-After-Bridge (BAB) / Feature-Benefit Cascade"`. Write the compound as `"Before-After-Bridge with Feature-Benefit Cascade"` when the bridge phase runs Cascade rhythm.
+BAB very often runs Feature-Benefit Cascade as its bridge-walk rhythm. Write as `"Before-After-Bridge with Feature-Benefit Cascade"` (see guide.md).
 
 ## Variants (Golden Samples)
 

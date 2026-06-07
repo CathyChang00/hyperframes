@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Shrikhand + Zilla Slab + Caveat — instead of the brand DNA fonts. Scatterbrain has no machine-mono moment, so the `mono` slot also points at Caveat (the system's hand-script doubles for any mono role per §D's three-slot contract). The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Scatterbrain has no machine-mono moment — the `mono` slot points at Caveat per §D's three-slot contract.
 
 ## §A Director's intent
 
@@ -48,8 +48,6 @@ Depth is **soft blurred drop-shadow** (`2px 3px 15px shadow, 0 1px 3px shadow-de
 **Color role contract**: post-its cycle through the four anchor-mixed pastels (butter, sky, blush, mint) for categorical variety; brand DNA flows in as gradient deepening, pin colors, and feature-icon accents. Ink-warm carries every headline, every body line, every border, every doodle — colored text on pastel stickies kills legibility.
 
 Motion is **hand-placed tilt**: short overshoot on entry (the sticky "lands" with a tiny bounce), no glide. Doodles drift on `sine.inOut`. Scene transitions are quick cuts with a single tape-rip beat — never crossfade.
-
-**Best for** sites with warm, friendly, or craft-leaning palettes (creative agencies, education, indie tools, workshop products). Cold corporate brands still render but the workshop voice softens.
 
 **Class prefix:** `sb-` (initialism, 3 chars per §8.6).
 
@@ -185,8 +183,6 @@ Scatterbrain forces its display / body / script regardless of site DNA — the w
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `headline` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas scatterbrain ships in its Typography section, ported as machine-readable JSON.
-
 The atlas is the **sole authoring source** for non-component text. If a scene needs a `stat-value` numeral that isn't covered by §6 components, the worker reads role `stat-value` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Scatterbrain's identity collapses if Shrikhand drops out of headline roles or if body copy slips into Shrikhand.
 
 ```type-roles
@@ -270,8 +266,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
   }
 ]
 ```
-
-The atlas omits `grain-overlay` (it's a texture, declared in §B decoration tokens) and post-it / pin / tape geometry (depth props, declared as §B decoration tokens and realized in §6 components).
 
 ## §E Motion (GSAP consts — REPLACES site ease)
 

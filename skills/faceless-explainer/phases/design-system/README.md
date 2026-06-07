@@ -22,7 +22,7 @@ The build script (`phases/design-system/scripts/build-design.mjs`) reads by dire
 
 ### 1.1 Existing Presets (reference set for comparison)
 
-Below are all existing styles currently under `style-presets/`. Before creating a new one, scan them first: **(a) avoid duplicate names / duplicate positioning; (b) choose the preset whose visual language is closest to your target as the `cp -r` starting template** (§5), which is usually faster than starting from block-frame. `name` = directory name = `preset-meta.name`; fingerprints come from each preset's `preset-meta.fingerprint` (used for preset selection / inference matching; see §2.0).
+Before creating a new one, scan them first: **(a) avoid duplicate names / duplicate positioning; (b) choose the preset whose visual language is closest to your target as the `cp -r` starting template** (§5), which is usually faster than starting from block-frame. `name` = directory name = `preset-meta.name`; fingerprints come from each preset's `preset-meta.fingerprint` (used for preset selection / inference matching; see §2.0).
 
 | `name` (directory name) | label             | One-sentence style fingerprint                                                                                       |
 | ----------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -45,8 +45,6 @@ Below are all existing styles currently under `style-presets/`. Before creating 
 | `capsule`               | Capsule           | universal capsule shapes · soft low-opacity offset · Didone serif + Grotesk · floating capsule wallpaper             |
 | `liquid-glass`          | Liquid Glass      | inner highlight · translucent hairline edge · rise-and-settle motion · high-contrast aurora base                     |
 | `neo-grid-bold`         | Neo-Grid Bold     | 12×8 CSS grid · 1.5px ink hairline · no shadow · single electric signal color                                        |
-
-> This table is a **style-positioning index**, not a status checklist. Update it only when presets are truly added / removed (do not add mutable counts such as "component count / compliant"; those are not guide content).
 
 ---
 
@@ -217,9 +215,9 @@ grep -rhoE "font-size:[^;]+" <ds-dir>/chunks/components/*.html <ds-dir>/chunks/t
          if(p<24)print "  WARN "t" approx "p"px  <- "$0}'
 ```
 
-> **Do not scan only `px`** - small text written in `rem` / `vw` will be missed (capsule's components were all `rem`, and once fooled a px-only check). The normalized px/rem/vw version above is the reliable one.
+> **Do not scan only `px`** — `rem` / `vw` values will be missed; the normalized version above covers all three.
 
-> This grep is a **hard final check**: after creating or editing a preset, you must run it against that preset, and **only empty output passes** (any <24px value must be raised or the role / font-size deleted). All existing presets already satisfy it, so treat it as an unbreakable floor.
+> This grep is a **hard final check**: only empty output passes — any <24px value must be raised or deleted.
 
 **`caption-skin.html` verification** (§4 rule 6, required): every preset should provide one. Run:
 

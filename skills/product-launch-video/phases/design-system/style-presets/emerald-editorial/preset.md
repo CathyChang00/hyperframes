@@ -29,15 +29,13 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Bodoni Moda + Manrope + JetBrains Mono — instead of the brand DNA fonts. Emerald Editorial is a two-face system: Bodoni Moda 900 carries every display moment, Manrope carries every chrome / body moment, the `script` slot points back at Bodoni because the preset refuses a third face (italics are loaded but dormant per design.md). The brand fonts still apply to §6 component code (paste-ready for Phase 4b). §T type-role atlas uses `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Two-face system: `script` slot points back at Bodoni because the preset refuses a third face (italics are loaded but dormant per design.md).
 
 ## §A Director's intent
 
 A fashion-masthead / 19th-century theatrical-playbill register: one display serif at extreme scale (heavy Bodoni-style, weight 900, 92-460px), with negative tracking and tight leading, set against a saturated brand canvas with deep ink and a warm alt-tile surface. The signature is the **double-rule ornament** — a centered serif word framed by two stacked 4px horizontal rules on each side (3px between them), bracketing a connector ("of", "and", "for") between two display words like a printed playbill.
 
 Depth is flat printed ink. **Zero shadows, zero gradients, zero border-radius, zero blur.** Elevation is communicated through color-block inversion (an `--ink` tile on the canvas reads as "elevated") and 4px solid ink rules that separate every section, list row, and tile divider.
-
-**Best for** sites whose brand DNA reads "literary / considered / authoritative / designed" — strategy, planning, leadership, editorial, longform, research, or any product that wants to feel like the front of a serious magazine. **Avoid for** quiet / institutionally-restrained brands — the saturated canvas + 900-weight display is too theatrical to disappear.
 
 Class prefix: `ee-` (emerald-editorial). All component CSS classes are namespaced under this prefix. No hex literals — every color references brand vars (`var(--canvas)`, `var(--ink)`, `var(--brand-primary)`, `var(--brand-accent)`).
 
@@ -107,9 +105,7 @@ Class prefix: `ee-` (emerald-editorial). All component CSS classes are namespace
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/decoration. Phase 4b scene workers may cite roles by `id` ("use a `kpi-figure` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas Emerald Editorial ships in its Typography section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `numeral-jumbo` that isn't covered by §6 components, the worker reads role `numeral-jumbo` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — the system's identity collapses if Bodoni drops below weight 900 at display scale, or if Manrope crosses out of the chrome ladder (24 / 26 / 28 px).
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — the system's identity collapses if Bodoni drops below weight 900 at display scale, or if Manrope crosses out of the chrome ladder (24 / 26 / 28 px).
 
 ```type-roles
 [
@@ -214,8 +210,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the chart-card surface treatment, the masthead/footline layout (structural chrome, declared in §H), and the inverse-tile fill — those are component-level surface gestures, not type roles.
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -291,15 +285,7 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Bodoni Moda + Manrope + JetBrains Mono regardless
- * of brand DNA. The §6 component preview and §T type-role atlas
- * also read these via .preset-native-scope.
- *
- * Emerald Editorial has no script face — the script slot points at Bodoni Moda
- * because the preset refuses a third face (italics are loaded but dormant per
- * design.md). The display fallback chain ends in heavy contemporary serifs
- * (Playfair / DM Serif / Georgia) so the playbill voice survives offline. */
+/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref). */
 :root {
   --f-disp-native:
     "Bodoni Moda", "Playfair Display", "DM Serif Display", Georgia, "Times New Roman", serif;
@@ -311,12 +297,7 @@ const DUR = {
     "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Bodoni Moda / Manrope / JetBrains Mono regardless of
- * brand DNA. Paste-ready component source is untouched — Phase 4b still grep +
- * paste the original `var(--font-display)` tokens, which resolve to brand DNA at
- * scene-render time. */
+/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families for §6 previews and §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -362,11 +343,7 @@ pre.ds-code {
   font-weight: 700;
 }
 
-/* ── §T Type-role atlas. Container = strict-rectangle ink-bordered card.
- * Each .t-trole-* class encodes the role's family / size / weight / leading /
- * tracking / case / decoration. Family selectors use var(--font-*) tokens so
- * the atlas renders in BRAND DNA fonts; only the recipe is preset-declared.
- * Single-column padding-only rows (no row-grid splits) per the spec. */
+/* ── §T Type-role atlas. Family selectors use var(--font-*) so the atlas renders in brand DNA fonts; only the recipe is preset-declared. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -393,9 +370,7 @@ pre.ds-code {
   }
 }
 
-/* ── Type-role samples. var(--font-display/body/mono) resolves to brand DNA;
- * color decisions follow Emerald Editorial's printed-ink discipline — navy ink
- * on emerald canvas, with the inverse-tile flip for jumbo numerals. */
+/* ── Type-role samples. Uses var(--font-*) for typeface; preset-native decoration. */
 .t-trole-numeral-jumbo {
   display: inline-block;
   font-family: var(--font-display);

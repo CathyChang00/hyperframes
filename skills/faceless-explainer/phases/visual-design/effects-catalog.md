@@ -58,8 +58,3 @@ The actual source of truth checked by Phase 3 `validate.mjs section` is the set 
 | `reactive-displacement`      | Physical collision: incoming element's spring drives outgoing element displacement - one source of truth creates causal motion.                        |
 | `scale-swap-transition`      | Coordinated shrink-out + spring-in between two elements, creating a morph-like transition without SVG path interpolation.                              |
 | `sine-wave-loop`             | Continuous breathing / idle ambient motion using trigonometry - keeps elements alive after entry. Pairs well with almost any entry rule.               |
-
-## Skipped (frontmatter problems)
-
-- css-marker-patterns.md: missing frontmatter (name + description)
-- gsap-effects.md: missing frontmatter (name + description)

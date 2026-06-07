@@ -40,7 +40,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Alfa Slab + Caveat Brush + Source Sans + DM Mono — instead of the brand DNA fonts. The brand fonts still apply to §6 component code (paste-ready for Phase 4b) and to the LEFT column of §6's dual preview. The RIGHT column uses `.preset-native-scope` to re-bind `--font-display/body/script/mono` to these native families so reviewers can compare brand-applied vs preset-native side-by-side.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components.
 
 ## §A Director's intent
 
@@ -132,9 +132,7 @@ The script role is unique to this preset — `var(--font-script)` resolves at re
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `stamp-statement` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas peoples-design.html ships in its `// 03 / type` section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `mega-stat` numeral that isn't covered by §6 components, the worker reads role `mega-stat` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes.
 
 ```type-roles
 [
@@ -253,8 +251,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits `grain-tile` from peoples-design (it's a texture, not a type role — belongs in §B decoration tokens).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -302,7 +298,7 @@ Apply ONLY to DOM-visible text (headlines, chips, button labels, stat captions).
 
 ## §H Scene composition hints
 
-**Single surface — paper.** Every scene sits on the paper poster-board canvas (`#root` below). The blue authority plate and orange signal are **no longer full-bleed scene surfaces** — they live as **self-contained components**: `framed-stamp` / `mega-stat` / `end-stamp` carry their own `var(--blue)` fill + cream frame, `orange-quote` carries its own `var(--orange)` — dropped as cards onto the paper canvas. (A blue framed plate floating on paper-board reads MORE poster-like than a full-bleed blue scene.) Scene transitions go through hard cut, never fade.
+**Single surface — paper.** Every scene sits on the paper poster-board canvas (`#root` below). The blue authority plate and orange signal are **no longer full-bleed scene surfaces** — they live as **self-contained components**: `framed-stamp` / `mega-stat` / `end-stamp` carry their own `var(--blue)` fill + cream frame, `orange-quote` carries its own `var(--orange)` — dropped as cards onto the paper canvas. Scene transitions go through hard cut, never fade.
 
 **`#root` CSS** — the one paste-ready paper stanza for the Phase 4b worker:
 
@@ -344,17 +340,8 @@ Apply ONLY to DOM-visible text (headlines, chips, button labels, stat captions).
 ## §I Page-level CSS (makes design.html itself read as peoples)
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Alfa Slab/Caveat Brush/Source Sans/DM Mono
- * regardless of which brand DNA the preset is applied to. The §6 component
- * preview also reads these via .preset-native-scope.
- *
- * The fallback chain matters: if Google Fonts is blocked (some IDE previews) or
- * slow, we DO NOT want to fall through to generic `serif` (renders as Times,
- * which kills the stamped-slab character). Each chain ends in a font that still
- * carries the preset's vibe — Archivo Black / Anton / Impact for the display
- * slab; Inter for body; system cursives for script. Falling all the way to
- * generic should never happen in practice. */
+/* ── Preset-native typography vars (chromeFonts). Fallback chains avoid generic
+ * serif — each ends in a font carrying the stamped-slab character. */
 :root {
   --f-disp-native:
     "Alfa Slab One", "Archivo Black", "Anton", "Impact", "Arial Black", "Helvetica Neue", sans-serif;
@@ -578,12 +565,8 @@ h3 {
   font-weight: 700;
 }
 
-/* ── .preset-native-scope: re-bind brand DNA font tokens to preset-native
- * families. Wraps §6 component previews so var(--font-*)
- * resolves to Alfa Slab / Source Sans / Caveat Brush / DM Mono regardless of
- * the brand DNA tokens emitted in :root. The paste-ready component source is
- * untouched — Phase 4b still grep + paste original `var(--font-display)`
- * tokens, which resolve to brand DNA at scene-render time. */
+/* ── .preset-native-scope: rebinds var(--font-*) to preset-native families for
+ * component previews. Component source is untouched. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -591,13 +574,7 @@ h3 {
   --font-mono: var(--f-mono-native);
 }
 
-/* ── §T Type-role atlas (declared as JSON in §T; rendered in §3 Typography).
- * Container = peoples-design's `.type-box` look. Each row's `.t-trole-*` class
- * encodes the role's family / size / weight / leading / tracking / case /
- * shadow / decoration. Family selectors use var(--font-display) etc. so the
- * atlas renders in BRAND DNA fonts (heygen → ABC Solar Display etc.), not
- * preset-native. The role itself is preset-declared (the recipe is peoples-
- * native), only the actual typeface comes from brand. */
+/* ── §T Type-role atlas. var(--font-*) → brand DNA; recipe is peoples-native. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -624,11 +601,7 @@ h3 {
   }
 }
 
-/* ── Type-role samples. Each .t-trole-* class mirrors a peoples-design
- *    `.t-*` class but uses var(--font-display/body/mono/script) tokens so the
- *    actual typeface comes from brand DNA. Decoration (shadow, color, frame,
- *    rotation, pill, ribbon, dots, button, etc.) is peoples-native and stays
- *    declared with hard-coded peoples colors (var(--orange), var(--red), etc.). */
+/* ── Type-role samples. var(--font-*) → brand DNA at render time. */
 .t-trole-display {
   font-family: var(--font-display);
   font-weight: 400;

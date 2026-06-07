@@ -28,7 +28,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Instrument Serif italic display + Inter body + Newsreader italic asides + JetBrains Mono — instead of the brand DNA fonts. Editorial is a serif-display + sans-body system: the `script` slot points at Newsreader italic (an expressive serif companion) because the preset has no handwritten voice but does ship italic asides / footnotes that need a slightly different cut from the display face. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). §T type-role atlas uses `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. The `script` slot points at Newsreader italic (italic asides / footnotes that need a slightly different cut from the display face).
 
 ## §A Director's intent
 
@@ -72,9 +72,7 @@ Prefer keeping site fonts if they exist on Google Fonts. Preset only enforces we
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/border/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `number-hero` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `pull-quote` that isn't covered by §6 components, the worker reads role `pull-quote` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — the editorial register collapses when sizes drift off the Swiss type scale.
+The atlas is the **sole authoring source** for non-component text — do NOT invent ad-hoc sizes. The editorial register collapses when sizes drift off the Swiss type scale.
 
 ```type-roles
 [
@@ -144,8 +142,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the hairline rule (it's structural — declared in §B decoration tokens) and the asymmetric grid (a layout primitive declared in §H).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -183,10 +179,7 @@ const DUR = {
 
 **Transitions between scenes**
 
-Default is a 320–500ms crossfade with a 16–24px upward drift on the incoming
-content. Never hard-cut. Never directional swipes. If two adjacent scenes share
-a rule line or chapter label, hold that element across the transition (match-cut
-on the rule).
+If two adjacent scenes share a rule line or chapter label, hold that element across the transition (match-cut on the rule). See §H Atmosphere for crossfade/drift defaults.
 
 **Typography in motion**
 
@@ -251,15 +244,7 @@ Take the brand's product description / value prop. Transform with:
 ## §I Page-level CSS (makes design.html itself read as editorial)
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Instrument Serif + Inter + Newsreader + JetBrains Mono
- * regardless of which brand DNA the preset is applied to. The §6 component preview
- * and §T type-role atlas also read these via .preset-native-scope.
- *
- * Fallback chains end in a face that still carries the preset's vibe (Fraunces / Newsreader /
- * Spectral / Georgia for the italic-serif display; Source Sans 3 / Public Sans / system-ui for
- * Inter body; system serif italic for Newsreader). Falling all the way to generic should never
- * happen in practice. */
+/* ── Preset-native typography vars (chromeFonts.googleFontsHref). */
 :root {
   --f-disp-native:
     "Instrument Serif", "Fraunces", "Newsreader", "Spectral", "Georgia", "Times New Roman", serif;
@@ -271,12 +256,9 @@ Take the brand's product description / value prop. Transform with:
     "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and the §T type-role atlas so var(--font-*) resolves to
- * Instrument Serif / Inter / Newsreader / JetBrains Mono regardless of the brand
- * DNA tokens emitted in :root. The paste-ready component source is untouched —
- * Phase 4b still grep + paste original `var(--font-display)` tokens, which
- * resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: re-bind var(--font-*) to preset-native families for component
+ * previews + §T atlas. Paste-ready component source is untouched — Phase 4b tokens
+ * resolve to brand DNA at render time. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);

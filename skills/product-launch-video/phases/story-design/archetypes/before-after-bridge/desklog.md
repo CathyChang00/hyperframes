@@ -8,7 +8,7 @@
 
 ## Narrative Analysis
 
-- **Emotional Arc**: Friction and anxiety (showroom chaos) → relief and clarity (product reveal) → ease and control (check-in & assignment) → confidence and alignment (real-time tracking) → empowerment and synergy (manager dashboard) → excitement and foresight (Vision AI wow moment) → motivation and urgency (CTA)
+- **Emotional Arc**: Friction and anxiety (hook) → relief and clarity (reveal) → control through bridge walk → excitement and foresight (Vision AI wow) → motivation (CTA)
 - **Hook Strategy**: Poetic pain validation — three-sentence prose opening that names what the showroom experience _should be_ before naming what goes wrong. Establishes domain expertise via the _quality_ of the friction observation
 - **Product Reveal Timing**: Early-mid (scene 2 of 7, 29%). One full pain scene → product. The "before" state is established in a single rich scene rather than extended across multiple
 - **Pacing**: Slow-medium — most scenes 10-17s. The bridge walk is detailed and deliberate, not rapid-fire. Each feature scene shows the workflow operating, not just naming the capability
@@ -25,7 +25,7 @@
 - **Emotional Beat**: Friction and anxiety
 - **Transition**: `none_first_scene` — starts directly with a glowing green heart pulsing against dark minimalist radial background
 - **Script**: "The heart of your dealership is the showroom experience. Excellent showroom experience from check-in to test drive, F&I to active delivery. Every step must flow seamlessly. Because when it doesn't, things can get messy, and instant to-dos get lost."
-- **Copywriting Notes**: **The strongest single-scene script in the BAB samples.** Three moves: (1) name the _ideal_ state ("the heart... excellent... seamless"), (2) name the steps that must flow (check-in / test drive / F&I / active delivery — domain vocabulary that proves the writer knows the audience's world), (3) pivot on "Because when it doesn't" — the entire pain validation is in the _Because_ clause, not as a separate beat. Anaphora ("experience... experience... step"). 13 seconds of prose that earns the rest of the video.
+- **Copywriting Notes**: Three moves: (1) name the ideal state, (2) list the operational steps using domain vocabulary, (3) pivot on "Because when it doesn't." The entire pain validation is in the Because clause, not a separate beat. Anaphora ("experience... experience... step").
 
 ### Section 2: "Introducing Desklog AI" (0:13–0:26, ~14%)
 
@@ -78,7 +78,7 @@
 - **Emotional Beat**: Excitement and foresight
 - **Transition**: `match_cut` — fades into a dramatic aerial view of a Porsche dealership with red computer-vision targeting rings
 - **Script**: "Integrate dealership camera systems into our vision AI to instantly notify your team of potential opportunities."
-- **Copywriting Notes**: **The wow climax of the bridge walk.** Scenes 3-5 are operational improvements; scene 6 is the _capability the audience didn't know they could have_. Elevates the bridge from "organized" to "predictive." The `match_cut` transition into a dramatic Porsche aerial with red computer-vision targeting rings is the visual signature of the entire video — generic AI would have ended on a dashboard screenshot.
+- **Copywriting Notes**: Scene 6 is the wow capability the audience didn't know they could have — elevates the bridge from "organized" to "predictive." The `match_cut` into a Porsche aerial with computer-vision targeting rings is the visual signature.
 
 ### Section 7: "Closing Call to Action" (1:26–1:35, ~9%)
 
@@ -92,22 +92,13 @@
 
 ## Takeaways
 
-**What Works Well**:
-
-- **Poetic pain validation as the entire before-state**: scene 1 is 13 seconds of prose that names what _should be_, lists the operational steps in domain vocabulary (F&I, active delivery), and pivots to pain via "Because when it doesn't" — single scene, no extended agitation. Compresses the BAB before-state into one strong beat instead of dragging it across multiple scenes.
-- **Contrast-via-transition**: the morph from messy floating tags into the clean logo (scene 1→2) _is_ the before-to-after contrast. Doesn't require a split-screen or comparison beat — the transition mechanic carries the contrast.
-- **"How?" as the bridge opener**: scene 3 starts with "How?" — a single-word question that explicitly opens the bridge walk. Names the next three scenes as the answer.
-- **Sequential workflow narration**: scenes 3-5 narrate the operational sequence (arrive → check in → match → track → manager view → F&I transition) in the order it happens in the dealership. The viewer learns the workflow, not just the features.
-- **Wow climax at scene 6**: Vision AI is the predictive capability that elevates the bridge. The most dramatic visual (Porsche aerial + targeting rings) saved for the last bridge scene before CTA — the audience leaves with the most ambitious capability fresh in mind.
-- **Domain-specific vocabulary throughout**: "F&I" (finance & insurance), "showroom kiosk", "customer profiles", "data-driven queue", "F&I managers", "test drive", "active delivery" — every term proves the writer is in the audience's world, not adjacent to it.
-
 **Reusable Patterns**:
 
-- **Poetic Pain Validation Hook**: 3-sentence prose opening — (1) name the ideal state, (2) list the operational steps that must flow seamlessly using audience-domain vocabulary, (3) pivot on "Because when it doesn't" or equivalent. Compresses the before-state into one strong scene.
-- **Contrast-Via-Transition**: don't show before/after as a split-screen — morph the chaotic visual into the clean visual directly in the transition. The transition mechanic carries the contrast.
-- **"How?" Bridge Opener**: open the first feature scene with the literal word "How?" — names the bridge walk as the answer to the implied question.
-- **Wow-Climax-Then-CTA**: structure the bridge walk so the most ambitious capability sits in the penultimate scene, just before CTA. Audience leaves with the _biggest_ idea fresh in mind, not a list of standard features.
-- **Domain Vocabulary Saturation**: in every script, use 2-3 terms specific to the audience's operational world. Proves expertise; generic AI never knows the right vocabulary.
+- **Poetic Pain Validation Hook**: 3-sentence prose — name the ideal state, list operational steps in domain vocabulary, pivot on "Because when it doesn't."
+- **Contrast-Via-Transition**: morph the chaotic visual into the clean visual in the transition itself rather than a split-screen.
+- **"How?" Bridge Opener**: open the first feature scene with "How?" — names the bridge walk as the answer.
+- **Wow-Climax-Then-CTA**: place the most ambitious capability in the penultimate scene so the audience leaves with the biggest idea fresh.
+- **Domain Vocabulary Saturation**: use 2-3 audience-specific operational terms per script scene to prove expertise.
 
 **Formula**: Open with a 3-sentence poetic pain validation in audience-domain vocabulary. Reveal product via a contrast-carrying transition (chaos morphs into clean logo). Open the bridge with "How?". Walk 3-4 sequential workflow steps narrated in operational order. Place the wow-climax capability in the penultimate scene. Close with a direct CTA + web address.
 

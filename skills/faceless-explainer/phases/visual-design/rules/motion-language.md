@@ -145,7 +145,7 @@ Static elements = dead video, but **over-amplitude ambient motion is the more co
 
 Inter-scene transitions follow a limited vocabulary. Choose only 2-3 and repeat them - repetition creates professional cohesion. Cleanest archive reference: playground-launch uses **only cut-the-curve** across 8 distinct visual universes, which is what makes the film cohere.
 
-> **These 2-3 slots count only Tier-B transitions on `break` boundaries** (choose 2-3 from crossfade / blur-crossfade / push-slide / zoom-through / squeeze). `shared-element` (morph, Tier-A) is a shared-element bridge hand-written by the worker inside two scenes, **not part of this vocabulary and not counted** - it is driven by narrative `intent: morph`, and may be used freely where the story needs it (e.g. several morph pairs in a demo sequence).
+> These 2-3 slots are Tier-B transitions on `break` boundaries only; `morph` (Tier-A, worker-authored) does not count toward the limit and may be used freely.
 
 ### Cut-the-curve (archive signature; default for most cases)
 
@@ -175,5 +175,3 @@ Instant opacity flip, used for high-energy moments (grid appears fully filled wi
 ## Plan Reference Example
 
 > "Multi-phase: entry uses `EASE.entry` spring (heavy intent, hero image) -> ambient drift (multiplicative breathing ±3%) -> major transition: icons enter with snappy stagger (5 items, total stagger ~400ms) -> **stillness-before-climax 0.6s** (cursor still, background still breathing) -> result emphasis: text gentle entry + double-layer glow -> idle breathing -> exit cut-the-curve LEFT into next scene."
-
-Do not write concrete ease curve names / ms values / stagger formulas / JS code.

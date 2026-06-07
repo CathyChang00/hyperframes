@@ -20,7 +20,7 @@
     story we need to hear.").
 
     Phase 4b note: numerals count up on entry with power2.out, ~0.6s, snapping
-    to the final value. Do not use steps() — that's the wrong preset's grammar.
+    to the final value. Do not use steps().
   */
   .sb-stat-counter {
     position: relative;

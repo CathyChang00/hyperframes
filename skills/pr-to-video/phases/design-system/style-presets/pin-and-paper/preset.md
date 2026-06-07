@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Space Grotesk + Caveat + DM Mono — instead of the brand DNA fonts. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
 
 ## §A Director's intent
 
@@ -46,8 +46,6 @@ Three editorial voices, each in its own face: **Space Grotesk 700** carries ever
 **Brand DNA drives the chrome color, preset drives the structure.** `--brand-primary` maps to the ink-blue role (text, borders, dividers, pin illustrations, hard offset shadow). `--brand-accent` maps to the cinnabar-red stamp role (used in exactly two places: the rotated rubber stamp and the negative pill). The yellow paper base is a **technical signature anchor** — without it the layered radial gradients, grain overlay, and cream-on-yellow card contrast all fail; declared once in §B as `--anchor-paper-yellow` / `--anchor-cream` so brand DNA can tint via `color-mix()` without losing the paper reading.
 
 Motion is **quiet and considered** — short fades, no overshoot, no bounce. The hand-pinned aesthetic doesn't want kinetic theatrics; the camera holds and the eye reads. Ambient pin rotations drift on `sine.inOut` like paper settling.
-
-**Best for** decks that should feel hand-crafted, warm, literary — qualitative research findings, founder reflections, longform brand stories. Avoid for digital-native polished or rigorously data-driven contexts; the handwritten Caveat is intentionally informal.
 
 **Density philosophy: populated, not sparse.** Pin & Paper reads as authoritative when 3–6 cards are pinned across the page, each carrying a heading + body + marginal note. A scene with one centered headline and otherwise empty space reads as broken.
 
@@ -132,9 +130,7 @@ The handwritten layer (Caveat) is non-substitutable — if Caveat fails to load 
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/border/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `display-cover` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas pin-and-paper's source `design.md` ships in its type-scale section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `number-hero` numeral that isn't covered by §6 components, the worker reads role `number-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — the three-voice editorial rhythm (print headline / handwritten scribble / mono archival tag) collapses if sizes drift.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — the three-voice editorial rhythm (print headline / handwritten scribble / mono archival tag) collapses if sizes drift.
 
 ```type-roles
 [
@@ -239,8 +235,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the paper-grain overlay (a texture, declared in §B) and the pin-illustration / hard-offset-shadow gestures (composition decoration, declared in §B and the §6 components).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -278,11 +272,7 @@ const DUR = {
 
 **Forbidden**
 
-- Slide-in / wipe / zoom-between-scenes (reads as digital chrome).
-- Bounce / overshoot / elastic on any primary motion.
 - Sub-pixel positions — keep transforms on integer pixel offsets.
-- Rotating a pin or scribble back to 0° on rest. The off-axis tilt is the identity.
-- Counter-rotating the rubber stamp away from −4°.
 - Particle systems / sparkles / glow filters — paper doesn't emit light.
 
 **Stagger budget**

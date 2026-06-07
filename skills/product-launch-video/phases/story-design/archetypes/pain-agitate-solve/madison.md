@@ -8,10 +8,10 @@
 
 ## Narrative Analysis
 
-- **Emotional Arc**: Curiosity and validation (familiar search) → recognition of operational complexity (multi-platform reality) → overwhelm (manual workload) → cost anxiety (agency invoice) → relief and optimism (product reveal) → confidence (price anchor) → ease → power → control → reassurance → efficiency → excitement → triumph → clarity → motivation (CTA). The reverse-engineered plan describes it as: _"Transitions from overwhelm and cost frustration to relief, control, and growth using a unified AI specialist."_
+- **Emotional Arc**: Curiosity (hook) → overwhelm + cost anxiety (dual pain) → relief and optimism (reveal) → confidence through cascade → triumph (analytics) → motivation (CTA)
 - **Hook Strategy**: Relatable scenario + direct address — "In today's world, the internet is where consumers discover local businesses like... yours." Sentence completes across two scenes (1 → 2), pulling the viewer into the protagonist's chair by the time "yours" lands
 - **Product Reveal Timing**: Mid (scene 5 of 15, ~33%). Four pain scenes — discoverability landscape → platform proliferation → manual burden → agency cost — agitate the problem in dual registers (mental load _and_ financial cost) before relief
-- **Pacing**: Front-loaded with short pain scenes (2-6s each in scenes 1-4 = ~17s of accumulating tension), then a sustained mid-tempo Cascade body (scenes 6-14 average 8-11s each), closing with a 10s CTA. The 9-scene Cascade body is the longest sustained sequence in the entire reverse-engineered archive
+- **Pacing**: Front-loaded with short pain scenes (2-6s each in scenes 1-4 = ~17s of accumulating tension), then a sustained mid-tempo Cascade body (scenes 6-14 average 8-11s each), closing with a 10s CTA
 - **Persuasion Framework**: **Problem-Agitate-Solution (PAS) with Feature-Benefit progression** — labeled exactly this way in the reverse-engineered plan. Classic PAS outer arc; Feature-Benefit Cascade as the inner rhythm of the 9-scene showcase body
 
 ## Complete Section Sequence
@@ -152,7 +152,7 @@
 - **Emotional Beat**: Triumph
 - **Transition**: `ui_morphing` — dashboard transitions to a 'Reports' tab with upward-trending analytic charts
 - **Script**: "And Madison tracks it all in one dashboard, showing you exactly how she's driving more customers."
-- **Copywriting Notes**: **"how she's driving more customers"** — female pronoun for Madison. Anthropomorphization completes here: not just a tool, not just a specialist, but _she_. Emotional beat is "Triumph" — analytics presented as a _celebration_ of work delivered, not as a summary screen. Generic AI would title this scene "Analytics" or "Reporting"; this plan names it as the _proof of victory_.
+- **Copywriting Notes**: Female pronoun ("she's") completes the anthropomorphization chain here. Emotional beat is "Triumph" — analytics presented as proof of victory, not a summary screen.
 
 ### Section 14: "Conversational AI Insights" (1:37–1:43, ~5%)
 
@@ -176,22 +176,13 @@
 
 ## Takeaways
 
-**What Works Well**:
-
-- **Sentence-completion recruitment (scenes 1→2)**: "the internet is where consumers discover local businesses like / yours." Single word ("yours.") in scene 2 conscripts the viewer into the protagonist seat. Pacing: 2s setup + 6s reveal — the long "yours." gives the recruitment moment room to land.
-- **Dual-register pain (scenes 3+4)**: same problem in two adjacent dimensions — mental load (Overwhelm Cloud) + financial cost (Invoice Shock). Stacks two distinct anxieties before relief, making the product feel like it solves _more than one thing_.
-- **Personification as compounding metaphor**: "Specialist" (scene 5) → "Madison goes to work" (scene 8) → "Madison crafts" (scene 9) → "she's driving more customers" (scene 13). The product is named once as a person, then every later script line treats the AI as a colleague. By scene 13 the female pronoun ("she's") lands without commentary — the personification has been earned.
-- **Price-anchor positioned immediately after cost pain**: "$99/month" in scene 6 lands 9 seconds after the agency-invoice pain in scene 4. The contrast is not stated — it's structural. The viewer does the math.
-- **Analytics presented as celebration, not summary**: scene 13's emotional beat is "Triumph". Reports = proof of victory, not feature list. Generic AI would close the showcase with the analytics screen as a flat summary; this plan makes it the _highest-emotion scene in the cascade_.
-- **9-scene Feature-Benefit Cascade body**: scenes 6-14 form the longest sustained Cascade in the reverse-engineered archive. The cascade rhythm itself is the persuasion — every feature pays out emotionally within ~10 seconds.
-
 **Reusable Patterns**:
 
-- **Continuous-Sentence Recruitment**: open with a sentence that dangles across two scenes, where the final word of the sentence in scene 2 conscripts the viewer ("like / yours.", "people who / you.", "businesses that / you run."). Best when you want the audience to _become_ the protagonist before pain is named.
-- **Dual-Register Pain Stack**: split the agitation into two adjacent scenes that target distinct anxieties (mental load + financial cost, time + reputation, etc.). Same problem, two dimensions. Makes the eventual relief feel like it solves more than one thing.
-- **Specialist Personification Chain**: name the product as a _person_ (specialist / assistant / partner / colleague) in the intro scene, then verb-anthropomorphize ("goes to work", "crafts", "answers", "tracks") through the cascade, and pronoun-anthropomorphize ("she", "he", "they") at the climax scene. Three-stage anthropomorphization compounds — the audience accepts the personhood by the climax because they've been walked into it.
-- **Price-Anchor After Cost-Pain**: position the price reveal exactly one scene after a cost-pain scene. The viewer does the contrast math without prompting; structural placement beats explicit "10x cheaper than agencies" copy.
-- **Analytics-As-Triumph**: rename the analytics/reporting scene's emotional beat from "Clarity" or "Information" to "Triumph". Frame the dashboard as proof of victory ("showing you exactly how she's driving more customers"), not as a feature summary. The cascade's highest-emotion moment should be the _outcome_ the AI delivered, not the most advanced _capability_ it has.
+- **Continuous-Sentence Recruitment**: open with a sentence that dangles across two scenes; the final word in scene 2 conscripts the viewer ("...like / yours.").
+- **Dual-Register Pain Stack**: split agitation into two adjacent scenes targeting distinct anxieties (mental load + financial cost) — makes relief feel like it solves more than one thing.
+- **Specialist Personification Chain**: name the product as a person in the intro, verb-anthropomorphize through the cascade ("goes to work", "crafts"), pronoun-anthropomorphize at the climax ("she's driving more customers").
+- **Price-Anchor After Cost-Pain**: reveal the price exactly one scene after a cost-pain scene — the viewer does the contrast math structurally.
+- **Analytics-As-Triumph**: set the analytics scene's emotional beat to "Triumph" and frame the dashboard as proof of victory, not a summary screen.
 
 **Formula**: Open with a dangling-sentence scenario that completes on the viewer ("...like yours."). Stack 2-3 dual-register pain scenes (mental + financial). Reveal the product as a _person_ with a human role-noun ("Specialist", "Assistant", "Partner"). Anchor price immediately after cost-pain. Run a 6-9 scene Feature-Benefit Cascade body with consistent verb-anthropomorphization. Reserve the highest emotional beat (Triumph) for the analytics scene at the end of the cascade. Close with a CTA visually anchored on customer social proof.
 

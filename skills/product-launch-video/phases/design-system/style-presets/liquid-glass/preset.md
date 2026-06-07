@@ -42,7 +42,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Inter + JetBrains Mono — instead of the brand DNA fonts. Liquid-glass is a single-face system: Inter does display + body + script (the preset refuses a hand-script voice — refraction smears thin strokes), with JetBrains Mono reserved for chrome / numeric metadata. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Liquid-glass is a single-face system: Inter does display + body + script (refuses hand-script — refraction smears thin strokes), JetBrains Mono for metadata.
 
 > Liquid-glass auto-infers normally now (its `match_signals` light up on
 > hairline-border + minimal-decoration sites), **but** `requires_capabilities`
@@ -66,9 +66,7 @@ glass, not the glass itself. Decoration is reserved for the aurora — the
 surfaces stay neutral, just specular highlight + edge-light + chromatic
 fringe at the rim.
 
-**Surfaces rise; they don't pop.** Entry is a soft upward translate from
-below the frame + scale 0.86→1.0 with `back.out(1.04)` — the back overshoot
-is tiny on purpose. Hard cuts and bouncy springs break the wetness.
+**Entry motion**: soft upward translate + scale 0.86→1.0 with `back.out(1.04)` — overshoot tiny on purpose. Hard cuts and bouncy springs break the wetness.
 
 ## §B Decoration tokens (merge into design.html `:root`)
 
@@ -193,9 +191,7 @@ weights smear. Letterspacing 0 to -0.01em; never tight.
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/shadow decoration. Phase 4b scene workers may cite roles by `id` ("use a `stat-value` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. Liquid-glass is type-on-glass: every role assumes the text sits over a refracting panel or the aurora, so `text-shadow: var(--text-shadow-glass)` is the default decoration on every legibility-critical role (display, headline, body, label). Weight floors stay at 550 because thin strokes smear through refraction.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `stat-value` numeral that isn't covered by §6 components, the worker reads role `stat-value` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — weight under 550 at body scale collapses through the IIFE shader.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — weight under 550 at body scale collapses through the IIFE shader. Every role assumes text over glass/aurora: `text-shadow: var(--text-shadow-glass)` is the default on all legibility-critical roles.
 
 ```type-roles
 [
@@ -271,8 +267,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
   }
 ]
 ```
-
-The atlas omits the glass card surface itself (a §6 component, not a text role) and the aurora background (a structural canvas declared in §B).
 
 ## §E Motion (GSAP consts — REPLACES site ease)
 
@@ -435,20 +429,13 @@ blocks. **Do not let an LLM rewrite it.** When authoring a scene:
 - **Transitions between scenes**: hold the aurora across scenes (single
   composition-wide `uTime` driver). Panels slide off the bottom on scene N,
   rise from the bottom on scene N+1. The aurora doesn't blink.
-- **Stagger**: 100-140ms between sibling panels, 30-60ms between menu items.
 
 ## §I Page-level CSS (makes design.html itself read as liquid glass)
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Inter + JetBrains Mono regardless of
- * brand DNA. The §6 component preview and §T type-role atlas
- * also read these via .preset-native-scope.
- *
- * Liquid-glass is a single-face system: Inter does display, body, AND script
- * because refraction smears thin-stroke script faces. JetBrains Mono carries
- * metadata + unit suffixes. The fallback chain ends in SF Pro / Geist / Public
- * Sans / system-ui — all neutral grotesques that survive backdrop-blur. */
+/* ── Preset-native typography vars (chromeFonts). Single-face system: Inter does
+ * display/body/script (refraction smears thin-stroke scripts), JetBrains Mono
+ * for metadata. */
 :root {
   --f-disp-native:
     "Inter", "SF Pro Display", "Geist", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -460,12 +447,8 @@ blocks. **Do not let an LLM rewrite it.** When authoring a scene:
     "JetBrains Mono", "Geist Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Inter / JetBrains Mono regardless of brand DNA.
- * Paste-ready component source is untouched — Phase 4b still grep + paste the
- * original `var(--font-display)` tokens, which resolve to brand DNA at
- * scene-render time. */
+/* .preset-native-scope: rebinds var(--font-*) to preset-native families for
+ * component previews + §T atlas. Component source is untouched. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -562,11 +545,8 @@ h2 {
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* ── §T Type-role atlas. Container = frosted glass card stacking each role on
- * its own row. Single column — padding only, no row dividers beyond a hairline
- * (the aurora carries the visual rhythm; lines would compete). Family selectors
- * use var(--font-*) tokens so the atlas renders in BRAND DNA fonts; only the
- * recipe + the text-shadow-glass legibility decoration are preset-declared. */
+/* ── §T Type-role atlas. var(--font-*) → brand DNA; text-shadow-glass legibility
+ * decoration is preset-declared. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -598,9 +578,7 @@ h2 {
   }
 }
 
-/* ── Type-role samples. var(--font-*) resolves to brand DNA; text-shadow uses
- * --text-shadow-glass for legibility through refraction. Color floor stays at
- * white-on-glass; brand color appears only in pill / unit-suffix accents. */
+/* ── Type-role samples. var(--font-*) → brand DNA at render time. */
 .t-trole-display-cover {
   font-family: var(--font-display);
   font-weight: 800;

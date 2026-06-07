@@ -130,8 +130,6 @@ Set `VO_MODE = verbatim | restructure` (default `restructure` if the user is ind
 (cd "$PROJECT_DIR" && npx hyperframes capture "<TARGET_URL>" -o ./capture)
 ```
 
-> If `user_script.txt` exists (the user gave a script that also named a site), this capture is for **brand + assets only**; Step 2 still uses `user_script.txt` as the narration spine.
-
 **(B) No-capture path (`CAPTURE=no` — pure text video, or a user script with no derivable site)** - do not capture; synthesize a minimal capture package and feed it into the same downstream path. **The preset is chosen by you (master)** because no site can be inferred; choose from the 19 presets according to the user's intent, or ask one short question. The full user script/brief goes into `visible-text.txt`; `colors:[]` makes build-design use the **R2 preset-palette fallback** (a complete readable palette exists even without brand colors; if the user specified brand colors, fill `colors`, which overrides the preset defaults):
 
 ```bash
@@ -184,8 +182,6 @@ The Step 1 Bash phase has already deterministically produced `design-system/infe
   Voice-over mode: <verbatim | restructure>   # From Step 1.0; pair it with the Provided script line. Omit when there is no user script.
   Script style: Keep each scene's script concise - 1-2 sentences, no more than 20 words   # Applies in restructure / no-user-script mode ONLY. In verbatim mode this budget is suspended — preserve the user's wording and let total length follow the script (see story-design guide "Provided-Script Modes").
   ```
-
-> Why these two run in parallel and do not wait for each other: see "Design notes / sibling producer" at the end. The real join point is Phase 3 visual-design, which requires both `chunks/index.json` and `narrator_scripts.json`.
 
 ### Step 3 - Audio (Phase 2.5)
 

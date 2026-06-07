@@ -5,8 +5,7 @@
     (b) you want a still preview thumbnail of the scene.
   When the IIFE runtime IS active, this is invisible (z-index: 0 covers it).
   In the full pipeline, the aurora shader inside <canvas id="three-canvas">
-  takes over — see <SKILL_DIR>/phases/design-system/style-presets/liquid-glass/components/liquid-stage.md
-  for how the canvases stack.
+  takes over — see liquid-stage.md for how the canvases stack.
 -->
 <div class="aurora-bg"></div>
 <style>

@@ -29,12 +29,12 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Anton + Inter + Space Mono — instead of the brand DNA fonts. Neo-Brutalism is a two-face system: Anton (condensed display) carries every heading and the `script` slot also points at Anton because the preset refuses a third face. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). §T type-role atlas uses `.preset-native-scope` so var(--font-display/body/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Neo-Brutalism is a two-face system: Anton (condensed display) carries every heading; the `script` slot also points at Anton because the preset refuses a third face.
 
 ## §A Director's intent
 
 Hard edges. Declarative typography. Shadow is **weight**, not depth.
-Manifesto voice. Hit-and-stick motion. No glide, no fade, no apology.
+Hit-and-stick motion. No glide, no fade.
 One huge thing per scene. Cut, don't crossfade.
 
 ## §B Decoration tokens (merge into design.html `:root`)
@@ -63,9 +63,7 @@ If brand fonts ARE on Google Fonts, keep brand fonts — preset only overrides w
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/border/shadow decoration. Phase 4b scene workers may cite roles by `id` ("use a `display-cover` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. Decoration (hard offset shadow, thick ink border, hard tilt) is preset-native and stays declared with neo-brutalism colors.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `number-hero` numeral that isn't covered by §6 components, the worker reads role `number-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — neo-brutalism's identity collapses if weights drift below 800 at display scale or borders thin below 4px.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — neo-brutalism's identity collapses if weights drift below 800 at display scale or borders thin below 4px.
 
 ```type-roles
 [
@@ -163,8 +161,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits `shadow-hard` and `border-bold` (they're decoration tokens, declared in §B) and signature gestures like corner-pins / tilt-card (expressed as §6 components such as `corner-pins`).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -200,23 +196,15 @@ Take the brand's product description / value prop. Transform with:
 ## §H Scene composition hints (Phase 4b layout guidance)
 
 - **One huge thing per scene**. Display size 200-340px dominates frame.
-- **Use corner-pins on framed scenes** (`<!-- COMPONENT: corner-pins -->`). They give brutalist signature in one element.
-- **Background**: solid brand canvas OR dot-grid (`<!-- COMPONENT: dot-grid-bg -->`). Never gradient (gradient is glass territory).
+- **Use corner-pins on framed scenes** (`<!-- COMPONENT: corner-pins -->`).
+- **Background**: solid brand canvas OR dot-grid (`<!-- COMPONENT: dot-grid-bg -->`). Never gradient.
 - **Transitions between scenes**: hard cut. No crossfade, no slide, no blur.
-- **Stagger**: 100-150ms between elements. Tight, not languid.
+- **Stagger**: 100-150ms between elements.
 
 ## §I Page-level CSS (overrides design.html's neutral chrome — makes the doc itself brutalist)
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Anton + Inter + Space Mono regardless of
- * brand DNA. The §6 component preview and §T type-role atlas
- * also read these via .preset-native-scope.
- *
- * Neo-Brutalism has no script face — the script slot points at Anton because the
- * preset refuses a third face. The fallback chain ends in a heavy condensed
- * grotesque (Archivo Black / Impact / Arial Black) that still carries the
- * declarative-display register. */
+/* ── Preset-native typography vars — doc chrome + .preset-native-scope (Anton + Inter + Space Mono). */
 :root {
   --f-disp-native:
     "Anton", "Archivo Black", "Oswald", "Impact", "Arial Black", "Helvetica Neue", sans-serif;
@@ -228,12 +216,7 @@ Take the brand's product description / value prop. Transform with:
     "Space Mono", "JetBrains Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and the §T type-role atlas so
- * var(--font-*) resolves to Anton / Inter / Space Mono regardless of brand DNA.
- * Paste-ready component source is untouched — Phase 4b still grep + paste the
- * original `var(--font-display)` tokens, which resolve to brand DNA at
- * scene-render time. */
+/* .preset-native-scope: rebinds var(--font-*) to native families for §6 previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -305,12 +288,7 @@ h2 {
   font-weight: 700;
 }
 
-/* ── §T Type-role atlas. Container = canvas card with thick ink border + hard
- * offset shadow. Each .t-trole-* class encodes the role's family / size /
- * weight / leading / tracking / case / decoration. Family selectors use
- * var(--font-*) tokens so the atlas renders in BRAND DNA fonts; only the
- * recipe is preset-declared. Single-column layout — sample stacks vertically
- * with padding-only rows divided by a thin ink hairline. */
+/* ── §T Type-role atlas container. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -338,11 +316,7 @@ h2 {
   }
 }
 
-/* ── Type-role samples. Each .t-trole-* class mirrors a neo-brutalism type
- * role but uses var(--font-display/body/mono/script) so the actual typeface
- * comes from brand DNA. Decoration (color, border, shadow, tilt, ink chip)
- * is preset-native and stays declared with hard-coded neo-brutalism colors
- * (var(--ink), var(--canvas), var(--border-bold), var(--shadow-hard)). */
+/* ── Type-role samples. var(--font-*) resolves to brand DNA; decoration vars are preset-native. */
 .t-trole-display-cover {
   font-family: var(--font-display);
   font-weight: 800;

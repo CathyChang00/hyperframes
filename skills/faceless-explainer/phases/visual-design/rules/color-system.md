@@ -104,30 +104,16 @@ Exception: pure white `text-shadow` / `drop-shadow` halos at emphasis moments (c
 
 ## Background: Keep the Pin-and-Paper Native Paper Texture
 
-**FE ships pin-and-paper (paper-grain family): keep the preset's native paper-texture background, consistent across the film; the brand-color mesh default does NOT apply.** The grain *is* the atmosphere - a mesh / Gaussian-blur blob layer fights the paper aesthetic and is forbidden here. (Historical note: an earlier multi-preset lineage used a brand-color mesh as the project background default; that lineage explicitly listed paper-grain presets like pin-and-paper under "do not use mesh," so for FE it is simply inapplicable.)
+**FE ships pin-and-paper (paper-grain family): keep the preset's native paper-texture background, consistent across the film; the brand-color mesh default does NOT apply.** The grain _is_ the atmosphere - a mesh / Gaussian-blur blob layer fights the paper aesthetic and is forbidden here. (Historical note: an earlier multi-preset lineage used a brand-color mesh as the project background default; that lineage explicitly listed paper-grain presets like pin-and-paper under "do not use mesh," so for FE it is simply inapplicable.)
 
 - **Every scene background = the pin-and-paper paper base** (warm paper texture + optional sparse paper-grain/fiber noise), as declared by the preset §H surface contract.
 - **Single background medium** - do not stack mesh, dual-radial swell, scanline, halftone, or architectural grid on top of the paper. Only the preset's own paper-grain/fiber layer belongs there.
-- **Cross-film consistency is a hard rule** - background is determined by the preset system, not improvised per scene. The paper base is the same warm paper in scene 1 and the closing scene; there is no per-scene surface drift.
-
-> **Component implementation:** the build agent reads pin-and-paper's §H surface contract from `composition-hints.md` and reuses the preset's declared paper-base component (or synthesizes "warm paper texture + sparse fiber noise" from the functional description). Plan references it by function ("native paper base"), not by hex/opacity.
-
-### Background Unification Rule (no per-scene surface drift)
-
-**Hard rule: scene backgrounds are the pin-and-paper paper base, consistent across every scene, including closing / CTA scenes.** Do not switch a scene to off-black / ink dark ground for drama - that is exactly what causes lightness jumps ("the whole film is warm paper, but the final scene suddenly turns black"). For climax / brand-reveal impact, use **foreground techniques** (hero-word weight + scale, pure-#000 ink contrast peak, accent saturation release on the focal element, wordmark / pin reveal), while the **paper base remains unchanged**.
-
-**Deprecated** (no longer allowed because it creates per-scene light/dark jumps): ~~serious/pain beat -> off-black ground~~. For a serious beat on paper, darken by one step with `--paper-warm` and tighten whitespace (see "Pain / Serious Scenes" above), not by swapping the ground.
-
-Plan writes: "native pin-and-paper paper base (warm paper texture, sparse grain) - consistent across the film, including closing scene." **Do not** write whole-scene off-black / ink ground, and **do not** write `opacity` / `blur()` values (build work).
+- **Cross-film consistency is a hard rule** - background is determined by the preset system, not improvised per scene. The paper base is the same warm paper in scene 1 and the closing scene; there is no per-scene surface drift. For climax / brand-reveal impact, use **foreground techniques** (hero-word weight + scale, accent saturation release on the focal element), not a ground swap. **Deprecated:** ~~serious/pain beat -> off-black ground~~; darken by one step with `--paper-warm` instead.
 
 ## Plan Reference Examples
 
-**Standard scene (pin-and-paper native paper base):**
+**Plan Reference Example (pin-and-paper native paper base):**
 
 > "Background: native pin-and-paper paper base (warm paper texture, sparse grain) - consistent across the film. Palette 60-30-10: 60% warm paper (canvas) + 30% hairline + chapter-label rule layering (no surface token; layer with hairline if no `--surface` tier) + 10% accent on the hero word and CTA underline. `--ink` is pure #000 as print-like ink; if any surface goes pure white, prefer `--paper-warm`."
-
-**Brand reveal climax (foreground only, base unchanged):**
-
-> "Beat 6 hero reveal: paper base unchanged; hero word steps to its weight/scale peak with pure-#000 ink contrast and an accent saturation release on the focal element only. No ground swap - the warm paper carries through."
 
 Do not write concrete hex / opacity / saturation percentages - those are build work.

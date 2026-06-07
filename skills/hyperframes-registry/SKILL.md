@@ -10,13 +10,6 @@ The registry provides reusable blocks and components installable via `hyperframe
 - **Blocks** — standalone sub-compositions (own dimensions, duration, timeline). Included via `data-composition-src` in a host composition.
 - **Components** — effect snippets (no own dimensions). Pasted directly into a host composition's HTML.
 
-## When to use this skill
-
-- User mentions `hyperframes add`, "block", "component", or `hyperframes.json`
-- Output from `hyperframes add` appears in the session (file paths, clipboard snippet)
-- You need to wire an installed item into an existing composition
-- You want to discover what's available in the registry
-
 ## Quick reference
 
 ```bash

@@ -1,14 +1,4 @@
-This is a menu of pre-designed multi-phase scene templates. **Plan agent**: scan `triggers` / `role` to match your scene; **do not** Read individual `blueprints/<id>.md` files - `uses` / `phases` / prose descriptions are enough to write the plan. Build agent needs the full blueprint text only when writing code.
-
-A **blueprint** describes a complete multi-phase scene with phase pipeline, glue code, and a working sample composition. Each blueprint has a runnable HTML example under `examples/` you can use as ground truth.
-
-## Picking a Blueprint
-
-Match your scene's narrative role to a blueprint role: `social-proof`, `concept-demo`, `brand-reveal`, `takeover`, `demo`, `opening-hook`, `workflow`, `problem`, `cta`, `comparison`, `metric`, `messaging`.
-
-If two blueprints fit, pick the one whose `uses` rules are closer to your visual plan - composing existing rules is cheaper than reinventing.
-
-If no blueprint fits, **compose rules directly** from the effects catalog - blueprints are starting points, not requirements.
+Pre-designed multi-phase scene templates. **Plan agent**: scan `triggers` / `role` — do not Read `blueprints/<id>.md` files. **Build agent**: read the full blueprint text when writing code. If no blueprint fits, compose rules from the effects catalog.
 
 ## Blueprints
 

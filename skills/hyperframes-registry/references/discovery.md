@@ -38,7 +38,7 @@ Where `<type-dir>` is `examples`, `blocks`, or `components`.
 
 ### Blocks
 
-For an always-current list run `npx hyperframes catalog --type block`. The tables below group the 88 blocks shipping today (as of 2026-06-03) by category. **Block name ≠ shader name**: shader-transition blocks (e.g. `domain-warp-dissolve`) wrap a HyperShader runtime whose internal name omits the `-dissolve`/`-warp` suffix — see the showcase HTML installed alongside the block for the canonical name.
+For an always-current list run `npx hyperframes catalog --type block`. The tables below group the 88 blocks by category. **Block name ≠ shader name**: shader-transition blocks (e.g. `domain-warp-dissolve`) wrap a HyperShader runtime whose internal name omits the `-dissolve`/`-warp` suffix — see the showcase HTML installed alongside the block for the canonical name.
 
 #### Shader transitions (14)
 

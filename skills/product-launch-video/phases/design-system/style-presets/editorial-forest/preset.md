@@ -28,11 +28,11 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Source Serif 4 (opsz axis engaged) + JetBrains Mono — instead of the brand DNA fonts. Editorial Forest is a two-face system: Source Serif 4 carries every editorial moment (display, body, even the script slot, because the preset refuses a third face); JetBrains Mono carries chrome only. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §T type-role atlas uses `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Source Serif 4 carries every editorial moment (display, body, script — the preset refuses a third face); JetBrains Mono carries chrome only.
 
 ## §A Director's intent
 
-Editorial Forest reads like a Penguin classic or a quiet annual report — a serif voice committed to one face (Source Serif 4 at weight 500, with the optical-size axis engaged) and a mono chrome that frames every page (JetBrains Mono UPPERCASE with 0.14em–0.18em tracking). Depth is flat: no drop shadows, no glows, no gradients, ever. Elevation is communicated by color-block contrast, 2px hairline rules, and the difference between a filled tile and a bordered one. The palette is a tight tri-tone — deep forest green, dusty rose pink, oat cream paper — and the brand colors map onto those roles via `--brand-primary` / `--brand-secondary` / `--canvas`. Every scene carries a topbar (mono label + monogram or counter) as the editorial spine. Motion is quiet and committed: nothing bounces, nothing snaps; entries glide, emphasis settles, ambient layers breathe. Best for: warm, unhurried product stories, research recaps, studio updates. Avoid for: urgent, sales-driven, or punchy registers — the rhythm is intentionally slow. **Class prefix: `ef-`.**
+A serif voice committed to one face (Source Serif 4 at weight 500, with the optical-size axis engaged) and a mono chrome that frames every page (JetBrains Mono UPPERCASE with 0.14em–0.18em tracking). Depth is flat: no drop shadows, no glows, no gradients, ever. Elevation is communicated by color-block contrast, 2px hairline rules, and the difference between a filled tile and a bordered one. The palette maps to a tight tri-tone — deep forest green, dusty rose pink, oat cream paper — via `--brand-primary` / `--brand-secondary` / `--canvas`. Every scene carries a topbar (mono label + monogram or counter) as the editorial spine. Motion is quiet and committed: nothing bounces, nothing snaps; entries glide, emphasis settles, ambient layers breathe. **Class prefix: `ef-`.**
 
 ## §B Decoration tokens
 
@@ -73,9 +73,7 @@ Editorial Forest reads like a Penguin classic or a quiet annual report — a ser
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case. Phase 4b scene workers may cite roles by `id` ("use a `stat-figure` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas Editorial Forest ships in its Typography section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `display-hero` numeral that isn't covered by §6 components, the worker reads role `display-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Editorial Forest's identity collapses if the display ladder (220 / 140 / 96 / 84 / 80 / 68 / 56) is broken, or if serif body drifts above weight 400.
+The atlas is the **sole authoring source** for non-component text — do NOT invent ad-hoc sizes. Editorial Forest's identity collapses if the display ladder (220 / 140 / 96 / 84 / 80 / 68 / 56) is broken, or if serif body drifts above weight 400.
 
 ```type-roles
 [
@@ -159,8 +157,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the monogram circle (an identity stamp, not a text role) and the footline layout (structural, declared in §H).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -231,15 +227,7 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Source Serif 4 (opsz engaged) + JetBrains Mono
- * regardless of which brand DNA the preset is applied to. The §6 component preview
- * and §T type-role atlas also read these via .preset-native-scope.
- *
- * Editorial Forest is two-face: Source Serif 4 carries every editorial moment;
- * JetBrains Mono carries chrome only. The script slot points back at Source Serif 4
- * because the preset refuses a third face. Fallbacks end in Georgia / Menlo so the
- * register survives even if the Google fonts fail. */
+/* ── Preset-native typography vars (chromeFonts.googleFontsHref). */
 :root {
   --f-disp-native:
     "Source Serif 4", "Source Serif Pro", "Fraunces", "Spectral", "Newsreader", Georgia, serif;
@@ -249,12 +237,9 @@ const DUR = {
     "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Source Serif 4 / JetBrains Mono regardless of the
- * brand DNA tokens emitted in :root. The paste-ready component source is
- * untouched — Phase 4b still grep + paste the original `var(--font-display)`
- * tokens, which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: re-bind var(--font-*) to preset-native families for component
+ * previews + §T atlas. Paste-ready component source is untouched — Phase 4b tokens
+ * resolve to brand DNA at render time. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);

@@ -8,7 +8,7 @@
 
 ## Narrative Analysis
 
-- **Emotional Arc**: Awe (Fire Soul reveal) → curiosity (Water/Earth/Air variety) → motivation (gamified collecting mechanic) → intense desire (premium Collective Soul tier) → FOMO (drop date) → focused intent (marketplace)
+- **Emotional Arc**: Awe (reveal) → curiosity (element variety) → desire (Collective Soul climax) → FOMO (drop date) → focused intent (marketplace)
 - **Hook Strategy**: Visual spectacle / single-word reveal — one word ("Fire") + amber particle trail does the entire opening; no setup, no pain, no question
 - **Product Reveal Timing**: Immediate (scene 1 of 10, 0% delay). The product _is_ visible in scene 1 — there's no separate "introducing" beat for the collection
 - **Pacing**: Tight cascade — 2-4s per scene, four element reveals back-to-back, then unify, then climax tier, then close. Total runtime is essentially one continuous montage
@@ -25,7 +25,7 @@
 - **Emotional Beat**: Awe and curiosity
 - **Transition**: `none_first_scene` — starts from black with amber particle trail leading into a glowing red environment
 - **Script**: "Fire"
-- **Copywriting Notes**: Single-word script. The aesthetic IS the pitch. Generic AI would say "Introducing the Fire Soul card from our new collection." This says "Fire."
+- **Copywriting Notes**: Single-word script. The aesthetic is the pitch.
 
 ### Section 2: "Water Soul Reveal" (0:02–0:05, ~10%)
 
@@ -89,7 +89,7 @@
 - **Emotional Beat**: Intense desire
 - **Transition**: `match_cut` — all glowing paths merge into a single multicolored spiral, highlighting one ultimate card
 - **Script**: "The exclusive Collective Soul"
-- **Copywriting Notes**: This is the climax of the stratified tier escalation. Four base cards → ecosystem → premium tier. Generic AI would have flat-listed all five. This _withholds_ the premium tier until the cascade has done its work, then drops it as the desire climax.
+- **Copywriting Notes**: Climax of the stratified tier escalation. Four base cards → ecosystem → premium tier withheld until the cascade has done its work.
 
 ### Section 8: "Release Date and Urgency" (0:20–0:24, ~13%)
 
@@ -125,21 +125,12 @@
 
 ## Takeaways
 
-**What Works Well**:
-
-- **Stratified tier escalation**: cascade four equivalents (Fire / Water / Earth / Air) → unify them into ecosystem → reveal the premium tier (Collective Soul). The pacing of _withholding_ the premium tier until scene 7 is the entire video's persuasive engine
-- **Single-word scripts during element reveals**: trusting the visual to carry the message produces tight, kinetic cascades that a verbose AI would never write
-- **Color-bleed transitions matching content**: each transition's color shift _is_ the next element (red→teal→green→cyan) — the transition mechanic and the content are the same thing
-- **Continuous-sentence cascades (scenes 5-6 and 8-9)**: same trick as Vibe.co — adjacent scripts complete each other across the cut, creating momentum
-- **Drop date as climax CTA, not afterthought**: scene 8 is the _peak_ of FOMO, not just an info dump at the end. Pairs scarcity (date) with exclusivity (platform lock) for maximum urgency
-- **Brand outro distinct from product CTA**: scene 10 is `branding` (parent brand identity), not another `cta`. The drop CTA already happened; scene 10 just signs the work.
-
 **Reusable Patterns**:
 
-- **Stratified Tier Reveal**: cascade N equivalents at the same tier level → unify them → reveal a premium tier the audience didn't know existed. Works for collections, plans, subscription tiers, product lines
-- **Color-As-Content Transitions**: when each scene's content has its own color identity, use `ui_morphing` or `fade_color_bleed` with the _next color_ leading the wipe — the transition itself becomes the next content beat
-- **Single-Word Cascade**: 4+ consecutive scenes with one-word scripts, each anchored by a visual signature. Builds rhythm; trusts the audience to read the visual; produces a kinetic, mood-led opening
-- **Drop-Date FOMO Climax**: temporal scarcity (specific date) + platform lock ("only available on X") = strongest cascade-ending move for collectible/launch content
+- **Stratified Tier Reveal**: cascade N equivalents at the same tier → unify into ecosystem → reveal a premium tier the audience didn't know existed.
+- **Color-As-Content Transitions**: when each scene has its own color identity, use a `fade_color_bleed` with the next element's color leading the wipe.
+- **Single-Word Cascade**: 4+ consecutive scenes with one-word scripts anchored by visual signatures — trusts the audience to read the visual.
+- **Drop-Date FOMO Climax**: temporal scarcity (specific date) + platform lock ("only available on X") is the strongest cascade-ending move for collectible/launch content.
 
 **Formula**: Open with visual spectacle and a single-word script. Cascade N equivalents at the same tier (color-led transitions matching each element). Unify them into ecosystem framing mid-video. Reveal a premium tier the audience didn't know was coming. Close with drop date + platform lock + parent brand identity.
 

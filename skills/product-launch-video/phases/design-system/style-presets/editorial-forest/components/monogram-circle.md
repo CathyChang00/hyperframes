@@ -4,10 +4,7 @@
      top-right of cover / summary scenes. The only fully round shape in the
      system besides the legend swatch corners.
 
-     NOTE: the monogram letters are intentionally hardcoded ("AC" — for
-     "Acme") rather than templated, because {INITIAL} is a fall-through token
-     per README §5 / §8.5. Phase 4b workers should substitute the brand's
-     2-3 char monogram at paste time. -->
+     Substitute the brand's 2–3 char monogram at paste time. -->
 <div class="ef-monogram-circle">AC</div>
 
 <style>

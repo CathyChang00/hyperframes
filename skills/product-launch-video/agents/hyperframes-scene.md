@@ -9,9 +9,9 @@ You are a product-launch-video Step 6 worker, running in parallel fan-out with s
 
 **Path contract:** Dispatch provides `PROJECT_DIR` (the video project root). Write to `PROJECT_DIR/compositions/<scene-id>.html`; do not create a `hyperframes/` subdirectory under `PROJECT_DIR`.
 
-## Pre-Write Cheat Sheet (scan before typing; saves 15-20% rework)
+## Pre-Write Cheat Sheet
 
-In practice, 80% of rework in a single worker run clusters around 4 hidden pitfalls — run through them mentally before starting:
+Run through these mentally before starting:
 
 1. **Bridge morphs (constraint #14) with bbox differences → must be converted into GSAP transform** (`x/y/scaleX/scaleY`); **do not** tween `left/top/width/height`. The conversion formula is in constraint #5.
 2. **Component elements that will be tweened → remove CSS-baked `transform: rotate(...)`; move tilt into GSAP `rotation`.** CSS transform and GSAP transform on the same element overwrite each other, and the preset tilt signature will be lost. See constraint #5b.
@@ -28,7 +28,7 @@ After writing, run the self-check grep block (at the end). If any FAIL/MISSING/b
 4. **Every** `.md` file in your `rule_paths` list (absolute paths; read all of them)
 5. When `blueprint` is not `composed` → read `<id>.md` in the hyperframes-animation skill `blueprints/` subdirectory (extract `id` from `based-on <id>` / `extended <id>`)
 6. **`design_chunks` field (replaces the old full read of `design.html`):**
-   - `tokens_file` — **prefer the `tokens.css` body in the dispatch packet's `## Tokens/easings/voice` section** (already available after Step 0 Read packet; saves an extra Read). Only Read this absolute path if that section is missing; ~1 KB. Rewrite the full `:root { ... }` block to `#root { ... }` and paste it into the scene `<style>`.
+   - `tokens_file` — prefer the inline body from the packet's `## Tokens/easings/voice` section; Read this absolute path only if that section is missing. Rewrite `:root { ... }` → `#root { ... }` per the Skeleton.
    - `easings_file` — **prefer the inline body from the packet section** (same as above); Read only if missing, ~0.5 KB. Paste the full `const EASE = { ... }; const DUR = { ... }` block at the top of the scene `<script>`. `creative_brief` only references canonical role keys (`EASE.entry/emphasis/exit/drift`, `DUR.snap/med/slow`). **If the brief references a key not present in the pasted object**: use the semantically closest existing role key (for example `EASE.emphasis`→`EASE.entry`, `DUR.slow`→`DUR.med`), **and note one line in the completion report: `ease-key fallback: <brief key>→<actual key>` — do not silently drop it or hard-code raw curves.**
    - `voice_file` — **prefer the inline body from the packet section** (same as above); Read only if missing, ~0.5 KB. Write **all visible DOM text** (headline / chip / button / stat label) in this register: follow the recipe (strip articles, UPPERCASE, sentence breaks, etc.) when rewriting English phrases from the `creative_brief`. **Do not** modify the narrator script associated with `<audio>` (Phase 2 already shaped it for TTS; uppercasing would damage speech rhythm).
    - `hints_file` — absolute path \| null. If non-null, read it; ~1-3 KB. It contains preset **composition / material / color preferences** (60-30-10 ratio, signature material, optional background / surface-treatment stanzas). Use it as a **style reference**: §3 60-30-10 and constraint #11 `#root` background choices should reference it. This is taste guidance, **not** a hard render contract.
@@ -73,7 +73,7 @@ Rewrite image `src` in `page-card.html` from `capture/assets/<file>` to **`publi
 
 ## Constraints Specific to This Skill (Not Separately Covered by hyperframes-core)
 
-Workers must execute these constraints exactly. hyperframes-core already covers the rest (`<template>` required, no `Math.random` / `Date.now` / `repeat:-1`, no `display`/`visibility` animation, build timelines synchronously), so they are not repeated here; trust that you have read `SKILL.md`.
+Workers must execute these constraints exactly.
 
 1. **CSS / JS selector — root uses `#root`; internal elements use `s<N>-` prefix**
    - During render, producer strips the `<div class="<scene-id>-root">` wrapper (preview/snapshot keep it), so any ancestor selector like `.<scene-id>-root .foo` breaks completely in render.
@@ -422,8 +422,6 @@ done
 ```
 
 Any FAIL / MISSING / bug-shape hit → fix before reporting. Step 7 finalize has the same harness, so catching it here saves an 8-13 minute round-trip.
-
-> **Component selection is your judgment:** `design_chunks.components` is the full preset component library (not a Phase 3-designated subset). Choose a few components that fit the role description in `creative_brief`; **use only one clear focus component per scene** (multiple hero-level focuses in one scene fight each other). If nothing fits, use fewer / none and let effects + type roles carry the scene; do not force components in.
 
 ## Report Template
 

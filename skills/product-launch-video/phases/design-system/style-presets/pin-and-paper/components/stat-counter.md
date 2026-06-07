@@ -20,8 +20,6 @@
     Variants:
       .alt   — paper-2 fill.
       .alt2  — paper-extra fill + 0.9° askew rotation.
-
-    Often combined with a pp-safety-pin overlay at the top edge of the card.
   */
   .pp-stat-counter {
     position: relative;

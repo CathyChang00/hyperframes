@@ -2,8 +2,6 @@
 
 `block-frame/` is the **reference implementation (reference preset)**. This README defines what a style preset must contain, what each part outputs, and how to **add / refactor / convert another style** into the standard format.
 
-> The fastest way to start a new preset: `cp -r block-frame <new-name>`, then rewrite section by section according to §2, follow the rules in §4, and verify with §6.
-
 ---
 
 ## 1. Directory Shape
@@ -45,8 +43,6 @@ Below are all existing styles currently under `style-presets/`. Before creating 
 | `capsule`               | Capsule           | universal capsule shapes · soft low-opacity offset · Didone serif + Grotesk · floating capsule wallpaper             |
 | `liquid-glass`          | Liquid Glass      | inner highlight · translucent hairline edge · rise-and-settle motion · high-contrast aurora base                     |
 | `neo-grid-bold`         | Neo-Grid Bold     | 12×8 CSS grid · 1.5px ink hairline · no shadow · single electric signal color                                        |
-
-> This table is a **style-positioning index**, not a status checklist. Update it only when presets are truly added / removed (do not add mutable counts such as "component count / compliant"; those are not guide content).
 
 ---
 
@@ -103,7 +99,7 @@ Parsed as `## §<letter> <title>`. Block Frame has 8 sections, in this order:
 
 **`§B` token naming convention** (Block Frame example): brand colors `--brand-primary/secondary/tertiary/accent/costume`, `--ink`, `--canvas`, `--brand-gradient`, decorative colors `--deco-1..4`, fonts `--font-display/body/mono`, and preset-private tokens with a prefix (Block Frame uses `--bf-*`: `--bf-border-bold`, `--bf-shadow`, `--bf-tilt-*`, `--bf-pad-*`, ...).
 
-**`§T` role schema** (each entry): `id` · `family` (display/body/mono/script, resolved at render time to `var(--font-*)`) · `purpose` · `px_min`/`px_max` · `weight` · `leading` · `tracking` · `case` · `sample_html` (uses `.t-trole-<id>` class). Decorative CSS for each role lives in §I as `.t-trole-<id> { ... }`. Block Frame currently has 11 roles: `heading-xl / heading-lg / heading-md / close-title / quote-text / stat-number / card-title / step-num / label-pill / mono-tag / counter`.
+**`§T` role schema** (each entry): `id` · `family` (display/body/mono/script, resolved at render time to `var(--font-*)`) · `purpose` · `px_min`/`px_max` · `weight` · `leading` · `tracking` · `case` · `sample_html` (uses `.t-trole-<id>` class). Decorative CSS for each role lives in §I as `.t-trole-<id> { ... }`.
 
 > **`sample_html` copy convention:** sample text should be the kind of **short real copy a video would use** (headline / number / eyebrow, etc.). **Do not write self-describing placeholder prose** (for example, `<p>Body sits at 24-28px, weight 400 — never uppercase...</p>` describing the role itself). That kind of self-description reads like debug notes in the design.html §T atlas, not a sample. Either provide a proper sample line, or, if the role is just generic body text without a signature worth demonstrating, do not create that role at all (let §6 components carry body copy; see how capsule leaves almost no generic body role).
 

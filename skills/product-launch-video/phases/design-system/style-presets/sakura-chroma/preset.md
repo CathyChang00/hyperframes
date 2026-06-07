@@ -28,7 +28,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Big Shoulders Display + Albert Sans + JetBrains Mono + Noto Sans JP — instead of the brand DNA fonts. Sakura Chroma is a four-face system; the `script` slot points at Noto Sans JP because the cassette-package register uses Japanese characters (限定版) as the only "script" voice — there is no handwritten face in the system. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Four-face system: `script` slot points at Noto Sans JP because the cassette-package register uses Japanese characters (限定版) as its only "script" voice — there is no handwritten face in the system.
 
 ## §A Director's intent
 
@@ -41,8 +41,6 @@ Depth comes from **hard 8px ink-offset shadows** (zero blur), 1.5px ink borders,
 **Color role contract**: one scene = one dominant rainbow color carrying the lockup bar or stamp / topstrip / chip; ink-brown carries every headline, border, body, and shadow. Red is reserved for inline `<em>` emphasis inside display headlines and for hero numerals. Borders are always ink — colored borders do not exist.
 
 Motion is **considered paper-snap**: power2.out entries, no overshoot (a cassette package doesn't bounce). Ambient: petal scatter drift, ribbon parallax. Type emphasis: subtle scale + opacity, never elastic. Scene transitions favor 280ms ease cross-blends (matching the template's intrinsic opacity transition) over hard cuts.
-
-**Best for** brands with warm/medium-saturation palettes that can carry rainbow accents — indie hardware, music labels, creative studios, kawaii-tech, magazine/zine launches, analog product catalogues. Restrained corporate or quiet palettes still render but lose the catalogue-page playfulness.
 
 **Class prefix**: `sk-` (initialism of sakura, 3 chars).
 
@@ -161,9 +159,7 @@ Sakura Chroma's typographic identity depends on a four-face stack — condensed 
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `num-hero` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the source design.md typography table ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `num-hero` numeral that isn't covered by §6 components, the worker reads role `num-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Sakura Chroma's identity collapses if weights drift below 900 at display scale or if negative tracking is dropped.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — Sakura Chroma's identity collapses if weights drift below 900 at display scale or if negative tracking is dropped.
 
 ```type-roles
 [
@@ -275,8 +271,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits `paper-grain` (a texture, declared in §B decoration tokens), `petal-cluster` / `ribbon-band` / `rosette-seal` (decorative gestures, realized in §6 components), and the `qbody-box` shadow (a §B structural token).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 Sakura Chroma's source template ships **zero content @keyframes** — only a 280ms ease opacity slide-fade for navigation chrome. EASE/DUR are therefore derived from the design.md voice register: "warm but disciplined", "playful but tightly typeset", "hand-curated industrial". That register is calm-considered, not bouncy — power2.out / power3.out for primary motion, no back-overshoot. The single 280ms ease cross-blend the template inherits maps to the scene-transition default.
@@ -308,7 +302,6 @@ const DUR = {
 
 **Allowed primitives**
 
-- Cross-blend (280ms opacity) between scenes; hard cut only on stat-counter beats.
 - Hero entry: y +24px → 0, opacity 0 → 1, scale 0.98 → 1 on power2.out @ DUR.med.
 - Inline `<em>` emphasis: animate the red color shift (not delayed reveal). Stagger 80-160ms after the parent headline lands.
 - Stamp / seal: drop-in with rotate(-3deg) preserved; opacity 0 → 1 + scale 0.92 → 1 on power3.out @ DUR.snap.
@@ -317,11 +310,9 @@ const DUR = {
 - Ribbon-band sweep: x -10% → 0 with rotate preserved on power2.out @ DUR.slow.
 - Equalizer bar fill: per-column stagger 60ms; each "on" segment scaleY 0 → 1 with `transform-origin: bottom` on power3.out @ DUR.snap.
 - Hero stat counter: animated count-up (0 → target) on power3.out @ DUR.slow.
-- Ambient petal / ribbon drift: sine.inOut, period 6-10s, amplitude ±8-16px.
 
 **Forbidden**
 
-- Back / elastic / bounce eases on display type or hero numerals (breaks catalogue voice).
 - Rotation animations beyond preserving the source ±3° (stamp) / ±22° (ribbon). No spinning.
 - Blurred shadow tweens or filter: blur() (sakura uses zero-blur exclusively).
 - Italic on emphasis — the red `<em>` color shift IS the emphasis, never `font-style: italic`.
@@ -330,7 +321,7 @@ const DUR = {
 
 **Stagger budget**
 
-160-220ms between elements (slower than 8-bit-orbit's 80-120ms — sakura is considered, not arcade). Total scene-in stagger ≤ 700ms. Hero / lockup land first; petals + ribbons last (atmosphere drops in after the focal beat).
+160-220ms between elements. Total scene-in stagger ≤ 700ms. Hero / lockup land first; petals + ribbons last (atmosphere drops in after the focal beat).
 
 ## §G Voice transform recipe (apply to brand's voice from §1 DNA)
 
@@ -397,17 +388,7 @@ Take the brand's product description / value prop. Transform with:
 ## §I Page-level CSS (overrides design.html's neutral chrome — makes the doc itself read as sakura-chroma)
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Big Shoulders Display / Albert Sans /
- * JetBrains Mono / Noto Sans JP regardless of which brand DNA the preset is
- * applied to. The §6 component preview and §T type-role atlas
- * read these via .preset-native-scope.
- *
- * The script slot points at Noto Sans JP because Sakura Chroma's only "script"
- * voice is the Japanese cultural-accent character (限定版) — there is no
- * handwritten face in the system. Fallback chains end in faces that still
- * carry the preset's vibe (Archivo Black / Oswald for the condensed display;
- * Inter / IBM Plex Sans for body). */
+/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref). */
 :root {
   --f-disp-native:
     "Big Shoulders Display", "Archivo Black", "Oswald", "Impact", "Helvetica Neue", sans-serif;
@@ -419,12 +400,7 @@ Take the brand's product description / value prop. Transform with:
     "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Big Shoulders / Albert Sans / Noto Sans JP /
- * JetBrains Mono regardless of brand DNA. The paste-ready component source is
- * untouched — Phase 4b still grep + paste original `var(--font-display)`
- * tokens, which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families for §6 previews and §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -509,12 +485,7 @@ h2 {
   color: var(--anchor-ink) !important;
 }
 
-/* ── §T Type-role atlas. Container = paper-on-paper card with 1.5px ink border.
- * Each .t-trole-* class encodes the role's family / size / weight / leading /
- * tracking / case / decoration. Family selectors use var(--font-*) tokens so
- * the atlas renders in BRAND DNA fonts; only the recipe is preset-declared.
- * Decoration (sk-red color, hard ink shadow, stamp/seal/ribbon treatments)
- * stays declared with sakura-chroma colors. */
+/* ── §T Type-role atlas. Family selectors use var(--font-*) so the atlas renders in brand DNA fonts; decoration stays preset-native. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -541,11 +512,7 @@ h2 {
   }
 }
 
-/* ── Type-role samples. Each .t-trole-* mirrors a sakura-chroma typography
- * token (disp-hero / disp-statement / num-hero / mono / ...) but uses
- * var(--font-display/body/mono/script) so the actual typeface comes from
- * brand DNA. Decoration is preset-native: ink color, sk-red emphasis,
- * red-stamp rotation, starburst seal, ribbon-bar fill. */
+/* ── Type-role samples. Uses var(--font-*) for typeface; preset-native decoration. */
 .t-trole-disp-hero {
   font-family: var(--font-display);
   font-weight: 900;

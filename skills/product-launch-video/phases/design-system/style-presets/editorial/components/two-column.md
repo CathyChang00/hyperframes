@@ -10,10 +10,5 @@
     gap: 48px;
     align-items: start;
   }
-  @media (max-width: 720px) {
-    .ed-cols {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
 ```

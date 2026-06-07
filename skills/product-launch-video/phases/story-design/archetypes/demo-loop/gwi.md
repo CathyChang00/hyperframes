@@ -8,7 +8,7 @@
 
 ## Narrative Analysis
 
-- **Emotional Arc**: Pressure (urgency for answers) → immediate relief (simple solution) → confidence (repeated competence demos) → empowerment/limitless potential
+- **Emotional Arc**: Urgency (hook) → relief (reveal) → confidence (repeated proof) → empowerment (CTA)
 - **Hook Strategy**: Direct-address question + pain point ("Need answers... now?"). Creates immediate "Yes" response while establishing urgency
 - **Product Reveal Timing**: Almost immediately (5s) as direct answer to opening question. Product established as hero early — rest of video validates capabilities
 - **Pacing**: "Call and Response" rhythm — alternates between user query (slow, deliberate) and instant data reveal (fast, rewarding), mimicking actual tool UX
@@ -77,16 +77,10 @@
 
 ## Takeaways
 
-**What Works Well**:
-
-- "Call and Response" structure perfectly demonstrates UI without voiceover explanation
-- Specific examples (NBA, Fashion, Parents) cover wide enough range to feel universally applicable
-- Explicitly addressing "trust" objection is crucial for AI product narratives
-
 **Reusable Patterns**:
 
-- **Query → Result Loop**: Show input (user effort) and output (reward) to demonstrate value
-- **Micro-to-Macro Expansion**: Start with specific niche, broaden to "any market" to show scale
-- **Verb-Brand Association**: Use product name as action word in copy ("Spark your next idea")
+- **Query → Result Loop**: show input (user effort) and output (reward) every demo cycle.
+- **Micro-to-Macro Expansion**: start with a specific niche query, broaden to "any market" to show scale.
+- **Verb-Brand Association**: use the product name as an action word ("Spark your next idea").
 
 **Formula**: Start with a time-sensitive question, answer it with the product, prove it with three diverse scenarios escalating from data to strategy.

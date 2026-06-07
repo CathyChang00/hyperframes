@@ -29,23 +29,21 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Stardos Stencil + Inter + Barlow Condensed + Bowlby One — instead of the brand DNA fonts. The `mono` slot binds Barlow Condensed because Stencil & Tablet uses it as the chrome / pill / legend voice (a condensed extra-heavy uppercase grotesque playing the role mono plays elsewhere); the `script` slot binds Bowlby One because the preset reserves that face for the 320px quote-mark glyph and refuses any other handwritten register. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). §T type-role atlas uses `.preset-native-scope` so var(--font-display/body/mono/script) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. The `mono` slot binds Barlow Condensed (chrome / pill / legend voice); the `script` slot binds Bowlby One (320px quote-mark glyph only — no other handwritten register permitted).
 
 ## §A Director's intent
 
-West Coast skate-poster meets municipal stencil signage. Stardos Stencil carries every headline and numeral with its characteristic ink-break gaps; Barlow Condensed extra-heavy runs all uppercase chrome, metadata, pills, and legends; Inter handles the small set of sentence-case body paragraphs that exist mostly to caption the loud type above them.
+Stardos Stencil carries every headline and numeral with its characteristic ink-break gaps; Barlow Condensed extra-heavy runs all uppercase chrome, metadata, pills, and legends; Inter handles sentence-case body paragraphs.
 
-Depth is **flat by design** — no drop shadows, no gradients. Depth comes from saturated color blocks against a warm bone field and from generous 22-26px tablet radii. Cards tile the canvas geometrically; you can identify a slide's structure from across the room because the color blocks ARE the layout.
+Depth is **flat by design** — no drop shadows, no gradients. Depth comes from saturated color blocks against a warm bone field and from generous 22-26px tablet radii. Cards tile the canvas geometrically.
 
-The system's identity hinges on **warm neutrals** (bone / paper) tinted with brand DNA, not on a fixed palette. The bone and paper anchors are declared as hue-anchor hexes in §B (§8.2 exception) so the archival, kraft-paper register survives any brand color; brand-primary / -secondary / -accent ignite tablets, action-bars, section numerals, and pills as the saturated tile fills.
+The system's identity hinges on **warm neutrals** (bone / paper) tinted with brand DNA, not on a fixed palette. The bone and paper anchors are declared as hue-anchor hexes in §B (§8.2 exception) so the archival register survives any brand color; brand-primary / -secondary / -accent ignite tablets, action-bars, section numerals, and pills as the saturated tile fills.
 
-Type runs **huge and uppercase**: cover hero 220px, section-divider numeral 540px, tablet numerals 220px, stats 160px. Scale is the primary expressive tool, color is secondary, body sentence-case Inter is the supporting cast. Stencil ink-break glyphs are non-negotiable on every headline; Barlow Condensed without ≥0.04em tracking reads as broken.
+Type runs **huge and uppercase**: cover hero 220px, section-divider numeral 540px, tablet numerals 220px, stats 160px. Scale is the primary expressive tool, color is secondary. Stencil ink-break glyphs are non-negotiable on every headline; Barlow Condensed without ≥0.04em tracking reads as broken.
 
 Motion is **considered and declarative** — stamped, not glided. Headlines arrive with `power2.out` / `expo.out` (no overshoot, no bounce); numerals reveal with stepped emphasis (`steps()`) to feel printed rather than animated. Scene transitions are hard cuts or slow paper-wipe — never crossfade.
 
-**Best for** museum / cultural-institution decks, art / architecture brands, longform research, heritage and craft brands, manifestos — anytime the brief reads "field manual," not "slide deck." **Avoid for** contexts demanding digital-native polish or playful pop — the stencil-cut display commits to a deliberate analog feel.
-
-**Class prefix `stn-`** (4 chars, lowercase-dash). `st-` was rejected as too generic. Every component class is namespaced `stn-*`.
+**Class prefix `stn-`** (4 chars, lowercase-dash). Every component class is namespaced `stn-*`.
 
 ## §B Decoration tokens (merge into design.html `:root`)
 
@@ -112,9 +110,7 @@ Stencil & Tablet forces stencil display + condensed chrome regardless of site DN
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/border/rotation/suffix decoration. Phase 4b scene workers may cite roles by `id` ("use a `numeral-tablet` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas Stencil & Tablet ships in its Typography section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a 220px tablet numeral that isn't covered by §6 components, the worker reads role `numeral-tablet` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Stencil & Tablet's identity collapses if numerals drop below 160px or if Barlow Condensed runs without ≥0.04em tracking.
+The atlas is the **sole authoring source** for non-component text — do NOT invent ad-hoc sizes. Stencil & Tablet's identity collapses if numerals drop below 160px or if Barlow Condensed runs without ≥0.04em tracking.
 
 ```type-roles
 [
@@ -197,8 +193,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
   }
 ]
 ```
-
-The atlas omits chrome positions (declared in §B / §H as fixed absolute offsets) and the tablet card pad / radius (a §B decoration token, not a text role).
 
 ## §E Motion (GSAP consts — REPLACES site ease)
 
@@ -294,7 +288,7 @@ Take the brand's product description / value prop. Transform with:
 
 **Tablet doctrine**
 
-- Tablets ALWAYS carry a numeral above their headline. A tablet without a numeral is a generic card.
+- Tablets ALWAYS carry a numeral above their headline. (See tablet.md.)
 - Tablet radius is 22-26px; square corners on cards / action bars / pills break the system.
 - Tablets tile flat — never stack. No z-index inside tablet grids. Gap between tablets is 22-28px and the bone field showing through IS the layout.
 
@@ -311,16 +305,7 @@ Take the brand's product description / value prop. Transform with:
 ## §I Page-level CSS (overrides design.html's neutral chrome — makes the doc itself read as Stencil & Tablet)
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Stardos Stencil + Inter + Barlow Condensed +
- * Bowlby One regardless of which brand DNA the preset is applied to. The §6
- * component preview and §T type-role atlas also read these via
- * .preset-native-scope.
- *
- * The script slot is bound to Bowlby One because Stencil & Tablet reserves it
- * for the 320px quote-mark glyph (and refuses any other handwritten register).
- * The mono slot is bound to Barlow Condensed because the preset uses it as the
- * chrome / pill / legend voice — the role mono plays in other presets. */
+/* ── Preset-native typography vars (chromeFonts.googleFontsHref). */
 :root {
   --f-disp-native:
     "Stardos Stencil", "Allerta Stencil", "Black Ops One", "Impact", "Arial Black", serif;
@@ -333,12 +318,9 @@ Take the brand's product description / value prop. Transform with:
     "Barlow Condensed", "Oswald", "Archivo Narrow", "Helvetica Neue", Arial, sans-serif;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and the §T type-role atlas so
- * var(--font-*) resolves to Stardos Stencil / Inter / Barlow Condensed / Bowlby
- * regardless of the brand DNA tokens emitted in :root. The paste-ready
- * component source is untouched — Phase 4b still grep + paste original
- * `var(--font-display)` tokens, which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: re-bind var(--font-*) to preset-native families for component
+ * previews + §T atlas. Paste-ready component source is untouched — Phase 4b tokens
+ * resolve to brand DNA at render time. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);

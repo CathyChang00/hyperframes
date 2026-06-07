@@ -2,8 +2,7 @@
 <!-- Daisy Days signature: a cluster of 4-7 hand-drawn SVG ornaments living
      on z-index:1, pointer-events:none, often cropping past the slide edge.
      This component renders the four canonical anchor positions (top-left
-     daisy, top-right star, bottom-left star, bottom-right rainbow). The
-     Phase 4b worker can drop, duplicate, or reposition instances per scene.
+     daisy, top-right star, bottom-left star, bottom-right rainbow).
      Strokes are charcoal (--ink); fills pull pastel tints from brand vars
      so the ornaments re-color when the palette shifts. -->
 <div class="dc-ornaments" aria-hidden="true">

@@ -27,7 +27,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Inter + Space Grotesk — instead of the brand DNA fonts. Block Frame is a two-face system: heavy uppercase Inter does display + body, wide-tracked Space Grotesk carries chrome / mono / labels. The `script` slot also points at Inter because Block Frame refuses a third face. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). §T type-role atlas uses `.preset-native-scope` so `var(--font-display/body/script/mono)` re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Block Frame is a two-face system — Inter does display + body, Space Grotesk carries mono/labels; the `script` slot points at Inter (refuses a third face).
 
 ## §A Director's intent
 
@@ -38,10 +38,7 @@ saturated pastels — pink, blue, green, yellow, cream — plus off-white and
 ink. Display is heavy uppercase Inter with negative tracking; chrome is
 wide-tracked Space Grotesk in caps. Decorative tilts (±2° to ±12°),
 star-bursts, stripe blocks, and dot grids puncture the grid intentionally.
-The system reads as confident, joyful, slightly chaotic — zine layout meets
-toy packaging. Density is the rule, not the exception: empty surfaces feel
-timid. Best for: indie SaaS launch, agency credentials, creative reviews,
-brand redesigns. Avoid for: regulated disclosures, formal legal briefs.
+Density is the rule: empty surfaces feel timid.
 
 Brand-aware color contract: `--brand-primary` is the dominant pastel
 ground, `--brand-secondary` is the colored-shadow accent (replaces the
@@ -97,9 +94,7 @@ is the CTA fill. Class prefix is `bf-` (block-frame initials).
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `stat-number` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the Block Frame typography scale, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `quote-text` block that isn't covered by §6 components, the worker reads role `quote-text` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Block Frame's identity depends on the heavy-uppercase + negative-tracking + sentence-body + wide-tracked-label ladder.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — Block Frame's identity depends on the heavy-uppercase + negative-tracking + sentence-body + wide-tracked-label ladder.
 
 ```type-roles
 [
@@ -182,8 +177,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
   }
 ]
 ```
-
-The atlas omits `nav-btn` / `slide-counter` chrome shells (declared in §B / template chrome) and the decorative `star-burst` / `stripe-block` / `dot-grid` patterns (decorative patterns, not text roles).
 
 ## §E Motion (GSAP consts — REPLACES site ease)
 
@@ -287,16 +280,8 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Inter + Space Grotesk regardless of
- * brand DNA. The §6 component preview and §T type-role atlas also read
- * these via .preset-native-scope.
- *
- * Block Frame has no script face — the script slot points at Inter because the
- * preset refuses a third face. The fallback chain ends in a heavy grotesque
- * (Archivo Black / system-ui) that still carries the "neobrutalist mass"
- * register. Mono slot is Space Grotesk (treated as quasi-mono via wide
- * tracking + uppercase) with JetBrains Mono / IBM Plex Mono as deeper falls. */
+/* ── Preset-native typography vars (chromeFonts). No script face — script slot
+ * points at Inter (refuses a third face). Space Grotesk in mono slot. */
 :root {
   --f-disp-native:
     "Inter", "Archivo Black", "Helvetica Neue", -apple-system, BlinkMacSystemFont, system-ui,
@@ -310,12 +295,8 @@ const DUR = {
     "Space Grotesk", "JetBrains Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Inter / Space Grotesk regardless of brand DNA.
- * Paste-ready component source is untouched — Phase 4b still grep + paste the
- * original `var(--font-display)` tokens, which resolve to brand DNA at
- * scene-render time. */
+/* .preset-native-scope: rebinds var(--font-*) to preset-native families for
+ * component previews + §T atlas. Component source is untouched. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -358,10 +339,7 @@ pre {
   box-shadow: var(--bf-shadow-sm, 4px 4px 0 #000);
 }
 
-/* ── §T Type-role atlas. Container = bordered + shadowed canvas card.
- * Each .t-trole-* class encodes the role's family / size / weight / leading /
- * tracking / case. Family selectors use var(--font-*) tokens so the atlas
- * renders in BRAND DNA fonts; only the recipe is preset-declared. */
+/* ── §T Type-role atlas. var(--font-*) → brand DNA; only recipe is preset-declared. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -389,10 +367,7 @@ pre {
   }
 }
 
-/* ── Type-role samples. var(--font-display/body/mono) resolves to brand DNA.
- * Decoration (color, border, shadow, tracking, case, tilt) is preset-native
- * and stays declared with Block Frame tokens (--ink, --brand-primary,
- * --brand-accent, --bf-shadow-sm). */
+/* ── Type-role samples. var(--font-*) → brand DNA at render time. */
 .t-trole-heading-xl {
   font-family: var(--font-display);
   font-weight: 900;

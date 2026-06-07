@@ -95,7 +95,7 @@ Common failure: small elements floating in the center of 1920x1080 with empty sp
 
 **Fullness test:** could this frame work as a poster or social graphic? If it looks like a sparse PPT slide -> add visual layers.
 
-**Poster-pause test:** if you freeze the video at any moment, can the frame stand as an independent graphic design? Codex's 6 beats all pass.
+**Poster-pause test:** if you freeze the video at any moment, can the frame stand as an independent graphic design?
 
 ## Negative Space as Design Tool
 

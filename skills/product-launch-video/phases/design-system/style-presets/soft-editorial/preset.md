@@ -30,19 +30,15 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Cormorant Garamond (roman + italic) + Work Sans + JetBrains Mono — instead of the brand DNA fonts. Soft Editorial is a two-face system: Cormorant carries every headline and ornamental moment (with italic doing all the "script" work, since the preset has no handwritten voice); Work Sans recedes into body. The `script` slot points at Cormorant Garamond because italic IS the system's intimate / personal voice — no third face. Mono is declared for completeness only (the preset never reaches for it in components). The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. The `script` slot points at Cormorant Garamond because italic IS the system's intimate / personal voice — no third face.
 
 ## §A Director's intent
 
 A warm small-press literary quarterly. Cream paper field, Cormorant Garamond carrying every headline and ornamental moment, Work Sans receding into body. Generous rounded cards (24–36px radius) float as translucent white over the cream — depth is implied by translucency and form, never by shadow.
 
-**Distinct from `editorial` — softer in every register.** Where `editorial` (Swiss) commits to hairline solid rules, ragged-right asymmetry, and ink-on-white restraint, Soft Editorial commits to **rounded translucent cards, dashed warm hairlines, and a quartet of pastel candy accents** (pink, lemon, blush, sage, lilac) as interchangeable card fills. Where editorial is "printed essay set in lead type", soft-editorial is "Sunday-supplement magazine spread with riso-print color". Both are calm and serif-driven — but pick soft-editorial when the brand wants Sunday warmth, not Swiss discipline.
-
 **Typographic signal: mixed weight inside the headline.** A serif headline at weight 500 carries an `<em>` that drops to weight 400 italic — the italic phrase is a _lighter_ weight of the same family. The weight drop is a softening, not bold emphasis. This is opposite the magazine convention of italic-for-bold; here italic is the more intimate tone.
 
 **Color philosophy: cream plus five pastels.** The cream paper field (`--paper-anchor`, a warm aged cream) is the constant under every surface — pastels appear only as card fills, never as the slide background. Pastel slots are interchangeable card paints: none carries a fixed semantic role outside matrix layouts. Text stays in `--ink` on every surface — soft-editorial never inverts to white on pastel.
-
-**Best for** sites whose brand DNA reads literary, unhurried, considered — founder essays, gallery/museum, advisory, longform brand stories, lifestyle media, research notebooks. Equally good for tech / business decks that want Sunday-supplement warmth instead of corporate polish. **Avoid for** sites that need visual heat or declarative punch — the cream palette and Cormorant serif are intentionally quiet.
 
 Motion is unhurried: soft `power2.out` arrivals, no overshoot, no bounce. Stagger budgets stretch toward the editorial upper band (200–280ms between siblings); even snap durations are slow by other-preset standards. Class prefix: `se-`.
 
@@ -100,9 +96,7 @@ Mono is declared for completeness; soft-editorial does not use monospace in any 
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, italic flag, leading, tracking, case, and any color/decoration. Phase 4b scene workers may cite roles by `id` ("use an `opener` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This atlas mirrors the design.md typography scale (display through swatch-label), filtered to the roles that actually compose scenes — and adds the soft-editorial signature ornaments (drop-cap, roman-numeral step, italic-em emphasis).
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `numeral-hero` numeral that isn't covered by §6 components, the worker reads role `numeral-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — soft-editorial's literary register collapses when sizes drift off the Cormorant scale.
+The atlas is the **sole authoring source** for non-component text — do NOT invent ad-hoc sizes; soft-editorial's literary register collapses when sizes drift off the Cormorant scale.
 
 ```type-roles
 [
@@ -200,8 +194,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits page chrome positions (declared in §H) and the cover swatch row (a §6 component, not a text role). The 11px uppercase swatch tile label was retired with the §T no-small-text pass — its only home, the swatch-row component, carries no text, so the role had no live consumer.
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -243,7 +235,6 @@ const DUR = {
 
 **Forbidden**
 
-- `back`, `elastic`, `bounce` — anything with overshoot. Soft-editorial is calm.
 - Any `scale` beyond 0.92 → 1.0 (no "zoom" reveals).
 - Any rotation on content elements. Pastel cards are not stickers.
 - Letter-by-letter typewriter on serif. Cormorant doesn't typewrite.
@@ -351,15 +342,7 @@ Take the brand's product description / value prop. Transform with:
 
 ```css
 /* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Cormorant Garamond + Work Sans + JetBrains Mono
- * regardless of brand DNA. The §6 component preview and §T type-role
- * atlas read these via .preset-native-scope.
- *
- * Soft-editorial has no script face — the script slot points at Cormorant Garamond
- * because italic Cormorant IS the system's intimate / personal voice. The fallback
- * chain ends in a face that still carries the old-style-serif register (EB Garamond /
- * Fraunces / generic serif). Mono is declared for completeness only — the preset
- * never reaches for monospace in components. */
+ * Cormorant Garamond + Work Sans + JetBrains Mono for doc chrome; script slot = Cormorant italic (no third face); mono for completeness only. */
 :root {
   --f-disp-native:
     "Cormorant Garamond", "Cormorant", "EB Garamond", "Fraunces", "Garamond", "Times New Roman",
@@ -373,12 +356,7 @@ Take the brand's product description / value prop. Transform with:
     "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Cormorant / Work Sans / JetBrains Mono regardless of
- * brand DNA. Paste-ready component source is untouched — Phase 4b still grep +
- * paste the original `var(--font-display)` tokens, which resolve to brand DNA at
- * scene-render time. */
+/* .preset-native-scope: re-binds var(--font-*) to preset-native families for component previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -436,12 +414,7 @@ h2 {
   text-transform: none;
   letter-spacing: -0.005em;
 }
-/* ── §T Type-role atlas. Container = translucent white card on cream with
- * dashed warm-ink dividers between rows. Each .t-trole-* class encodes the
- * role's family / size / weight / italic / leading / tracking / case / color.
- * Family selectors use var(--font-*) tokens so the atlas renders in BRAND DNA
- * fonts (resolved through .preset-native-scope to Cormorant + Work Sans for
- * the live preview); only the recipe is preset-declared. */
+/* ── §T Type-role atlas. var(--font-*) tokens → brand DNA; only the recipe is preset-declared. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -468,10 +441,7 @@ h2 {
   }
 }
 
-/* ── Type-role samples. var(--font-display/body/script) resolves to brand DNA
- * at scene-render time; inside .preset-native-scope it resolves to Cormorant /
- * Work Sans for the design.html preview. Color stays in var(--ink) on every
- * surface — soft-editorial never inverts to white. */
+/* ── Type-role samples. var(--font-display/body/script) → brand DNA. */
 .t-trole-display {
   font-family: var(--font-display);
   font-weight: 500;

@@ -7,12 +7,7 @@ metadata:
 
 # HyperFrames — read this first
 
-**HyperFrames builds videos from HTML**: you author an HTML composition (timed elements + GSAP timelines + media) and HyperFrames renders it to MP4. If you are about to do _anything_ with HyperFrames — and especially if there is no project `CLAUDE.md` to orient you — start here.
-
-This skill does two jobs:
-
-1. **Capability map** — which HyperFrames skill or workflow handles your intent.
-2. **Video router** — for "make me a video" intents, the exact workflow to use (decision table below).
+**Start here for any HyperFrames task** — especially with no project `CLAUDE.md` present. Capability map + video router below.
 
 ## Capability map — which skill for which intent
 
@@ -43,15 +38,11 @@ Everything else — a video from a URL, brief, topic, PR, footage-to-annotate, o
 
 # Video routing
 
-The entry point for "I want to make a video" intent. Routes to the correct workflow based on **INPUT type** and **OUTPUT length**. Asks clarifying questions when the request is under-specified.
-
 This section knows ONLY top-level workflows. It does not load workflow-internal phases, domain skills (`hyperframes-*` — see the capability map above), or technical references.
 
 ## Decision table
 
 **INPUT type (intent) is the primary axis; OUTPUT length is only a ceiling, not a gate.** For a matching input, the specialized workflows handle anything **up to ~3 min** — _which_ workflow you enter is decided by intent (the input type, and for text the subject), not by length. Length matters only at the top end: a genuinely longer piece (a 3-5 min tutorial, a 5 min+ deep dive) is a different register and routes to `/general-video`. Within the ≤~3 min band, a third axis splits the two text-fed workflows — the **subject**: a product being _marketed_ vs a topic being _explained_ (see the disambiguation rule in step 3 below).
-
-Cells marked `/general-video` are not dead-ends — they route to the length- and input-agnostic fallback (step 4). Only the **bolded specialized** workflows are dedicated paths.
 
 | Length / Input  | Product URL             | GitHub PR / code change | Product brief / script  | Topic / article / notes (no product, no URL) | Existing footage |
 | --------------- | ----------------------- | ----------------------- | ----------------------- | -------------------------------------------- | ---------------- |
@@ -74,7 +65,7 @@ The table above is for **creating** a video from an input. One workflow sits out
 2. **Pick by INPUT type (intent) first; length is only a ceiling, not a gate.**
    - **Existing video footage** (the user has a video to re-edit / repurpose) → `/footage-recut`, at **any length** (input type wins over length here).
    - **GitHub PR / code change** (a `github.com/<owner>/<repo>/pull/<N>` link, an `owner/repo#N` ref, or "this PR") → `/pr-to-video` (up to ~3 min).
-   - **Otherwise** (product URL / brief / topic text): intent picks the workflow via step 3, and it handles anything **up to ~3 min** — a short 15-30 s promo and a ~100 s explainer both route by intent, not by length. Route to `/general-video` (the length-agnostic fallback — see step 4) only when the target is clearly **longer than ~3 min** (a 3-5 min tutorial, a 5 min+ deep dive). Never force a genuinely long piece into a ≤~3 min workflow, but never dead-end a short one either — intent decides within the band, `/general-video` covers the rest.
+   - **Otherwise** (product URL / brief / topic text): intent picks the workflow via step 3, and it handles anything **up to ~3 min** — a short 15-30 s promo and a ~100 s explainer both route by intent, not by length. Route to `/general-video` (the length-agnostic fallback — see step 4) only when the target is clearly **longer than ~3 min** (a 3-5 min tutorial, a 5 min+ deep dive). Never force a genuinely long piece into a ≤~3 min workflow — intent decides within the band, `/general-video` covers the rest.
 3. **Disambiguate the ≤~3 min URL / text inputs (the intent split).** Two splits:
    - **URL kind** — a URL no longer auto-wins for PLV; its _kind_ decides: a **GitHub PR** link (`.../pull/<N>`, `owner/repo#N`, "this PR") → `/pr-to-video`; any **other product / marketing website** URL → `/product-launch-video`. (Only product-site URLs get scraped with headless Chrome; PR URLs are read via `gh`.)
    - **Product vs topic** (text, no URL) — the decisive question is **what the video is about**, not the input format:
@@ -134,12 +125,3 @@ The table above is for **creating** a video from an input. One workflow sits out
 
 - **Domain skills** (`/hyperframes-core`, `/hyperframes-animation`, `/hyperframes-cli`, `/hyperframes-creative`, `/hyperframes-media`, `/hyperframes-registry`) — these are NOT routed here, but they ARE in the **capability map** at the top of this skill; a workflow's build phase loads them as technical references.
 - **Workflow-internal phases** — phases live inside each workflow's folder and are dispatched by that workflow's orchestrator, not by this router.
-
-## Adding a new workflow
-
-When a new video workflow lands at `skills/<workflow-name>/`:
-
-1. Add a row / cell to the decision table above.
-2. Add a description block under "Workflow descriptions" with **Input**, **Output**, **Triggers**, **Do NOT use for**.
-3. Update existing workflows' `Do NOT use for` lines to reference the new workflow where appropriate (mutual reverse-edges keep router precision).
-4. If two workflows could legitimately match the same cell, refine each one's `Triggers` and `Do NOT use for` until they are mutually exclusive.

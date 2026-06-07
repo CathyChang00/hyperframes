@@ -11,8 +11,7 @@
 <style>
   /*
     Process / roadmap step card. Cream-card pattern with the Caveat
-    hand-script ordinal at the top. The numeral is load-bearing — it signals
-    "step counted by hand, not by an algorithm". Sits in a 3-to-5 column flow
+    hand-script ordinal at the top. Sits in a 3-to-5 column flow
     with 22px gaps; place a pp-safety-pin overlay centered on the top edge
     for the full pinned look.
 

@@ -6,11 +6,7 @@ category: visual-design
 
 # Composition for 1920x1080 Video - Design-Judgment Layer
 
-Video composition is closer to film and poster design than webpage layout. There is no scrolling and no responsive reflow. Every frame is a fixed canvas; every pixel matters.
-
-**Most of this file is plan-layer design judgment** - conceptual canvas zones, 7 composition templates, density rules, hierarchy logic, and depth-layering principles. Concrete px (safe margins 96-150), scale values (1.05 / 0.92), three-layer `box-shadow` recipes, `perspective` 800-1400px, etc. belong to the build agent; plan does not write code.
-
-Composition is one of the highest-value parts of the plan - which layout to choose, how much frame the primary element occupies, and how many depth layers to use **are director decisions**.
+Plan-layer only — canvas zones, 7 templates, density rules, hierarchy logic, depth principles. Concrete px / scale / shadow values are build-agent territory.
 
 ## Squint Test
 
@@ -95,7 +91,7 @@ Common failure: small elements floating in the center of 1920x1080 with empty sp
 
 **Fullness test:** could this frame work as a poster or social graphic? If it looks like a sparse PPT slide -> add visual layers.
 
-**Poster-pause test:** if you freeze the video at any moment, can the frame stand as an independent graphic design? Codex's 6 beats all pass.
+**Poster-pause test:** if you freeze the video at any moment, can the frame stand as an independent graphic design?
 
 ## Negative Space as Design Tool
 

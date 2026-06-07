@@ -6,11 +6,11 @@ category: visual-design
 
 # Video Color System - Design-Judgment Layer
 
-**This file only covers plan-layer design judgment** - roles, 60-30-10 allocation logic, cross-scene consistency, and dangerous combinations. Concrete hex values, contrast ratio 4.5:1 math, dark-scene saturation compensation, and double-layer glow recipes belong to the build agent when writing CSS and consulting `chunks/tokens.css` plus `/hyperframes-core`; plan does not copy them.
+Plan-layer only — roles, 60-30-10 logic, cross-scene consistency, dangerous combinations. Hex values and contrast math are build-agent territory (`chunks/tokens.css`).
 
 ## Palette Source
 
-**Hex values come from `tokens.css` in `## Design chunks`** (named tokens in `:root`, varying by brand: `--brand-primary` / `--brand-accent` / `--canvas` / `--ink`, etc.; already inlined into Phase 3 dispatch). Plan references by **role**; **do not** copy concrete hex values - the build agent reads them from `chunks/tokens.css`.
+**Hex values come from `tokens.css` in `## Design chunks`**. Plan references by **role** only; do not copy concrete hex values.
 
 > **Preset rules take priority over this file's generic rules.** Preset name is in `## Design chunks` `index.json.preset`; its color discipline is in `composition-hints.md` (§H surface contract / accent budget) - for example, editorial explicitly says "accent <= 5% frame area, primary is not a background fill, canvas is the hero." If a generic rule (such as "use dual-radial swell background") conflicts with the preset's §H color discipline, **the preset wins**. Plan gets preset name from `index.json.preset` and its rules from `composition-hints.md` to constrain palette use for this film (**do not read design.html**; chunks have replaced it).
 
@@ -104,7 +104,7 @@ Exception: pure white `text-shadow` / `drop-shadow` halos at emphasis moments (c
 
 ## Background: Keep the Pin-and-Paper Native Paper Texture
 
-**FE ships pin-and-paper (paper-grain family): keep the preset's native paper-texture background, consistent across the film; the brand-color mesh default does NOT apply.** The grain _is_ the atmosphere - a mesh / Gaussian-blur blob layer fights the paper aesthetic and is forbidden here. (Historical note: an earlier multi-preset lineage used a brand-color mesh as the project background default; that lineage explicitly listed paper-grain presets like pin-and-paper under "do not use mesh," so for FE it is simply inapplicable.)
+**FE ships pin-and-paper (paper-grain family): keep the preset's native paper-texture background, consistent across the film; the brand-color mesh default does NOT apply.** The grain _is_ the atmosphere - a mesh / Gaussian-blur blob layer fights the paper aesthetic and is forbidden here.
 
 - **Every scene background = the pin-and-paper paper base** (warm paper texture + optional sparse paper-grain/fiber noise), as declared by the preset §H surface contract.
 - **Single background medium** - do not stack mesh, dual-radial swell, scanline, halftone, or architectural grid on top of the paper. Only the preset's own paper-grain/fiber layer belongs there.

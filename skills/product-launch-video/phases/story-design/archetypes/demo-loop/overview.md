@@ -26,7 +26,7 @@ GWI verbalizes this as: "Frustration with slow data morphs into immediate curios
 | 5     | benefit_highlight | Demo cycle 3: strategic use + trust claim | 25-30%   |
 | 6     | cta               | Tagline + next step                       | 10-15%   |
 
-**Reveal timing** — Demo Loop is an **early-reveal** archetype. GWI names the product at scene 2 of 9 (22%, ~5s into a 67s video). Product becomes the protagonist; the rest of the video proves it. If you delay the product past 30%, you've drifted into PAS or BAB territory.
+**Reveal timing** — Demo Loop is an **early-reveal** archetype; product lands at ~22% (scene 2). Product becomes the protagonist; the rest of the video proves it. Delay past 30% and you've drifted into PAS or BAB territory.
 
 ## When to Use
 
@@ -45,24 +45,17 @@ GWI verbalizes this as: "Frustration with slow data morphs into immediate curios
 
 ## Hook strategies that work for Demo Loop
 
-- **Rhetorical question** — GWI "Need answers about your audience, now?" — creates an instant cognitive gap that the product immediately closes
-- **Pain validation (brief)** — one sentence of pain, no extended agitation
-- **Direct address** — works when the audience is well-defined ("Marketers — how long does your research take?")
+**Rhetorical question** is the archetype-native move — it creates a cognitive gap the product immediately closes. Brief pain validation and direct address also work.
 
-What does _not_ work: extended pain agitation, "imagine..." framings, visual spectacle hooks — Demo Loop is functional, not poetic. The hook is the _setup line for the joke_; the demo is the punchline.
+Extended pain agitation, "imagine..." framings, and visual spectacle hooks do not — Demo Loop is functional, not poetic. The hook is the setup line; the demo is the punchline.
 
 ## Persuasion techniques that recur
 
-- **Query → Result Loop** — show input (user effort) and output (reward) every cycle
-- **Micro-to-Macro Expansion** — specific niche query (NBA fans) → broader market (APAC fashion buyers) → strategic application (target parents) — _escalation_ across cycles
-- **Cognitive ease / Simplicity bias** — "Just ask" framing; product as zero-learning-curve
-- **Authority + trust building** — explicit "trust" beat addresses the AI-hallucination objection
-- **Verb-Brand Association** — use the product name as an action word in copy ("Spark your next idea")
-- **Demonstrated capability** — every demo cycle is itself a persuasion technique
+**Query → Result Loop**, **Micro-to-Macro Expansion** (escalate query scope across cycles), **Cognitive ease / Simplicity bias** ("Just ask"), **Authority + trust building** (address the AI-hallucination objection), **Verb-Brand Association** ("Spark your next idea"), **Demonstrated capability** per cycle.
 
 ## Common compound
 
-Demo Loop's "Problem-Solution-Benefit Cascade" variant is essentially Demo Loop with **Feature-Benefit Cascade as its proof-phase rhythm**. The boundary between "Demo Loop" and "Feature-Benefit Cascade" is the _hook_: Demo Loop opens with a problem/question; Cascade opens with brand or visual spectacle. If you have neither pain nor question — just product from scene 1 — you're in Cascade, not Demo Loop.
+Demo Loop's "Problem-Solution-Benefit Cascade" variant runs Feature-Benefit Cascade as its proof-phase rhythm. The boundary: Demo Loop opens with a problem/question; Cascade opens with brand or visual spectacle (see guide.md).
 
 ## Golden Samples
 

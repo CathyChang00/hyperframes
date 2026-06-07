@@ -1,8 +1,6 @@
 # SFX Credits
 
-All sound effects in this directory are sourced from [Pixabay](https://pixabay.com/sound-effects/) and used under the [Pixabay Content License](https://pixabay.com/service/license-summary/).
-
-The Pixabay license allows free use for commercial and non-commercial purposes without attribution, but attribution is appreciated and given here for transparency.
+All sound effects in this directory are sourced from [Pixabay](https://pixabay.com/sound-effects/). License: Pixabay Content License (commercial use permitted).
 
 ## Files
 
@@ -23,13 +21,3 @@ The following `.mp3` files are bundled with this skill:
 - `whoosh.mp3` / `whoosh-short.mp3` / `whoosh-cinematic.mp3`
 
 See `manifest.json` for per-file metadata (duration, energy character, recommended use).
-
-## License
-
-All files are distributed under the [Pixabay Content License](https://pixabay.com/service/license-summary/), which permits:
-
-- Commercial and non-commercial use
-- Modification and remixing
-- Redistribution as part of derivative works (such as videos rendered with HyperFrames)
-
-without any attribution requirement.

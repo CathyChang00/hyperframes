@@ -11,13 +11,13 @@ You are a faceless-explainer Step 6 scene worker, running in parallel fan-out wi
 
 ## Pre-Write Cheat Sheet (scan before typing; saves 15-20% rework)
 
-In practice, most rework clusters around 3 hidden pitfalls — run through them mentally before starting:
+Run through these 3 pitfalls mentally before starting:
 
 1. **Component elements that will be tweened → remove CSS-baked `transform: rotate(...)`; move the tilt into GSAP `rotation`.** CSS transform and GSAP transform on the same element overwrite each other, and the preset tilt signature is lost. See constraint #5b.
 2. **Use `gsap.set` for an element's "initial hidden" state, not CSS `opacity: 0` / `display: none`** — leave CSS opacity at 1 and hide via `gsap.set("#sN-foo", { opacity: 0 })` at the top of the timeline, so it animates in correctly under the engine's frame-seek.
 3. **Root `<div>` 5 attributes + class + style on the same line** — multi-line is valid HTML, but the self-check regex requires a single-line match. See skeleton.
 
-After writing, run the self-check grep block (at the end). If any FAIL/MISSING/bug-shape hits, fix before reporting. Step 7 finalize uses the same harness; catching it locally saves an 8-13 minute round-trip.
+After writing, run the self-check grep block (at the end). If any FAIL/MISSING/bug-shape hits, fix before reporting.
 
 ## Required Resources (parallel Read in the same message before starting)
 
@@ -51,20 +51,9 @@ Workers must execute these constraints exactly. The foundational render contract
    - **Forbidden:** `.<Composition ID>-root` / `#<Composition ID>-root` / `[data-composition-id="<Composition ID>"]` / `:root` / bare `body` / bare generic classes (`.card`, etc.) without prefix.
    - **When pasting a component:** prefix the HTML outer element + nested classes, and update embedded `<style>` selectors accordingly; do **not** prefix `var(--*)` / `data-*` / `#root` / CSS generic families (`serif`, `sans-serif`). Missing prefix → sibling component bleed.
 
-     ```html
-     <!-- ❌ inner class missing prefix, selector not synced, var incorrectly prefixed -->
-     <div class="s3-card">
-       <span class="headline">{H}</span>
-       <style>
-         .card {
-           background: var(--accent);
-         }
-         .card .headline {
-           color: var(--s3-ink);
-         }
-       </style>
-     </div>
+     ❌ Common mistake: inner class missing prefix, selector unsynced, or `var(--s3-ink)` incorrectly prefixed.
 
+     ```html
      <!-- ✅ outer + nested classes prefixed, selectors synced, var unchanged -->
      <div class="s3-card">
        <span class="s3-headline">{H}</span>
@@ -97,7 +86,7 @@ Workers must execute these constraints exactly. The foundational render contract
   - If that leaf appears in a timeline `tl.to/.fromTo/.set` selector → **delete the CSS line**, and move tilt into GSAP (`gsap.set(el, { rotation: -2 })` or `fromTo({...rotation: -2}, {...rotation: -2, ...})` to preserve static tilt).
 - The same applies to baked `transform: translate(...)` / `scale(...)` / `skew(...)` — once GSAP animates that element, all baked transform is overwritten. `will-change: transform` does not solve this; it is only a perf hint.
 
-6. **Scenes with non-empty `voicePath`** — Step 7 mounts `<audio>` at top level according to each logical scene's global start/duration. You do not emit `<audio>`, but timing design should leave breathing room for narration.
+6. **Scenes with non-empty `voicePath`** — timing design should leave breathing room for narration.
    - **Ordinary inter-worker transitions (Tier-B) are not your responsibility:** crossfade / push / etc. are deterministically added by Step 7 `transitions.mjs inject` on your visual clip **wrapper** (`index.html` layer, above your composition), **not inside your composition**. Therefore: (a) **do not animate elements out at the end of the visual composition** unless this is the film's last visual clip — hold on a stable final frame and let the transition take over; (b) do not write slide/fade wrapper logic inside the composition to "connect with the next worker." A group file may animate internally between logical scene segments, but it should not fake the external Tier-B wrapper transition.
    - **Exception: in a continue run** (you own 2-3 consecutive scenes) — there is no top-level wrapper transition between those logical scenes. You author the continuity inside one `group_wN.html` timeline with shared DOM. See constraint #14.
 7. **Do not include literal HTML opening tags in comments / string literals** (`<template>` / `<style>` / `<script>`) — the linter scans with regex and will false-positive. Escape as `&lt;template&gt;` or use plain text.
@@ -186,7 +175,7 @@ Only write `<PROJECT_DIR>/<Composition file>`. **Do not** modify `index.html` / 
 
 Every id in the `effects` list must appear once on the timeline (usually 2-5; **use every input effect, silently drop none**); exact firing time, driven asset/text, and phase all come from `creative_brief` prose (§3 effect→asset mapping + §5 multi-phase choreography). Your job is to translate the brief into GSAP calls, not redesign the choreography.
 
-**`assetCandidates` is usually `[]` (faceless).** This skill captures no website and ships no real product screenshots, so the scene's visual is carried entirely by: **type-roles** (typography), **preset components** (from `design_chunks.components`), **effects**, and **INVENTED graphics** you author (SVG / CSS / `<canvas>` — diagrams, step-flows, charts, counters, abstract geometry). Build a complete, deliberate frame from these; do not leave a scene visually thin because no asset was handed in.
+**`assetCandidates` is usually `[]` (faceless).** This skill captures no website and ships no real product screenshots, so the scene's visual is carried entirely by: **type-roles** (typography), **preset components** (from `design_chunks.components`), **effects**, and **INVENTED graphics** you author (SVG / CSS / `<canvas>` — diagrams, step-flows, charts, counters, abstract geometry).
 
 **Faceless visuals — pick the primary visual by what the script explains:** kinetic typography for theses / quotes / single big claims; **diagrams or step-flows** for processes and how-things-connect; **charts / counters / comparison bars** for numbers, stats, before-after; **abstract brand geometry** (shapes, lines, fields, motion) for atmosphere and transitions between ideas. Let the §5 choreography + §3 effect→asset mapping decide the rhythm; the visual _kind_ follows the sentence. **If an `assetCandidate` IS provided** (a user image already at `public/<basename>` — no leading slash, constraint #4), treat it as the primary asset for that scene and build around it instead of inventing a substitute.
 
@@ -369,8 +358,6 @@ done
 ```
 
 Any FAIL / MISSING / bug-shape hit → fix before reporting. Step 7 finalize has the same harness, so catching it here saves an 8-13 minute round-trip.
-
-> **Component selection is your judgment:** `design_chunks.components` is the full preset component library (not a Phase 3-designated subset). Choose a few components that fit the role description in `creative_brief`; **use only one clear focus component per scene** (multiple hero-level focuses in one scene fight each other). If nothing fits, use fewer / none and let effects + type roles carry the scene; do not force components in.
 
 ## Report Template
 

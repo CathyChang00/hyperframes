@@ -4,8 +4,6 @@
   process diagram). 64px stencil ordinal at top, 28px stencil h3, small Inter
   body. Each step takes a different accent fill — siblings cycle through brand
   variants so a 5-up row reads as a tile sequence.
-  Kept as original id (not collapsed to a generic card) because the carried
-  ordinal numeral and narrative role are scene-level usable.
 -->
 <div class="stn-process-node">
   <div class="stn-process-node-ord">{NUM}</div>

@@ -26,12 +26,7 @@ The reverse-engineered AgentGPT plan verbalizes this as: "From curious and seeki
 | 7     | benefit_highlight | Self-improving / feedback loop       | 12-18%   |
 | 8     | cta               | Direct command to act                | 15-20%   |
 
-**Reveal timing** — Future Pacing is the **very-early-reveal** archetype. AgentGPT names the product at scene 2 of 12 (17%, within the first 4-8 seconds of runtime). AgentGPT is canonically labeled "Before-After-Bridge (BAB) / Feature-Benefit Cascade" — Future Pacing and BAB are sibling patterns; the difference is what fills the proof phase:
-
-- **Future Pacing**: proof = capability demonstrations + mechanism explanation (how the AI actually works)
-- **BAB**: proof = workflow walkthrough (process improvement step-by-step)
-
-If your proof phase is a tool walkthrough, prefer BAB; if it's "watch the AI do impossible things," prefer Future Pacing.
+**Reveal timing** — Future Pacing is the **very-early-reveal** archetype; product lands within the first 4-8 seconds (~17%). Future Pacing and BAB are sibling patterns: Future Pacing proves through capability demonstrations + mechanism explanation; BAB proves through a workflow walkthrough. If your proof phase is a tool walkthrough, prefer BAB.
 
 ## When to Use
 
@@ -49,24 +44,17 @@ If your proof phase is a tool walkthrough, prefer BAB; if it's "watch the AI do 
 
 ## Hook strategies that work for Future Pacing
 
-- **"Imagine..."** — AgentGPT "Imagine next generation AI for the enterprise" — bypasses critical filters by asking the viewer to _visualize_ a positive future before knowing the product
-- **Category announcement** — Kyvos "Cloud BI Acceleration" — names the aspiration as the title; works when the category itself is the differentiator
-- **Trend positioning** — Skye "Introducing the future of influencer marketing" — rides a cultural wave; novelty alone is the hook
+**"Imagine..."** is the archetype-native move — it bypasses critical filters by asking the viewer to visualize a positive future before knowing the product.
 
-What does _not_ work: pain validation, statistic, or visceral metaphor — those signal "this is a fix" and undercut the vision framing.
+Pain validation, statistics, and visceral metaphors do not work — those signal "this is a fix" and undercut the vision framing.
 
 ## Persuasion techniques that recur
 
-- **Aspiration / innovation bias** — "Next generation," "Omniscient AI," "the future of..." (bold absolutes)
-- **Brand authority** — product is named with confidence in scene 1-2; no apology, no positioning
-- **Friction reduction** — "no need for knowledge management," "no setup required"
-- **Demonstrated capability** — specific, nuanced example (AgentGPT: "My POS is not responding" → AI correctly interprets vague complaint)
-- **Micro-to-Macro Zoom** — one specific small interaction to prove competence, then expand to system-wide claim ("Omniscient AI")
-- **Human-in-the-loop reassurance** — for AI products, address the "but what if it's wrong?" objection with a feedback-loop scene before CTA
+**Aspiration / innovation bias** (bold absolutes), **Brand authority** (product named with confidence, no apology), **Friction reduction**, **Demonstrated capability** (specific nuanced example before the system-wide claim), **Micro-to-Macro Zoom**, **Human-in-the-loop reassurance** (address AI skepticism with a feedback-loop scene before CTA).
 
 ## Common compound
 
-Future Pacing very often runs with **Feature-Benefit Cascade as its inner rhythm** during the proof phase — AgentGPT scenes 4-10 alternate `feature_showcase` ↔ `benefit_highlight` for 7 consecutive scenes. Write the archetype string as `"Future Pacing with Feature-Benefit Cascade"` when this is the case.
+Future Pacing very often runs Feature-Benefit Cascade as its inner rhythm during the proof phase. Write as `"Future Pacing with Feature-Benefit Cascade"` (see guide.md).
 
 ## Golden Samples
 

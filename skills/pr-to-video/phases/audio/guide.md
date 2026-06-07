@@ -1,8 +1,6 @@
 # Audio (Phase 2.5) - workflow guide
 
-Phase 2.5 is handled end-to-end by **`scripts/audio.mjs`**: `narrator_scripts` -> per-scene voice + word JSON + `audio_meta.json`, plus optional detached BGM. In Step 3, the orchestrator runs `node audio.mjs` directly; there is **no subagent**. The script first uses ffprobe on TTS output to get the measured total duration, then asks the local MusicGen fallback to generate one ~28s seed clip in a single call (one `generate()`, kept within the model's ~30s positional-encoding limit). After that: if the target is shorter than the seed, it trims the seed; if the target is longer than the seed, it uses an ~0.3s crossfade to loop and tile the seed into an equal-length `assets/bgm.wav`; finally it applies overall fade-in and fade-out. Compared with the old segment-by-segment stitching, this avoids hard seams.
-
-For the full flag list, see SKILL.md Step 3 / `audio.mjs --help`. This file only describes the schema and failure modes.
+Phase 2.5 is handled end-to-end by **`scripts/audio.mjs`**: `narrator_scripts` -> per-scene voice + word JSON + `audio_meta.json`, plus optional detached BGM. In Step 3, the orchestrator runs `node audio.mjs` directly; there is **no subagent**. Force a provider with `--provider <name>`; override the BGM mood with `--bgm-prompt "<text>"`. For the full flag list, see SKILL.md Step 3 / `audio.mjs --help`. This file only describes the schema and failure modes.
 
 ## Artifacts
 
@@ -41,7 +39,7 @@ assets/bgm.wav                          # BGM (optional; may not be written yet 
 }
 ```
 
-Provider chain / voice id / mood prompt / environment detection are all handled inside `audio.mjs`; the orchestrator does not choose them. Force a provider with `--provider <name>`, and override the BGM mood with `--bgm-prompt "<text>"`. See the `hyperframes-media` skill for the underlying capability documentation.
+See the `hyperframes-media` skill for the underlying capability documentation.
 
 ## Failure Modes
 

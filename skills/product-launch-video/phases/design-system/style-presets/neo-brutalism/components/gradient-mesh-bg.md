@@ -6,8 +6,7 @@
   <div class="bn-mesh-fg">{FOREGROUND_CONTENT}</div>
 </div>
 <style>
-  /* Brand-color blobs blurred behind solid black foreground frame.
-   Brutalism keeps blur moderate so the brand colors still punch. */
+  /* Brand-color blobs blurred behind solid black foreground frame. */
   .bn-mesh {
     position: relative;
     overflow: hidden;

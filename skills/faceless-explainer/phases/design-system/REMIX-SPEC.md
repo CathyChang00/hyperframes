@@ -1,7 +1,5 @@
 # Preset Palette + Remix Spec
 
-> Status: **golden sample = `pin-and-paper`** (palette block added, §H removed). **R2 (engine consumes `palette{}`) is DONE + verified** — `pin-and-paper` text‑only now emits its native palette (`--ink #1F3A8A` on `--canvas #EFE56A`, no collapse) while a real URL capture is byte‑for‑byte unchanged. Remaining: **R1** (no‑URL SKILL.md entry), **R5** (component reframe), **rollout to the other 18 presets**, and reconciling `README.md` with this new standard.
-
 ## North Star
 
 Make each preset **self‑sufficient and remixable**:
@@ -109,17 +107,9 @@ Suggested order: start with the **"zero native color" presets** (`emerald-editor
 
 **Policy (implemented)**: default = preset palette; extraction wins when present. The fallback fires **only when nothing was scraped** (`hfTokens.colors` empty) — so the URL path is byte‑identical and **needs no golden‑baseline regen** (verified: a capture with colors still uses the captured palette).
 
-What landed in `build-design.mjs`:
-
-1. `palette: meta.palette || null` added to `parsePreset`'s `return {…}` so `preset.palette` is reachable.
-2. The seven color Hex vars (`primaryHex`/`secondaryHex`/`accentHex`/`canvasHex`/`inkHex`/`tertiaryHex`/`costumeHex`) + `signatureGradient` changed `const`→`let` (they're derived at ~§693‑806 from capture data, **before** the preset is chosen at `pickPreset()` ~§1201).
-3. Right after `pickPreset()`, a fallback block: `if ((hfTokens.colors || []).length === 0 && preset.palette)` reassigns each Hex from `preset.palette` via `_ppGet(slot)` (resolves `alias` recursively, normalizes hex; `costume` falls back to `surface`), then recomputes `signatureGradient`. Feature scoring + `decoColors` stay on capture‑derived values (don't skew auto‑inference; `decoColors` keeps its built‑in fallback when no palette deco is declared).
-
 **Trigger gotcha**: use `hfTokens.colors` (raw scraped palette), NOT `allColors` — the latter synthesizes black/white defaults from empty input, so it's never length 0.
 
 Verified: pin‑and‑paper text‑only emits `--canvas #EFE56A`, `--ink #1F3A8A`, `--brand-primary #1F3A8A`, `--brand-accent #C2342B`, `--brand-secondary #C9A66B` (no collapse); a `#0aa3ff` capture stays `#0aa3ff`.
-
-**Not yet (future, optional)**: per‑slot confident override for _degenerate‑but‑nonempty_ captures (e.g. a monochrome site with 1 real color) — currently those still use the extraction path. And `palette.deco` support so non‑`block-frame` presets don't inherit the hardcoded yellow/green/blue/pink deco when text‑only.
 
 ### R1 — no‑URL / text‑only entry (mostly SKILL.md)
 

@@ -2,8 +2,6 @@
 
 `block-frame/` is the **reference implementation (reference preset)**. This README defines what a style preset must contain, what each part outputs, and how to **add / refactor / convert another style** into the standard format.
 
-> The fastest way to start a new preset: `cp -r block-frame <new-name>`, then rewrite section by section according to §2, follow the rules in §4, and verify with §6.
-
 ---
 
 ## 1. Directory Shape
@@ -26,7 +24,7 @@ Below are all existing styles currently under `style-presets/`. Before creating 
 
 | `name` (directory name) | label             | One-sentence style fingerprint                                                                                       |
 | ----------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `block-frame`           | Block Frame       | hard black shadow · 4px solid ink border · saturated pastel cycle (**reference implementation**)                     |
+| `block-frame`           | Block Frame       | hard black shadow · 4px solid ink border · saturated pastel cycle                                                    |
 | `neo-brutalism`         | Neo-Brutalism     | hard shadow · thick solid border · hit-and-hold motion · high-density high contrast                                  |
 | `creative-mode`         | Creative Mode     | warm cream paper · thick ink square border · color-to-ink hard shadow · editorial magazine voice                     |
 | `retro-zine`            | Retro Zine        | paper-on-paper offset panels · 3px ink border · soft paper shuffle · warm paper over forest green                    |
@@ -105,7 +103,7 @@ Parsed as `## §<letter> <title>`. Block Frame has 8 sections, in this order:
 
 **`§T` role schema** (each entry): `id` · `family` (display/body/mono/script, resolved at render time to `var(--font-*)`) · `purpose` · `px_min`/`px_max` · `weight` · `leading` · `tracking` · `case` · `sample_html` (uses `.t-trole-<id>` class). Decorative CSS for each role lives in §I as `.t-trole-<id> { ... }`. Block Frame currently has 11 roles: `heading-xl / heading-lg / heading-md / close-title / quote-text / stat-number / card-title / step-num / label-pill / mono-tag / counter`.
 
-> **`sample_html` copy convention:** sample text should be the kind of **short real copy a video would use** (headline / number / eyebrow, etc.). **Do not write self-describing placeholder prose** (for example, `<p>Body sits at 24-28px, weight 400 — never uppercase...</p>` describing the role itself). That kind of self-description reads like debug notes in the design.html §T atlas, not a sample. Either provide a proper sample line, or, if the role is just generic body text without a signature worth demonstrating, do not create that role at all (let §6 components carry body copy; see how capsule leaves almost no generic body role).
+> **`sample_html` copy convention:** sample text should be the kind of **short real copy a video would use** (headline / number / eyebrow, etc.). **Do not write self-describing placeholder prose** (for example, `<p>Body sits at 24-28px, weight 400 — never uppercase...</p>` describing the role itself). Either provide a proper sample line, or do not create that role at all (let §6 components carry body copy).
 
 ---
 
@@ -142,7 +140,7 @@ It is a **"prebaked" skin**: the author writes a complete, brand-tokenized capti
 2. **Only change visuals inside `<style>`**: replace `.caption-pill` / `.caption-line` / `.caption-word{,.is-active,.is-spoken}` with tokens from your preset (border / shadow / radius / font / active highlight). **Do not touch** the three holes, `.caption-*` class names, `data-composition-id`, `window.__timelines["captions"]`, or the `gsap.set(className)` pattern.
 3. Use only §B `var(--*)` for colors; use `clamp()` + flex-wrap for adaptive type, with the lower edge inside the bottom caption band (roughly y900-1080).
 
-**Verify:** run §8 `build-design` + `emit-chunks` -> scroll design.html to **§C** and inspect live behavior; run `captions.mjs html` for the caption artifact (see `phases/captions/guide.md`), stdout should print `skin: preset-skin (preset-local -> ...)` + `self-lint: OK` (self-check covers every contract item in the table; any mismatch exits 1 loudly).
+**Verify:** run §7 `build-design` + `emit-chunks` -> scroll design.html to **§C** and inspect live behavior; run `captions.mjs html` for the caption artifact (see `phases/captions/guide.md`), stdout should print `skin: preset-skin (preset-local -> ...)` + `self-lint: OK` (self-check covers every contract item in the table; any mismatch exits 1 loudly).
 
 > The two registry karaoke skins (`caption-pill-karaoke` / `caption-highlight`) still exist, but only as **runtime fallback**. This standard requires every preset to provide its own `caption-skin.html`; missing it means **non-compliant** (caption style will break into a generic SaaS pill). `captions.mjs html` currently does not fail when the skin is missing (it falls back instead of exiting 1), so this rule is **enforced by the standard, not yet by machine**: when creating a new preset, you must add it.
 
@@ -171,7 +169,7 @@ cd my-new-style
 2. Rewrite sections §A->§I: change §B tokens (color/type/geometry), §D fallback fonts, §T role scale (**px_min >=24**), §E EASE/DUR, §G voice recipe, §H composition/color hints, §I shell + `.t-trole-*` + decorative CSS.
 3. Rewrite `components/*.md` (replace `.bf-` prefix with yours; **all font-size values >=24**).
 4. Change `caption-skin.html` `<style>` visuals to the new style (§3.5 contract: only change visuals; do not touch the three holes / `.caption-*` hooks / `data-composition-id` / `window.__timelines["captions"]` / `gsap.set` pattern). `cp -r block-frame` already brought it over; you only need to change visuals.
-5. Regenerate + verify according to §6.
+5. Regenerate + verify according to §7.
 
 ## 6. Refactor an External Style / Old Preset into This Standard
 
@@ -183,20 +181,9 @@ cd my-new-style
 - [ ] Ensure there is >=1 component; `§F` is not inline; `preset-meta` is valid.
 - [ ] Tokenize raw hex -> tokens.
 - [ ] Add `caption-skin.html` (§3.5, required): after `cp block-frame/caption-skin.html`, change `<style>` visuals to this style and tokenize to zero raw color; `captions.mjs html` should print `self-lint: OK`.
-- [ ] Generate + verify according to §6.
+- [ ] Generate + verify according to §7.
 
-## 7. Convert "Another Style" (website / Figma / brand guidelines) into a Preset
-
-1. **Extract DNA:** primary/neutral/accent colors -> §B tokens; font families -> `chromeFonts` + §D; radius/border/shadow/spacing -> §B private tokens (`--xx-*`).
-2. **Set type scale** -> §T roles (**all >=24**), including hero/title/body/eyebrow/numbers/counters.
-3. **Signature gestures -> components:** turn the style's instantly recognizable elements (cards, quote frame, stat, timeline, decoration) into separate `components/<id>.md` files.
-4. **Fill** §A intent, §E motion language, §G voice, §H composition/color hints.
-5. **Caption look -> `caption-skin.html`** (§3.5, required): build this style's lower-third caption look according to the contract (`cp` block-frame and change visuals).
-6. Apply §4 invariants and verify according to §6.
-
----
-
-## 8. Generate & Verify Loop
+## 7. Generate & Verify Loop
 
 ```bash
 # Run from project root (<ds-dir> is a video project's design-system directory,

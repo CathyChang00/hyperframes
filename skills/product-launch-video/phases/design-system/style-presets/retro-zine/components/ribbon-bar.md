@@ -26,7 +26,6 @@
     background: var(--ink);
     color: var(--brand-primary);
   }
-  /* Stamp-style tilted ribbon — pair sparingly with a stamp-mark on the same scene. */
   .rz-ribbon-bar.stamp {
     transform: rotate(var(--rot-stamp));
   }

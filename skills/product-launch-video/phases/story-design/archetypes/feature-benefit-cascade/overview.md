@@ -33,14 +33,7 @@ The cascade _itself_ generates emotional momentum. Each scene's beat is one step
 
 The cascade ratio of feature_showcase to benefit_highlight is roughly 1:1 across the samples. Each feature scene gets immediate emotional payment. Don't stack 4 features before naming a benefit — the rhythm is what carries the momentum.
 
-**Reveal timing** — Feature-Benefit Cascade is the **earliest-reveal** archetype. The product is named or visible from scene 1:
-
-- Vibe.co: brand in scene 1 ("Vibe.co. All-in-one TV Ad Platform.")
-- Elemental Soul: product visible from scene 1 (Fire Soul card spectacle)
-- Skye: product named scene 2 of 9 (4% through video)
-- Ultra Power: visual abundance grid in scene 1 (entire collection on screen)
-
-There is no "delayed reveal" version of Cascade — if you withhold the product, you're in BAB or PAS.
+**Reveal timing** — Feature-Benefit Cascade is the **earliest-reveal** archetype; product is named or visible from scene 1 (0–4% across samples). There is no delayed-reveal version of Cascade — if you withhold the product, you're in BAB or PAS.
 
 ## When to Use
 
@@ -60,36 +53,17 @@ There is no "delayed reveal" version of Cascade — if you withhold the product,
 
 ## Hook strategies that work for Cascade
 
-- **Category announcement** — Vibe.co "Vibe.co. All-in-one TV Ad Platform." — names what the thing IS in the first 4 seconds
-- **Visual spectacle / world-building** — Elemental Soul "Fire" (one word + amber particle trail), NFT Marketplace "Welcome to the Ultraverse" — aesthetic immersion as the pitch
-- **Trend positioning** — Skye "Introducing the future of influencer marketing" — novelty without proof
-- **Question/invitation (creator-friendly)** — Artinals "Got something to create?" — democratization framing
-- **Premium / abundance reveal** — Ultra Power: flying grid of collectibles in dark purple space implies "this is everything you wanted"
+**Visual spectacle / world-building** and **Category announcement** are the archetype-native moves — they establish desire and presence without pain.
 
 Don't open Cascade with pain validation or statistics — those signal "this is a fix" and undercut the desire-escalation arc.
 
 ## Persuasion techniques that recur
 
-- **Rule of three** — Vibe.co scene 2: "Advertise on TV. Target. Deliver. Measure." Triplet structure is the most-repeated cascade tactic
-- **Familiarity heuristic** — Vibe.co scene 3: feature UI mimics social-media ad setup ("simple as managing basic social media ads")
-- **Authority by association** — Vibe.co scene 6: 600+ channels named (CNN, ESPN, Fox); Skye: Google Cloud partnership; NFT Marketplace: blockchain framing
-- **Exclusivity & scarcity (crypto-native)** — Elemental Soul scene 7: "The exclusive Collective Soul" (rarest tier); Ultra Power: VIP access perks
-- **Scarcity & temporal urgency** — Elemental Soul scene 8: "Dropping on the 31st of August" — climax tier + drop date
-- **Reward motivation / completion incentives** — Elemental Soul scene 6: "Own the full collection to redeem"
-- **Status seeking / social belonging** — Ultra Power scene 8: premium tier as identity signal
-- **Hyperbolic time discount** — Vibe.co scene 8: "Launch in under five minutes"
-- **Visual proof of mechanics** — every feature*showcase scene uses `ui_morphing` to \_show* the UI doing the thing, not describe it
-- **Stratified tier reveal** — Elemental Soul cascades 4 base cards → ecosystem → premium "Collective Soul" — _stratified desire escalation_ where each scene increases stakes
+**Rule of three**, **Familiarity heuristic**, **Authority by association**, **Exclusivity & scarcity** (crypto-native: rarest tier + drop date), **Reward motivation / completion incentives**, **Status seeking / social belonging**, **Hyperbolic time discount** ("under five minutes"), **Visual proof of mechanics**, **Stratified tier reveal** (escalate stakes with each cascade step).
 
 ## Common compound
 
-Feature-Benefit Cascade is itself often an **inner rhythm** inside other archetypes:
-
-- PAS + Cascade = Madison (extended pain, then 9-scene cascade body)
-- Future Pacing + Cascade = AgentGPT (vision hook, then 7-scene cascade proof phase)
-- BAB + Cascade = AgentGPT alternate framing — the reverse-engineered file labels it "BAB / Feature-Benefit Cascade"
-
-When Cascade is the _outer_ archetype, the hook is brand/spectacle and there is no extended pain phase. When Cascade is an _inner_ rhythm, write the compound as `"<outer> with Feature-Benefit Cascade"`.
+Cascade is most often an **inner rhythm** inside other archetypes (PAS, BAB, Future Pacing). When Cascade is the outer archetype, the hook is brand/spectacle. When it is an inner rhythm, write as `"<outer> with Feature-Benefit Cascade"` (see guide.md).
 
 ## Variants (Golden Samples)
 

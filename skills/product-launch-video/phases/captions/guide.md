@@ -1,14 +1,12 @@
 # Captions (Phase 4a.5) - deterministic, no subagent
 
-Captions are produced by **two deterministic scripts** that hand off to each other and emit `compositions/captions.html`; `assemble-index.mjs` then mounts it in `index.html` as a **track-12 clip**. There is **no captions LLM agent** (removed). The entire caption path uses zero LLM calls, so the old class of render-time footguns from "agent hand-writes captions.html" (§6 Illegal invocation / timeline not registered / raw colors / two groups on screen / fitText not wired) is eliminated.
+Captions are produced by **two deterministic scripts** that hand off to each other and emit `compositions/captions.html`; `assemble-index.mjs` then mounts it in `index.html` as a **track-12 clip**.
 
 ```
 captions.mjs group       -> caption_groups.json          (word engine: clean/group/classify/global timing/scene+surface)
 captions.mjs html        -> compositions/captions.html   (HTML engine: choose skin + inject words + brand-tokenize + self-check)
 assemble-index.mjs       -> if file exists, mount track-12 clip (data-composition-id="captions", data-start=0, data-duration=total)
 ```
-
-Captions remain an **independent file + sub-composition** (not inline), so the **studio caption editor** (recognizes `.caption-group` + fetchable caption source file) and runtime `captionOverrides` (recognizes `.caption-group/.caption-word`) both continue to work.
 
 ---
 
@@ -130,4 +128,4 @@ Before writing, `captions.mjs html` asserts the produced artifact (`check-compos
 
 ## 6. Acceptance
 
-Render a 60-90s captioned video and verify: 1. captions remain correct after 8s (DURATION/full-film tail anchor); 2. per-word highlight works and does not overlap across scenes (engine groups); 3. readable on both dark/light themes (pill built-in contrast / highlight scrim band); 4. scene foreground stays in the upper ~83%, backgrounds remain full-bleed (keep-out); 5. studio recognizes `.caption-group`; 6. node self-check has zero failures; 7. `--no-emit` skin selection can be reviewed (neutral -> pill, direct -> highlight); 8. `--skin caption-highlight` can be forced and renders.
+Render a 60-90s captioned video and verify: 1. captions remain correct after 8s (DURATION/full-film tail anchor); 2. per-word highlight works and does not overlap across scenes (engine groups); 3. readable on both dark/light themes (pill built-in contrast / highlight scrim band); 4. scene foreground stays in the upper ~83%, backgrounds remain full-bleed (keep-out); 5. studio recognizes `.caption-group`; 6. node self-check has zero failures; 7. `--no-emit` skin selection can be reviewed (neutral -> pill, direct -> highlight).

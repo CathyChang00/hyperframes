@@ -27,7 +27,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Tektur + Chakra Petch + Space Mono — instead of brand DNA. 8-Bit Orbit is a three-face system with no script slot; `script` points back at Tektur because the preset refuses a fourth face. §T type-role atlas uses `.preset-native-scope` so var(--font-\*) re-resolves to these native families.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. 8-Bit Orbit has no script slot — `script` points back at Tektur because the preset refuses a fourth face.
 
 ## §A Director's intent
 
@@ -40,8 +40,6 @@ Depth is **stacked hard offset shadows** in 4px increments — never blur. Hero 
 **Color role contract**: one scene = one dominant brand color carrying the hero / chip / button fill; the other two brand colors appear only as shadow halos, stat numerals, or particle accents. Body / supporting text uses white (`var(--ink)` if light on dark, otherwise neutral 0.85 opacity).
 
 Motion is pixel-snap: hard arrivals, no glide. Ambient layers (starfield twinkle, pixel-particle float) live behind everything on dark surfaces. Scene transitions are hard cuts — crossfade kills the arcade.
-
-**Best for** sites with high-saturation palettes (gaming, cyberpunk, web3, indie tools). Pastel or muted brand DNA still renders, but the "arcade neon" effect softens.
 
 **Atmosphere is non-negotiable.** Every scene gets scanlines + grain (+ CRT vignette on dark surfaces). A clean surface reads as broken.
 
@@ -234,7 +232,6 @@ const DUR = {
 **Forbidden**
 
 - Crossfade, dissolve, blur transitions.
-- Smooth eases on numerics (use steps).
 - Sub-pixel positions, sub-4px gaps, sub-4px shadow offsets.
 - Any rotation other than 0deg / 90deg / 180deg / 270deg (rotation breaks pixel grid).
 - Glow / bloom filters. Pixels don't glow — neighbors don't bleed.
@@ -242,7 +239,7 @@ const DUR = {
 
 **Stagger budget**
 
-80-120ms between elements. Faster than editorial (200-280ms), slower than chaos. Total scene-in stagger ≤ 500ms.
+80-120ms between elements. Total scene-in stagger ≤ 500ms.
 
 ## §G Voice transform recipe (apply to brand's voice from §1 DNA)
 
@@ -303,13 +300,7 @@ Take the brand's product description / value prop. Transform with:
 
 ```css
 /* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Tektur + Chakra Petch + Space Mono regardless
- * of brand DNA. The §6 component preview and §T type-role atlas also read these via
- * .preset-native-scope.
- *
- * 8-Bit Orbit has no script face — the script slot points at Tektur because
- * the preset refuses a fourth face. Fallback chains end in retro display /
- * humanist sans / monospace that still carry the arcade register. */
+ * Tektur + Chakra Petch + Space Mono for doc chrome; script slot = Tektur (no fourth face). */
 :root {
   --f-disp-native:
     "Tektur", "Press Start 2P", "VT323", "Archivo", "Arial Black", "Helvetica Neue", sans-serif;
@@ -321,11 +312,7 @@ Take the brand's product description / value prop. Transform with:
     "Space Mono", "JetBrains Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and the §T type-role atlas so var(--font-*) resolves to
- * Tektur / Chakra Petch / Space Mono regardless of brand DNA. Paste-ready
- * component source is untouched — Phase 4b still grep + paste the original
- * `var(--font-display)` tokens, which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: re-binds var(--font-*) to preset-native families for component previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -445,10 +432,7 @@ h2 {
   color: var(--brand-primary) !important;
 }
 
-/* ── §T Type-role atlas. Container = navy card with brand-primary heavy border.
- * Each .t-trole-* class encodes the role's family / size / weight / leading /
- * tracking / case. Family selectors use var(--font-*) tokens so the atlas
- * renders in BRAND DNA fonts; only the recipe is preset-declared. */
+/* ── §T Type-role atlas. var(--font-*) tokens → brand DNA; only the recipe is preset-declared. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -476,10 +460,7 @@ h2 {
   }
 }
 
-/* ── Type-role samples. var(--font-display/body/mono) resolves to brand DNA.
- * Color and decoration follow 8-Bit Orbit's neon-on-navy register —
- * brand-primary headlines, navy text-shadow on stat numerals, mono tracking
- * on every label. */
+/* ── Type-role samples. var(--font-display/body/mono) → brand DNA. */
 .t-trole-pixel-hero {
   font-family: var(--font-display);
   font-weight: 900;

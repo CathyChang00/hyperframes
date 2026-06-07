@@ -8,7 +8,7 @@
 
 ## Narrative Analysis
 
-- **Emotional Arc**: Curiosity (TV advertising complexity) → focus on category clarity → confidence as features cascade → prestige (CNN/ESPN/Fox association) → urgency to act
+- **Emotional Arc**: Curiosity (hook) → confidence (cascade) → prestige (authority anchor) → urgency (CTA)
 - **Hook Strategy**: Category announcement — the brand and the category claim land in scene 1 as one line, no pain validation
 - **Product Reveal Timing**: Immediate (scene 1 of 9, 0% delay). Vibe.co is the _category_, named at the same moment as the brand
 - **Pacing**: Cold-open cascade — every scene is 2-6s, no extended dwell on any single feature. The video closes by looping back to the opening line for brand recall
@@ -116,19 +116,11 @@
 
 ## Takeaways
 
-**What Works Well**:
-
-- **Brand-first cold open**: no pain validation, no question — the brand and category claim are the hook
-- **Rule of Three structural beat**: "Target. Deliver. Measure." gives the cascade a memorable spine before the features start
-- **Continuous-sentence cascade (scenes 3-5)**: "Target your audience / where they are / and what they like." — three scenes function as one sentence across cuts, which is _only possible_ in the Cascade rhythm
-- **Concrete authority anchors**: "Over 600 plus channels" + named networks does more for credibility than a "Trusted by Fortune 500" claim would
-- **Bookend recall**: closing on the exact opening line tightens the loop and makes the tagline stickier
-
 **Reusable Patterns**:
 
-- **Brand-Category-Tagline Hook**: brand name + category position + tagline in one declarative sentence as scene 1 (no verb required)
-- **Rule of Three Pillar Beat**: scene 2 names the platform's three core capabilities as imperatives in a triplet
-- **Continuous-Sentence Cascade**: 3+ consecutive feature scenes whose scripts complete one running sentence across the cuts
-- **Authority Anchor at the Halfway Point**: scene 6 (~halfway through a 9-scene cascade) names the credibility partners or concrete numbers — repositions the cascade from "neat features" to "real institution"
+- **Brand-Category-Tagline Hook**: brand name + category position in one declarative sentence as scene 1 (no verb required).
+- **Rule of Three Pillar Beat**: name the platform's three core capabilities as imperatives in a triplet in scene 2.
+- **Continuous-Sentence Cascade**: 3+ consecutive feature scenes whose scripts complete one running sentence across cuts.
+- **Authority Anchor at the Halfway Point**: name credibility partners or concrete numbers at the ~midpoint to reposition "neat features" as "real institution."
 
 **Formula**: Open with the brand + category claim as one declarative line. Structure the cascade with a Rule of Three pillar beat early. Run 3-5 feature/benefit pairs with `ui_morphing` and `camera_zoom_pan` transitions. Anchor authority at the midpoint. Close by repeating the opening line verbatim.

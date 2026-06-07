@@ -6,11 +6,7 @@ category: visual-design
 
 # Video Motion Language - Design-Judgment Layer
 
-A good promo video feels like one continuous whole, not a pile of unrelated animated slides. That requires a consistent motion language: the same ease intent, the same rhythmic timing, and the same spring feel.
-
-**This file only covers plan-layer design judgment** - spring intent, beat structure, holds, silent beats, and transition vocabulary. Concrete GSAP ease names (`back.out(1.4)`), ms/frame mapping, stagger formulas, exact cut-the-curve JS, and multiplicative breathing formulas are build-agent territory when writing timelines and consulting `/hyperframes-animation` plus `chunks/easings.js`; plan does not write code.
-
-> **`EASE` / `DUR` JS constants come from `chunks/easings.js`** (already inlined into Phase 3 dispatch `## Design chunks`; do not read design.html). Plan references by **intent role** (`EASE.entry` / `EASE.emphasis` / `EASE.exit`, `DUR.fast` / `DUR.med` / `DUR.slow`, though actual keys may vary by preset - e.g. editorial uses `DUR.snap` instead of `DUR.fast`). Plan writes "use entry spring" or "reference `EASE.entry`"; build agent maps it to the concrete curve.
+Plan-layer only — spring intent, beat structure, holds, transition vocabulary. GSAP ease names, ms/frame mapping, and stagger formulas are build-agent territory (`chunks/easings.js`). Plan references by **intent role** (`EASE.entry` / `EASE.emphasis` / `EASE.exit`, `DUR.snap` / `DUR.med` / `DUR.slow`; actual keys vary by preset).
 
 ## Spring Intent (by role, not curve)
 

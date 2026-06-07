@@ -18,9 +18,8 @@
     Default fill is butter; in a multi-card grid, cycle through sky / blush /
     mint variants. Each card carries its own ink pin via ::before.
 
-    TODO: when used in a 3-card grid, set background-color per card via a
-    .sky / .blush / .mint variant class and set the icon glyph per card (A/B/C
-    or brand-relevant character).
+    In a 3-card grid, set background-color per card via a .sky / .blush / .mint
+    variant class and set the icon glyph per card (A/B/C or brand-relevant character).
   */
   .sb-feature-card {
     position: relative;

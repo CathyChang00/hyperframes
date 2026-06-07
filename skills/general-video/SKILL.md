@@ -7,8 +7,6 @@ metadata:
 
 # general-video — general composition authoring
 
-The router's fallback for video creation that doesn't fit a specialized workflow. This is the original `hyperframes` authoring flow: **you (the main agent) author the composition directly**, pulling the technical contract, creative direction, and motion from the `hyperframes-*` domain skills. There is no capture step and no fixed pipeline — it adapts to whatever was asked, at any length or format.
-
 **Build exactly what was asked.** A title card is a title card — not a title card + three supporting scenes + ambient music + captions. If extra scenes or elements would genuinely improve the piece, _propose_ them; don't add them silently. For small edits (fix a color, adjust one duration, add one element), skip the planning steps and go straight to the build.
 
 ## Approach
@@ -30,7 +28,7 @@ Establish the visual identity first. If the project has a design spec, read it (
 
 **If no spec exists, you MUST read BOTH `hyperframes-creative/references/house-style.md` AND `hyperframes-creative/references/video-composition.md` before choosing any color or font.** `house-style.md` gives the "interpret the prompt / generate real content" opener, lazy-default list, and layer recipe; `video-composition.md` gives the video-medium density / scale / **foreground detailing** (data bars, registration marks, monospace metadata, "8-10 elements, two the user didn't ask for") that separates "produced" from "generated." Reading only one is the most common miss — `video-composition.md` is the one agents skip, and it is exactly the one that prevents flat, centered, web-page-looking output. Do not self-invent a palette and skip these; crossing into `hyperframes-creative` is mandatory here, not an optional branch. From there, also pull a named style/mood → `references/visual-styles.md`, or the interactive picker → `references/design-picker.md`, as needed. The spec/style defines the **brand**, not the composition rules.
 
-**Find the angle (vague brief, no spec):** before picking colors, write ONE sentence — what does this name/word/topic evoke, and what visual _world_ (metaphor, setting, instrument, motif) expresses it? E.g. a cybersecurity tool → vault doors / perimeter scan lines / lock tumblers; a meditation app → tide, breath, slow light bloom. Read the _meaning_ of the subject, not just its letters; pick a concrete angle over a literal restyle. Cost: one sentence, not a file. This is the cheap substitute for prompt expansion (Step 2) on single-scene pieces, where expansion is correctly skipped — and it is the difference between a designed concept and a generic logo-on-a-gradient.
+**Find the angle (vague brief, no spec):** before picking colors, write ONE sentence — what does this name/word/topic evoke, and what visual _world_ (metaphor, setting, instrument, motif) expresses it? E.g. a cybersecurity tool → vault doors / perimeter scan lines / lock tumblers; a meditation app → tide, breath, slow light bloom. Read the _meaning_ of the subject, not just its letters; pick a concrete angle over a literal restyle. This is the cheap substitute for prompt expansion (Step 2) on single-scene pieces, where expansion is correctly skipped — and it is the difference between a designed concept and a generic logo-on-a-gradient.
 
 <HARD-GATE>
 Before writing ANY composition HTML, verify you have ALL FOUR:
@@ -88,8 +86,6 @@ Never use `position: absolute; top: Npx` on a content container — it overflows
 
 ## Build — delegate to the domain skills
 
-**Read by intent before writing.** Because this is a thin orchestrator, the load-bearing guidance lives one skill-hop away — and an unopened file is the #1 cause of generic output. Open the matching references _first_, don't author from the SKILL.md summaries alone:
-
 This maps the skill's full surface (see the `description`) to its references — non-exhaustive; when an intent isn't listed, route through `hyperframes-creative` (look/concept), `hyperframes-animation` (motion), `hyperframes-core` (contract), `hyperframes-media` (audio/captions). **The first row is ADDITIVE — read it AND your intent row, not one or the other.**
 
 | Building…                                                             | Read first (in order)                                                                                                                                                       |
@@ -104,14 +100,6 @@ This maps the skill's full surface (see the `description`) to its references —
 | **Narrated / voiceover / captions / subtitles**                       | `hyperframes-media` (`tts`, `transcribe`, caption authoring) → place assets via `hyperframes-core`                                                                          |
 | **Multi-scene / transitions**                                         | `hyperframes-animation/transitions/overview.md` **then** `transitions/catalog.md` (you are not done after the overview — the GSAP recipe is in the catalog)                 |
 | **Modular / sub-compositions**                                        | `hyperframes-core/references/composition-patterns.md` + `references/sub-compositions.md`                                                                                    |
-
-Author the HTML against the domain skills; do not reinvent their contracts here:
-
-- **Composition contract** — `data-*` attributes, clips, tracks, sub-compositions, variables, media, the single paused `window.__timelines` registration, and the non-negotiable determinism rules → **`hyperframes-core`**.
-- **Motion** — atomic rules, multi-phase scene blueprints, scene transitions, broader techniques, and runtime adapters (GSAP default; Lottie / Three.js / Anime.js / CSS / WAAPI / TypeGPU) → **`hyperframes-animation`**.
-- **Creative direction** — palettes, typography, narration, audio-reactive visuals, composition patterns → **`hyperframes-creative`**.
-- **Media** — TTS narration, transcription, captions, background removal → **`hyperframes-media`**.
-- **Pre-built blocks / components** — install and wire via **`hyperframes-registry`** (`hyperframes add`).
 
 ## Output checklist → `hyperframes-cli`
 

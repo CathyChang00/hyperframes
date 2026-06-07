@@ -1,6 +1,6 @@
 ```html
 <div class="pp-process-step">
-  <!-- TODO: cycle the numeral literal per step instance: 1 / 2 / 3 / 4 / 5.
+  <!-- Set the numeral literal per step instance (1 / 2 / 3 / 4 / 5).
        Caveat hand-script numeral is the system's ordering voice — never substitute
        Space Grotesk numerals or a CSS list-counter. -->
   <span class="pp-process-step-num">1</span>

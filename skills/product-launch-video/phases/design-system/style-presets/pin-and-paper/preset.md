@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Space Grotesk + Caveat + DM Mono — instead of the brand DNA fonts. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the design.html doc chrome render in the preset's native fonts (Space Grotesk + Caveat + DM Mono); brand fonts still apply to §6 component code.
 
 ## §A Director's intent
 
@@ -45,9 +45,7 @@ Three editorial voices, each in its own face: **Space Grotesk 700** carries ever
 
 **Brand DNA drives the chrome color, preset drives the structure.** `--brand-primary` maps to the ink-blue role (text, borders, dividers, pin illustrations, hard offset shadow). `--brand-accent` maps to the cinnabar-red stamp role (used in exactly two places: the rotated rubber stamp and the negative pill). The yellow paper base is a **technical signature anchor** — without it the layered radial gradients, grain overlay, and cream-on-yellow card contrast all fail; declared once in §B as `--anchor-paper-yellow` / `--anchor-cream` so brand DNA can tint via `color-mix()` without losing the paper reading.
 
-Motion is **quiet and considered** — short fades, no overshoot, no bounce. The hand-pinned aesthetic doesn't want kinetic theatrics; the camera holds and the eye reads. Ambient pin rotations drift on `sine.inOut` like paper settling.
-
-**Best for** decks that should feel hand-crafted, warm, literary — qualitative research findings, founder reflections, longform brand stories. Avoid for digital-native polished or rigorously data-driven contexts; the handwritten Caveat is intentionally informal.
+Motion is **quiet and considered** — short fades, no overshoot, no bounce. Ambient pin rotations drift on `sine.inOut`.
 
 **Density philosophy: populated, not sparse.** Pin & Paper reads as authoritative when 3–6 cards are pinned across the page, each carrying a heading + body + marginal note. A scene with one centered headline and otherwise empty space reads as broken.
 
@@ -131,8 +129,6 @@ Pin & Paper depends on the three-voice editorial pairing (printed display / hand
 The handwritten layer (Caveat) is non-substitutable — if Caveat fails to load it falls through to `cursive`, which varies by OS. Component CSS forces Caveat directly; brand DNA does not override it.
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
-
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/border/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `display-cover` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas pin-and-paper's source `design.md` ships in its type-scale section, ported as machine-readable JSON.
 
 The atlas is the **sole authoring source** for non-component text. If a scene needs a `number-hero` numeral that isn't covered by §6 components, the worker reads role `number-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — the three-voice editorial rhythm (print headline / handwritten scribble / mono archival tag) collapses if sizes drift.
 
@@ -239,8 +235,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the paper-grain overlay (a texture, declared in §B) and the pin-illustration / hard-offset-shadow gestures (composition decoration, declared in §B and the §6 components).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -308,16 +302,8 @@ Take the brand's product description / value prop. Transform with:
 ## §I Page-level CSS (overrides design.html's neutral chrome — makes the doc itself read as pin-and-paper)
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Space Grotesk + Caveat + DM Mono regardless
- * of which brand DNA the preset is applied to. The §6 component preview and §T
- * type-role atlas also read these via .preset-native-scope.
- *
- * Fallback chains end in a face that still carries the preset's vibe (Inter /
- * Manrope for the printed display + body; system cursives for the script;
- * IBM Plex Mono / Menlo for the archival mono). Caveat in particular is
- * non-substitutable — its absence falls through to `cursive` which varies
- * widely by OS, so the chain stays short and intentional. */
+/* ── Preset-native typography vars — doc chrome renders in Space Grotesk + Caveat + DM Mono.
+ * Caveat is non-substitutable; its fallback chain stays short and intentional. */
 :root {
   --f-disp-native:
     "Space Grotesk", "Inter Tight", "Manrope", -apple-system, BlinkMacSystemFont, system-ui,
@@ -330,12 +316,7 @@ Take the brand's product description / value prop. Transform with:
     "DM Mono", "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role samples so
- * var(--font-*) resolves to Space Grotesk / Caveat / DM Mono regardless of the
- * brand DNA tokens emitted in :root. The paste-ready component source is
- * untouched — Phase 4b still grep + paste original `var(--font-display)`
- * tokens, which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families for §6 previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -430,14 +411,7 @@ h2 {
   font-family: "DM Mono", monospace !important;
 }
 
-/* ── §T Type-role atlas. Container = a single cream pinned-card with the
- * universal hard ink offset shadow. Each row is a single-column entry padded
- * only — no inner grid, no eyebrow column. Each .t-trole-* class encodes the
- * role's family / size / weight / leading / tracking / case / decoration.
- * Family selectors use var(--font-*) tokens so the atlas renders in BRAND DNA
- * fonts; only the recipe is preset-declared. Decoration (color, border,
- * shadow, rotation, stamp, pill) stays hard-coded to pin-and-paper tokens
- * (var(--brand-primary), var(--brand-accent), var(--surface-paper) etc.). */
+/* ── §T Type-role atlas. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -465,10 +439,7 @@ h2 {
   }
 }
 
-/* ── Type-role samples. Each .t-trole-* class mirrors a pin-and-paper type-scale
- * entry but uses var(--font-display/body/script/mono) so the actual typeface
- * comes from brand DNA. Decoration (color, border, shadow, rotation, stamp,
- * pill) is preset-native. */
+/* ── Type-role samples. */
 .t-trole-display-cover {
   font-family: var(--font-display);
   font-weight: 700;

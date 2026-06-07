@@ -28,15 +28,13 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Fredoka One + Quicksand — instead of the brand DNA fonts. Daisy Days is a two-face system: Fredoka does every headline, Quicksand carries every body line; the `script` slot also points at Fredoka because the storybook voice refuses a third face (mono lives only as metadata chrome). The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the design.html doc chrome render in the preset's native fonts (Fredoka One + Quicksand); brand fonts still apply to §6 component code. The `script` slot also points at Fredoka — the storybook voice refuses a third face.
 
 ## §A Director's intent
 
 Daisy Days is a **cheerful, storybook-pastel system**. Every container is a rounded card with a thick charcoal outline (3px) and a hard offset shadow (6px / 6px / 0), and every region is wreathed in hand-drawn SVG ornaments — daisies, stars, suns, clouds, rainbows — that cluster at the corners and crop past the edges. Type pairs a chubby rounded display face with a friendly humanist sans; surfaces alternate between cream and saturated pastels (turquoise, soft-pink, butter, mint, lavender, peach, sky). The single accent — coral — is reserved for small high-attention markers, never as a surface.
 
 Voice is **warm and informal**: short sentence fragments, sentence case, no shouting. Motion is **bounce-and-settle**: things hop in with a mild overshoot, ornaments breathe and twinkle, exits are quick and clean. Use `dc-` as the CSS class prefix to namespace components.
-
-**Best for:** educational content, wellness, community workshops, creator portfolios, friendly internal kickoffs, anything that wants to feel soft, hand-made, and approachable. **Avoid for:** authority-first contexts (enterprise compliance, financial precision, security) where storybook decoration reads as flippant.
 
 ## §B Decoration tokens
 
@@ -103,8 +101,6 @@ Voice is **warm and informal**: short sentence fragments, sentence case, no shou
 - **mono**: `'JetBrains Mono'` wght 500 · `'IBM Plex Mono'` wght 500
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
-
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `headline-pastel` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the Daisy Days typographic ladder (§D + design.md typography table) ported as machine-readable JSON.
 
 The atlas is the **sole authoring source** for non-component text. If a scene needs a `number-hero` numeral that isn't covered by §6 components, the worker reads role `number-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — every role floors at 24px and the Fredoka/Quicksand families split the ladder by role, so ad-hoc sizes break the storybook ladder.
 
@@ -190,8 +186,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the SVG ornament layer (a texture declared in §B, rendered by the ornament-cluster component) and the framed-header lockup (a composition pattern, not a text role — see the welcome-frame component).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -258,15 +252,7 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Fredoka One + Quicksand regardless of which
- * brand DNA the preset is applied to. The §6 component preview and §T type-role
- * atlas also read these via .preset-native-scope.
- *
- * Daisy Days is a two-face system — the script slot points at Fredoka One
- * because the storybook voice refuses a third face; mono is reserved as the
- * metadata fallback only. Fallback chains end in a face that still carries
- * the rounded-display vibe (Baloo 2 / Comfortaa for display; Nunito for body). */
+/* ── Preset-native typography vars — doc chrome renders in Fredoka One + Quicksand. */
 :root {
   --f-disp-native:
     "Fredoka One", "Fredoka", "Baloo 2", "Comfortaa", "Nunito", system-ui, sans-serif;
@@ -278,12 +264,7 @@ const DUR = {
     "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Fredoka One / Quicksand regardless of brand DNA.
- * Paste-ready component source is untouched — Phase 4b still grep + paste the
- * original `var(--font-display)` tokens, which resolve to brand DNA at
- * scene-render time. */
+/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families for §6 previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -322,11 +303,7 @@ body {
   background: #fffaf0;
 }
 
-/* ── §T Type-role atlas. Container = outlined card look (sticker-on-paper).
- * Each .ds-trole-row stacks padding only (no internal grid) — the role's
- * sample stretches full width within the card so display-cover scale reads
- * honestly. Family selectors use var(--font-*) tokens so the atlas renders
- * in BRAND DNA fonts; only the recipe is preset-declared. */
+/* ── §T Type-role atlas. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -354,11 +331,7 @@ body {
   }
 }
 
-/* ── Type-role samples. Each .t-trole-* class mirrors a daisy-days type-scale
- * entry but uses var(--font-display/body/script/mono) so the actual typeface
- * comes from brand DNA. Decoration (color, text-shadow, fill, border,
- * surface backing) is preset-native and stays declared with hard-coded
- * daisy-days colors (var(--ink), var(--anchor-butter), var(--brand-*), etc). */
+/* ── Type-role samples. */
 .t-trole-display-cover {
   font-family: var(--font-display);
   font-weight: 400;

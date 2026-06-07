@@ -8,7 +8,7 @@
 
 ## Narrative Analysis
 
-- **Emotional Arc**: Curiosity (category announcement) → relief (plug-and-play concept) → trust (brand authority) → excitement (speed/scale claim) → empowerment (do-what-you-do-best) → motivation (CTA)
+- **Emotional Arc**: Curiosity (hook) → relief (plug-and-play concept) → trust (brand reveal) → empowerment (do-what-you-do-best) → motivation (CTA)
 - **Hook Strategy**: Category announcement — "Cloud BI Acceleration" lands in scene 1 as the topic (not the brand). The category itself is the differentiator
 - **Product Reveal Timing**: Mid (scene 5 of 13, 38%). Sells the category and the concept (plug-and-play, "We Plug. You Play.") for 4 scenes _before_ naming the brand. This is the BAB "sell the bridge concept before naming the engineer" move
 - **Pacing**: Steady mid-tempo — most scenes 3-6s, two extended scenes (sub-second performance @ 6s, "Without worrying about..." pain-recap @ 10s). The 10s scene is unusually long for a BAB but works because it's a _list of removed worries_, not new content
@@ -78,7 +78,7 @@
 - **Emotional Beat**: Excitement
 - **Transition**: `kinetic_typography` — fades into dynamic neon streaks shooting past on a dark reflective surface
 - **Script**: "The World's Fastest And Most Scalable BI Acceleration Platform"
-- **Copywriting Notes**: First superlative claim of the video — held back until after the brand is named. Generic AI would have led with this in scene 1.
+- **Copywriting Notes**: First superlative claim of the video — held back until after the brand is named for maximum credibility.
 
 ### Section 7: "New SaaS Mode Launch" (0:22–0:28, ~10%)
 
@@ -157,20 +157,11 @@
 
 ## Takeaways
 
-**What Works Well**:
-
-- **Concept-before-brand opening (scenes 1-4)**: sells the bridge promise ("Cloud BI Acceleration" + "Plug & Play" + "We Plug. You Play.") before revealing who built it. The brand answers a question the audience is already asking.
-- **"We Plug. You Play." effort-reversal beat**: 5-word parallel structure crystallizes the entire value proposition in one line. The cleanest possible articulation of the bridge.
-- **Two-stage product reveal**: brand identity (scene 5) + product offering (scene 7) — separates "who" from "what's available." Most plans collapse these into one scene; Kyvos breaks them for clarity.
-- **Empirical proof at the bridge climax**: "Trillions of rows in sub-seconds" is the wow-claim, held back until scene 8 after credibility is established.
-- **Removed-pain as a feature (scene 11)**: rather than agitate pain, list the worries the product _removes_. Pain is acknowledged only as the absence of itself.
-- **Empowerment outro**: "Do What You Do Best" — names the after-state from the customer's perspective (not the product's perspective).
-
 **Reusable Patterns**:
 
-- **Category-Concept Preamble**: 3-4 scenes that sell the bridge concept (category name + concept tagline + effort-reversal beat) before naming the brand. Works when the _approach_ is the differentiator, not the brand recognition.
-- **Effort-Reversal Beat**: 4-6 words with parallel structure that names the delta in who does what. ("We Plug. You Play." / "We do the hard part, you do yours.")
-- **Two-Stage Product Reveal**: separate `branding` scene (who) from `product_intro` scene (what's available). Clearer than collapsing into one when the offering has a specific delivery mode (SaaS, plugin, marketplace, etc.).
-- **Removed-Pain List as Risk Reversal**: a `pain_point` scene whose script is a list of _removed_ worries, framed by "Without worrying about..." or "No more...". Acknowledges pain only to dismiss it.
+- **Category-Concept Preamble**: 3-4 scenes sell the bridge concept before naming the brand — works when the approach is the differentiator.
+- **Effort-Reversal Beat**: 4-6 words with parallel structure naming who does what ("We Plug. You Play.").
+- **Two-Stage Product Reveal**: separate `branding` scene (who) from `product_intro` scene (what's available).
+- **Removed-Pain List as Risk Reversal**: a `pain_point` scene whose script lists removed worries ("Without worrying about..."), acknowledging pain only to dismiss it.
 
 **Formula**: Open with the category name (not the brand). Sell the bridge concept across 3-4 scenes including an effort-reversal beat. Reveal the brand identity. Reveal the specific product/offering separately. Walk the bridge across 3-5 features (with at least one empirical-proof claim). List removed pains as risk reversal near the end. Close with an empowerment imperative + direct CTA.

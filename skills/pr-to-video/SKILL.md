@@ -7,7 +7,7 @@ metadata:
 
 # pr-to-video - dispatch entry
 
-Input is a **GitHub pull request** (a code change), supplied as a PR URL, an `<owner>/<repo>#<N>` ref, or "this PR" while a repo with an open PR is checked out. Output is a **code-change explainer**: what shipped, why, and how it works — rendered from the diff/commits as before-after, diff-highlight, file-tree, and impact scenes. Default length **up to ~3 min** (sweet spot ~30-90s; changelog / feature-reveal register); a genuinely longer or exhaustive every-file walkthrough (5 min+) is a different register → `/general-video`. There is **no website scrape and no headless Chrome for ingest** — ingest is the `gh` CLI. The shipped style preset is always **claude** (warm editorial; signature navy code window).
+Input is a **GitHub pull request** (a code change), supplied as a PR URL, an `<owner>/<repo>#<N>` ref, or "this PR" while a repo with an open PR is checked out. Output is a **code-change explainer**: what shipped, why, and how it works — rendered from the diff/commits as before-after, diff-highlight, file-tree, and impact scenes. Default length **up to ~3 min** (sweet spot ~30-90s); a genuinely longer or exhaustive every-file walkthrough (5 min+) is a different register → `/general-video`. There is **no website scrape and no headless Chrome for ingest** — ingest is the `gh` CLI. The shipped style preset is always **claude** (warm editorial; signature navy code window).
 
 This workflow owns only the PR-specific front (**ingest + story-design**); every phase marked _shared_ reuses the engine copied from faceless-explainer unchanged (it lives under this skill's own `scripts/` + `agents/` + `phases/`, so `<SKILL_DIR>` resolves to pr-to-video).
 
@@ -54,7 +54,7 @@ mkdir -p "$(dirname "$PROJECT_DIR")"
 npx hyperframes init "$PROJECT_DIR" --non-interactive --skip-skills --example=blank
 ```
 
-> `hyperframes init` drops a generic `AGENTS.md` / `CLAUDE.md` into `$PROJECT_DIR`; **leave them in place** — they are agent scaffolding for whoever opens the finished project later. This skill (not those files) is the source of truth for the workflow.
+> `hyperframes init` drops a generic `AGENTS.md` / `CLAUDE.md` into `$PROJECT_DIR`; **leave them in place** — they are agent scaffolding for whoever opens the finished project later.
 
 **Constraints:** never run `hyperframes init` / generate `AGENTS.md` / `CLAUDE.md` in the workspace root; never nest another `hyperframes/` inside `PROJECT_DIR`; every Bash command (master + subagents) is a `(cd "$PROJECT_DIR" && ...)` subshell — never bare `cd`.
 
@@ -145,7 +145,7 @@ Design DNA: ./design-system/inference.json           # Read site_dna once to set
 Script style: concise, dev-facing — 1-2 sentences/scene, <=20 words; name the change, the why, the impact
 ```
 
-The agent picks a PR **archetype** for `narrativeArchetype` (`changelog` / `feature-reveal` / `fix-explainer` / `refactor-walkthrough`, or `"<outer> with <inner>"`) and emits `narrator_scripts.json` (it runs the validator before returning). `continuity` drives worker grouping: `continue` = same worker as the previous scene (a run of **up to 3** scenes, cap=3); `break` = new worker; scene 1 is always `break`. `intent` / `sharedMotif` are soft hints. `assetCandidates` is `[]` on essentially every scene (faceless) — the one exception is an **optional credits / shipped-by close** that may reference the contributor avatars in `public/avatars/<login>.png` (from `people.json`).
+The agent picks a PR **archetype** for `narrativeArchetype` (`changelog` / `feature-reveal` / `fix-explainer` / `refactor-walkthrough`, or `"<outer> with <inner>"`) and emits `narrator_scripts.json` (it runs the validator before returning). `continuity` drives worker grouping: `continue` = same worker as the previous scene (cap=3); `break` = new worker; scene 1 is always `break`. `intent` / `sharedMotif` are soft hints. `assetCandidates` is `[]` on essentially every scene (faceless) — the one exception is an **optional credits / shipped-by close** that may reference the contributor avatars in `public/avatars/<login>.png` (from `people.json`).
 
 ### Step 3 - Audio — SHARED
 
@@ -250,7 +250,7 @@ mkdir -p /tmp/scene-dispatch
 
 Start **N scene workers in parallel in the same message** (`general-purpose`, each `run_in_background: true`). prompt = full contents of `agents/hyperframes-scene.md` + `## Dispatch context`, verbatim. Top-level fields: `SKILL_DIR` / `PROJECT_DIR` / `Worker ID` / `Captions: <enabled|disabled>` (= `group_spec.captions_enabled`) / `Dispatch packet: /tmp/scene-dispatch/w<N>.txt`, plus the shared header body + a `Scenes:` list.
 
-For the worker top-level context, copy from `group_spec.json.groups[i]`: `worker_id`, `composition_id`, `composition_file`, `duration_s`, `scene_ids`. Copy every field in the **`Scenes:` list verbatim from `group_spec.json.groups[i].scenes[<sid>]`** (only that worker's 1-3 logical scenes): `scene_id` / `local_start_s` / `effects` / `rule_paths` / `assetCandidates` / `estimatedDuration_s` / `voicePath` / `design_chunks` (absolute paths to the whole component library — the worker chooses by visual judgment) / `creative_brief`. A 2-3 scene worker writes one `group_wN.html` with true shared DOM across the segments.
+For the worker top-level context, copy from `group_spec.json.groups[i]`: `worker_id`, `composition_id`, `composition_file`, `duration_s`, `scene_ids`. Copy every field in the **`Scenes:` list verbatim from `group_spec.json.groups[i].scenes[<sid>]`** (only that worker's 1-3 logical scenes): `scene_id` / `local_start_s` / `effects` / `rule_paths` / `assetCandidates` / `estimatedDuration_s` / `voicePath` / `design_chunks` (absolute paths to the whole component library — the worker chooses by visual judgment) / `creative_brief`. A continue run of 2-3 scenes writes one `group_wN.html` with true shared DOM across the segments.
 
 `assetCandidates` is `[]` for most or all scenes — the worker invents the visual from `creative_brief` + design chunks (code-window for diffs, before/after, +/- counters); there are no captured assets to place. `design_chunks: null` (chunks missing) → worker falls back to reading `./design-system/design.html` fully; should not happen in the normal path.
 
@@ -367,6 +367,6 @@ Read `$PROJECT_DIR/context.log` and resume from:
 ## Routing note (for the hyperframes-read-first router)
 
 - **Input:** a **GitHub PR** — a code change (PR URL, `owner/repo#N`, or "this PR"). A URL, but **a `github.com/.../pull/N` link, not a product/marketing website**.
-- **Output:** code-change explainer, up to ~3 min (sweet spot ~30-90s) (changelog / feature-reveal / fix / refactor walkthrough); 5 min+ exhaustive deep-dives → `/general-video`.
+- **Output:** code-change explainer, up to ~3 min (sweet spot ~30-90s); 5 min+ exhaustive deep-dives → `/general-video`.
 - **Triggers:** "make a video about this PR", "turn PR #1187 into a changelog video", "explain what this pull request does as a video", "release-notes video from github.com/org/repo/pull/123", "把这个 PR 做成视频".
 - **Do NOT use for:** a product/marketing website URL (-> `/product-launch-video`); a topic/article/text with no PR (-> `/faceless-explainer`); existing video footage (-> `/footage-recut`); a whole-repo tour or multi-PR release (no workflow yet -> 通用).

@@ -28,7 +28,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Bebas Neue + Space Grotesk + Caveat + JetBrains Mono — instead of the brand DNA fonts. The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components.
 
 ## §A Director's intent
 
@@ -42,9 +42,7 @@ Depth is **paper-on-paper offset slabs**, not blurred shadows. Hero cards carry 
 
 Motion is soft paper-shuffle: gentle opacity + translateY entries, no overshoot, no glide. Decorative elements pop in with a single light tilt; nothing bounces. Three-face typography never animates a face-swap.
 
-**Class prefix `rz-`** is documented here so future maintainers know to use it on every component selector.
-
-**Best for** sites with editorial / craft / indie / earthy palettes (publishers, music + arts brands, small-batch / craft launches, creator portfolios, community decks). Pairs naturally with high-saturation single-hue brands (forest, oxblood, ochre). High-tech neon palettes still render but the warm-paper register softens the brand voice — use a different preset if "polished digital" is the brief.
+**Class prefix: `rz-`** — use on every component selector.
 
 **Density is non-negotiable.** A scene that holds only one centered headline reads as underdesigned; the zine register expects supporting moves (eyebrow, drop cap, hand-script, stamp, ribbon, divider stub). Reserve true sparseness for statement / quote beats.
 
@@ -107,9 +105,7 @@ Note: the `mono` slot carries the **hand-script** voice (Caveat / Kalam / Shadow
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/shadow/rotation decoration. Phase 4b scene workers may cite roles by `id` ("use a `headline` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas retro-zine ships in its Typography section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `number-hero` numeral that isn't covered by §6 components, the worker reads role `number-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes.
+The atlas is the **sole authoring source** for non-component text — do NOT invent ad-hoc sizes.
 
 ```type-roles
 [
@@ -214,8 +210,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits `grain-overlay` (it's a texture, declared in §B decoration tokens) and `card-offset` (a depth move, shipped as a §6 component).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -257,9 +251,7 @@ const DUR = {
 
 **Forbidden**
 
-- back / elastic / bounce eases on any element.
 - Crossfading between scenes (the template's slide opacity 0.6s is acceptable, but for scene-level transitions in the video, use a clean fade — never blur, slide, or zoom).
-- Animating rotation on stamps / collage pieces. Rotation is a static signature.
 - Tweening Caveat letter-spacing or `font-weight`.
 - More than ±8° tilt on any element. Beyond that, hand-placed becomes broken.
 - Modern blurred `box-shadow` reveals. All depth is paper-offset / rotation / grain.
@@ -267,7 +259,7 @@ const DUR = {
 
 **Stagger budget**
 
-120-200ms between elements. Slower than 8-bit-orbit (80-120ms), in line with editorial pacing. Total scene-in stagger ≤ 700ms.
+120-200ms between elements. Total scene-in stagger ≤ 700ms.
 
 ## §G Voice transform recipe (apply to brand's voice from §1 DNA)
 
@@ -349,13 +341,7 @@ Take the brand's product description / value prop. Transform with:
 
 ```css
 /* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Bebas Neue / Space Grotesk / Caveat / JetBrains Mono
- * regardless of which brand DNA the preset is applied to. The §6 component preview
- * and §T type-role atlas also read these via .preset-native-scope.
- *
- * Fallback chains end in a face that still carries the preset's vibe (Oswald / Anton /
- * Impact for the display slab; Inter for body; system cursives for script). Falling
- * all the way to generic should never happen in practice. */
+ * Bebas Neue / Space Grotesk / Caveat / JetBrains Mono for doc chrome. */
 :root {
   --f-disp-native:
     "Bebas Neue", "Oswald", "Anton", "Impact", "Arial Black", "Helvetica Neue", sans-serif;
@@ -368,12 +354,7 @@ Take the brand's product description / value prop. Transform with:
     "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and the §T type-role atlas so
- * var(--font-*) resolves to Bebas Neue / Space Grotesk / Caveat / JetBrains Mono
- * regardless of the brand DNA tokens emitted in :root. The paste-ready
- * component source is untouched — Phase 4b still grep + paste original
- * `var(--font-display)` tokens, which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: re-binds var(--font-*) to preset-native families for component previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -460,10 +441,7 @@ h2 {
   color: var(--ink) !important;
 }
 
-/* ── §T Type-role atlas. Container = paper-on-paper card look. Each .t-trole-*
- * class encodes the role's family / size / weight / leading / tracking / case /
- * decoration. Family selectors use var(--font-*) tokens so the atlas renders
- * in BRAND DNA fonts; only the recipe is preset-declared. */
+/* ── §T Type-role atlas. var(--font-*) tokens → brand DNA; only the recipe is preset-declared. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -490,11 +468,7 @@ h2 {
   }
 }
 
-/* ── Type-role samples. Each .t-trole-* class mirrors a retro-zine type-scale
- * entry but uses var(--font-display/body/mono/script) so the actual typeface
- * comes from brand DNA. Decoration (color, shadow, frame, rotation, stamp,
- * ribbon, marker) is preset-native and stays declared with hard-coded
- * retro-zine colors (var(--brand-primary), var(--ink), etc). */
+/* ── Type-role samples. var(--font-display/body/mono/script) → brand DNA. */
 .t-trole-display-cover {
   font-family: var(--font-display);
   font-weight: 400;

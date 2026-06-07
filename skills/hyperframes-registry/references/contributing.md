@@ -1,7 +1,5 @@
 # Contributing a Block or Component to the Registry
 
-> Authoring a NEW registry item (caption style, VFX block, transition, lower third, or reusable component) to ship as an upstream PR. To install or wire an EXISTING item instead, see the main `hyperframes-registry` guide.
-
 Guide the user from idea to merged PR for a new registry block or component.
 
 ## Workflow
@@ -53,47 +51,7 @@ registry/components/{component-name}/
 
 Use a 2-3 letter prefix. ALL element IDs must use this prefix to avoid collisions in sub-compositions.
 
-**registry-item.json for blocks:**
-
-```json
-{
-  "$schema": "https://hyperframes.heygen.com/schema/registry-item.json",
-  "name": "{block-name}",
-  "type": "hyperframes:block",
-  "title": "{Human Title}",
-  "description": "{one sentence}",
-  "dimensions": { "width": 1920, "height": 1080 }, // adjust: 1080x1920 for portrait/social
-  "duration": 10, // adjust for your composition
-  "tags": ["{category}", "{subcategory}"],
-  "files": [
-    {
-      "path": "{block-name}.html",
-      "target": "compositions/{block-name}.html",
-      "type": "hyperframes:composition"
-    }
-  ]
-}
-```
-
-**registry-item.json for components** (no `dimensions` or `duration`):
-
-```json
-{
-  "$schema": "https://hyperframes.heygen.com/schema/registry-item.json",
-  "name": "{component-name}",
-  "type": "hyperframes:component",
-  "title": "{Human Title}",
-  "description": "{one sentence}",
-  "tags": ["{category}"],
-  "files": [
-    {
-      "path": "{component-name}.html",
-      "target": "compositions/components/{component-name}.html",
-      "type": "hyperframes:snippet"
-    }
-  ]
-}
-```
+**registry-item.json** — use the canonical templates in [templates.md](templates.md) (block and component variants, both with all required fields).
 
 ### Step 3: Build
 
@@ -193,8 +151,6 @@ git commit -m "feat(registry): add {name} — {one sentence}"
 git push origin feat/registry-{name}
 gh pr create --title "feat(registry): {name}" --body "preview: {hyperframes.dev-url}"
 ```
-
-**If you don't have a GitHub account:** you need one to open a PR. Sign up at https://github.com/signup, then run `gh auth login`.
 
 ## Quality Gate
 

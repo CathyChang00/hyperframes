@@ -1,6 +1,6 @@
 ```html
-<!-- TODO: in a 3-up grid, cycle the icon literal: "I" / "II" / "III" — these are decorative Roman numerals, intentionally hardcoded since the placeholder whitelist has no semantic match for "ordinal mark". -->
-<!-- TODO: cycle the icon background between var(--brand-primary), var(--brand-secondary), var(--brand-accent) across instances. -->
+<!-- In a 3-up grid, cycle the icon literal: "I" / "II" / "III" (decorative Roman numerals, hardcoded). -->
+<!-- Cycle the icon background between var(--brand-primary), var(--brand-secondary), var(--brand-accent) across instances. -->
 <div class="cap-pillar">
   <div class="cap-pillar-icon">I</div>
   <h3 class="cap-pillar-title">{HEADLINE}</h3>

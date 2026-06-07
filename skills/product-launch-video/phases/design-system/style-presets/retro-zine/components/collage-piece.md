@@ -52,7 +52,6 @@
   .rz-collage-piece.a .rz-collage-piece-hand {
     color: var(--anchor-cream);
   }
-  /* Variant B: cream (default), slight clockwise tilt. */
   .rz-collage-piece.b {
     background: var(--anchor-cream);
     transform: rotate(var(--rot-collage-b));

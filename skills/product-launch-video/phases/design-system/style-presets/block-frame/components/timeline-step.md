@@ -1,13 +1,8 @@
 ```html
 <!--
-  TODO: step number is hardcoded per variant. Phase 4b worker picks the right
-  variant class per card position (bf-step-1 / bf-step-2 / bf-step-3) when the
-  plan references timeline-step multiple times in one scene, and matches the
-  number text inside .bf-step-num to the position (01 / 02 / 03). No suitable
-  placeholder exists for "sequence index": {KICKER} → "Issue 01" (magazine
-  semantics, all instances show the same string), {NUM} → "4M". To go fully
-  dynamic, extend placeholderFor() with cycling sequence substitutions (e.g.
-  {SEQ_1} / {SEQ_2} / {SEQ_3}) and document in README §5.
+  Note: step number is hardcoded per variant. Pick the right variant class per
+  card position (bf-step-1 / bf-step-2 / bf-step-3) and match the number text
+  inside .bf-step-num to the position (01 / 02 / 03).
 -->
 <div class="bf-timeline-step bf-step-1">
   <div class="bf-step-num">01</div>
@@ -25,10 +20,7 @@
     box-shadow: var(--bf-shadow-sm);
     color: var(--ink);
   }
-  /* Variants — Phase 4b worker picks one per timeline position. Backgrounds
-     rotate through the brand-color trio so a 3-up row reads as 3 distinct
-     beats. Pair the variant class with the matching step number in markup:
-     bf-step-1 → "01", bf-step-2 → "02", bf-step-3 → "03". */
+  /* Variants — pick one per timeline position; bf-step-1 → "01", etc. */
   .bf-step-1 {
     background: var(--brand-primary);
   }

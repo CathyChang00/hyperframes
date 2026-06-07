@@ -1,7 +1,3 @@
-# Scriptwriting
-
-The story layer for a faceless explainer video. Read the user's arbitrary input text, choose one explainer structure, segment the text into a scene sequence, define each scene's narrative intent, choose a transition for every seam, and write narrator scripts. Output: `narrator_scripts.json`.
-
 ## Core Principles
 
 The video narrative is independent from the input text's layout. An article / brief / set of notes is an information dump; a video is a guided act of understanding.
@@ -17,10 +13,10 @@ The planning standard: **write the emotional beat alongside the structural type*
 
 `design-system/inference.json` `site_dna` is the deterministic Phase 1 register summary. If present, read **only the `site_dna` section** once at the start and tune narration to the same channel as the final visuals (**do not read `design.html` / `chunks/`** — those are parallel design-system outputs, and reading them would break Phase 1b∥2 parallelism). If `inference.json` is missing, proceed without it; do not run any build step. The shipped style is **pin-and-paper** (warm, field-notebook, considered, literary), so absent any other signal, default narration to a warm, plain, considered voice — no hype, no corporate gloss.
 
-| `site_dna` field                               | How to use it                                                                                                                                |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `site_dna` field                               | How to use it                                                                                                                                              |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `voice_tone` (warm / neutral / formal / ...)   | Set script tone: `warm` allows disarming specificity and the occasional aside; `neutral` uses sharp-but-plain teaching language; `formal` stays restrained |
-| `voice_heading_style` / `voice_heading_length` | Hook copy rhythm: `tight` -> short triplets / single-line claims; `loose` -> longer setup lines, anaphora                                     |
+| `voice_heading_style` / `voice_heading_length` | Hook copy rhythm: `tight` -> short triplets / single-line claims; `loose` -> longer setup lines, anaphora                                                  |
 
 `site_dna` is a **soft input**: it tunes the voice. The structure and scene segmentation are driven by the input text + the structure decision below.
 
@@ -82,16 +78,16 @@ Define each scene's role in the explanation. Every scene has five narrative fiel
 
 The enum values cannot change (validate.mjs enforces them; at least one scene must be `feature_showcase` or `product_intro`). Map your explainer roles onto them as follows:
 
-| Explainer role you want   | Use enum `type`     | Why this value                                                                                       |
-| ------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------- |
-| Hook / curiosity gap      | `hook`              | Same job: the high-leverage opening 3–5s.                                                             |
-| Pain / problem / why-care | `pain_point`        | The friction or gap the explanation resolves ("you've probably wondered…", "this keeps going wrong"). |
-| Name the core concept     | `product_intro`     | The "introduce the protagonist" beat — here the protagonist is the **idea** being named/defined.      |
-| Mechanism / step / stage  | `feature_showcase`  | A unit of the explanation's body — one move of a process, one mechanism, one list item.               |
-| Implication / payoff / "so what" | `benefit_highlight` | The consequence or value of understanding — what it gets you, what now becomes possible.        |
-| Evidence / example / data point | `social_proof` | A concrete grounding: a real number, a worked example, a citation, a comparison that proves the point. |
-| Thesis / takeaway / principle | `branding`     | The _philosophical_ landing beat — the generalizable idea, the rule, the one line to remember.        |
-| Call to think / try / act | `cta`               | The closing ask — try it, watch for it, question it, do the thing.                                    |
+| Explainer role you want          | Use enum `type`     | Why this value                                                                                         |
+| -------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------ |
+| Hook / curiosity gap             | `hook`              | Same job: the high-leverage opening 3–5s.                                                              |
+| Pain / problem / why-care        | `pain_point`        | The friction or gap the explanation resolves ("you've probably wondered…", "this keeps going wrong").  |
+| Name the core concept            | `product_intro`     | The "introduce the protagonist" beat — here the protagonist is the **idea** being named/defined.       |
+| Mechanism / step / stage         | `feature_showcase`  | A unit of the explanation's body — one move of a process, one mechanism, one list item.                |
+| Implication / payoff / "so what" | `benefit_highlight` | The consequence or value of understanding — what it gets you, what now becomes possible.               |
+| Evidence / example / data point  | `social_proof`      | A concrete grounding: a real number, a worked example, a citation, a comparison that proves the point. |
+| Thesis / takeaway / principle    | `branding`          | The _philosophical_ landing beat — the generalizable idea, the rule, the one line to remember.         |
+| Call to think / try / act        | `cta`               | The closing ask — try it, watch for it, question it, do the thing.                                     |
 
 Use this mapping consistently. The explainer body is usually a run of `feature_showcase` (steps/mechanisms/items) optionally interleaved with `benefit_highlight` (implications) and `social_proof` (examples/data). At least one `feature_showcase` or `product_intro` must exist (every explainer has a body and a named idea, so this is automatic).
 
@@ -99,44 +95,44 @@ Use this mapping consistently. The explainer body is usually a run of `feature_s
 
 Choose one. The hook is the highest-leverage 3–5 seconds. For explainers it opens a cognitive gap or stakes:
 
-| Strategy                              | When to use it                                                  | Example                                                                          |
-| ------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| **Shocking statistic**                | You have a credible data point that quantifies the stakes       | "90% of plastic ever made has never been recycled."                              |
-| **Rhetorical question**               | Create an immediate cognitive gap                               | "Why does time seem to speed up as you get older?"                               |
-| **Counterintuitive claim**            | The truth contradicts common belief                             | "Adding more lanes to a highway makes traffic worse."                            |
-| **Pain validation**                   | The audience already feels the confusion; say it back to them   | "Everyone tells you to 'just diversify' — nobody says what that means."          |
-| **Visceral metaphor**                 | The idea is abstract and needs to become concrete / embodied    | "Your attention is a spotlight, and apps are fighting over the switch."          |
-| **Concept announcement**              | The term itself is the subject; make it memorable               | "There's a word for this: the bystander effect."                                 |
-| **Direct address / character hail**   | Audience is clearly defined                                     | "If you've ever rage-quit a recipe halfway through — this is for you."           |
-| **Imagine / scenario**                | A new perspective or thought experiment frames the whole piece  | "Imagine money that loses value if you don't spend it."                          |
-| **Stakes / consequence**              | The "why care now" is a real cost or risk                       | "Get this one step wrong and the whole batch is ruined."                         |
+| Strategy                            | When to use it                                                 | Example                                                                 |
+| ----------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Shocking statistic**              | You have a credible data point that quantifies the stakes      | "90% of plastic ever made has never been recycled."                     |
+| **Rhetorical question**             | Create an immediate cognitive gap                              | "Why does time seem to speed up as you get older?"                      |
+| **Counterintuitive claim**          | The truth contradicts common belief                            | "Adding more lanes to a highway makes traffic worse."                   |
+| **Pain validation**                 | The audience already feels the confusion; say it back to them  | "Everyone tells you to 'just diversify' — nobody says what that means." |
+| **Visceral metaphor**               | The idea is abstract and needs to become concrete / embodied   | "Your attention is a spotlight, and apps are fighting over the switch." |
+| **Concept announcement**            | The term itself is the subject; make it memorable              | "There's a word for this: the bystander effect."                        |
+| **Direct address / character hail** | Audience is clearly defined                                    | "If you've ever rage-quit a recipe halfway through — this is for you."  |
+| **Imagine / scenario**              | A new perspective or thought experiment frames the whole piece | "Imagine money that loses value if you don't spend it."                 |
+| **Stakes / consequence**            | The "why care now" is a real cost or risk                      | "Get this one step wrong and the whole batch is ruined."                |
 
 ### Rhetorical / Clarity Technique Catalog
 
 Each scene's `persuasion` field is a _named technique_, not a vague intent. For explainers, the field carries **how this scene makes the idea land or clear** — a clarity / rhetoric mechanism, not a sales mechanism. Choose from this catalog (combine when several are active, e.g. "Analogy + progressive disclosure"):
 
-| Family                  | Techniques                                                                                                                          |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Make-concrete**       | Analogy / metaphor • Concretization (abstract → tangible object) • Worked example with real numbers • Anchoring on a familiar referent |
-| **Reveal-in-order**     | Progressive disclosure (one term/layer at a time) • Build-up (simple case → general case) • Signposting ("first… then… finally")     |
-| **Contrast**            | Before/after contrast • Common-belief vs reality • Comparison of two options • Counterexample (here is when it breaks)               |
-| **Structure**           | Rule of three (triplet) • Numbered enumeration • Question→answer pairing • Frame-then-fill (state the shape, then populate it)        |
-| **Evidence**            | Statistical proof / hard metric • Citation / source attribution • Demonstration (show the mechanism running) • Causal chain (A → B → C) |
-| **Memory & landing**    | Callback (return to the hook's image) • Distillation (compress to one line) • Mnemonic / coined term • Generalization (specific → principle) |
+| Family               | Techniques                                                                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Make-concrete**    | Analogy / metaphor • Concretization (abstract → tangible object) • Worked example with real numbers • Anchoring on a familiar referent       |
+| **Reveal-in-order**  | Progressive disclosure (one term/layer at a time) • Build-up (simple case → general case) • Signposting ("first… then… finally")             |
+| **Contrast**         | Before/after contrast • Common-belief vs reality • Comparison of two options • Counterexample (here is when it breaks)                       |
+| **Structure**        | Rule of three (triplet) • Numbered enumeration • Question→answer pairing • Frame-then-fill (state the shape, then populate it)               |
+| **Evidence**         | Statistical proof / hard metric • Citation / source attribution • Demonstration (show the mechanism running) • Causal chain (A → B → C)      |
+| **Memory & landing** | Callback (return to the hook's image) • Distillation (compress to one line) • Mnemonic / coined term • Generalization (specific → principle) |
 
-When a scene's technique is not in the catalog, you may name a new one inline, but you must explain its _mechanism_ (e.g. "Subtractive framing: define the concept by what it is *not* before saying what it is"). Do not write generic "explain the idea" / "show benefits."
+When a scene's technique is not in the catalog, you may name a new one inline, but you must explain its _mechanism_ (e.g. "Subtractive framing: define the concept by what it is _not_ before saying what it is"). Do not write generic "explain the idea" / "show benefits."
 
 ### Emotional Beat Vocabulary
 
 `emotionalBeat` should be one word or a short compound phrase (e.g. "Curiosity and clarity", "Tension and recognition"). Avoid generic "positive" / "happy" / "interested." Explainers ride a comprehension arc:
 
-**Negative valley** — *open the gap* (hook / pain_point scenes): curiosity • puzzlement • surprise • tension • concern • skepticism • recognition • intrigue
+**Negative valley** — _open the gap_ (hook / pain_point scenes): curiosity • puzzlement • surprise • tension • concern • skepticism • recognition • intrigue
 
-**Pivot** — *orient* (product_intro / concept-naming scenes): clarity • orientation • anticipation • focus
+**Pivot** — _orient_ (product_intro / concept-naming scenes): clarity • orientation • anticipation • focus
 
-**Build** — *build understanding* (feature_showcase / benefit_highlight / social_proof scenes): comprehension • "aha" • confidence • fascination • foresight • momentum • conviction • delight • unease (for a caveat) • mastery
+**Build** — _build understanding_ (feature_showcase / benefit_highlight / social_proof scenes): comprehension • "aha" • confidence • fascination • foresight • momentum • conviction • delight • unease (for a caveat) • mastery
 
-**Resolution** — *land* (branding / cta / final beats): clarity • satisfaction • resolve • inspiration • inevitability • "now I get it"
+**Resolution** — _land_ (branding / cta / final beats): clarity • satisfaction • resolve • inspiration • inevitability • "now I get it"
 
 > The structure pages (`structures/*/overview.md`) refer to these four groups by their register names — **Negative valley**, **Pivot**, **Build**, **Resolution** — so a beat-trajectory link from a structure page resolves to the matching group above.
 
@@ -160,13 +156,13 @@ The only machine consequence of `continuity` is grouping: `prep.mjs` puts adjace
 
 Choose one of these 5. This is "narrative-level" vocabulary — it expresses what kind of connection the seam is, **not** blur amount / direction / duration (visual-design translates those according to preset/palette):
 
-| Intent     | Narrative meaning                                                                                                                          | Pairs with (soft hint) | Downstream translation direction (visual-design decides values)   |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- | ----------------------------------------------------------------- |
-| `morph`    | **One shared element transforms across scenes** (the shared element is open-ended: a diagram node that becomes a chart bar, a word that becomes an icon — only examples) | `continue`          | worker carries a shared element across the continue run (it owns the shared visual stage) |
-| `cut`      | Clean switch; scenes are not continuous (topic/tone shift, new list item, high-energy beat)                                                | **`break`**             | hard cut / crossfade                                              |
-| `slide`    | Directional slide / push (matches narrative flow: next step, next point)                                                                   | **`break`**             | push-slide (direction set by visual-design)                       |
-| `dissolve` | Soft dissolve / focus shift (enter atmosphere, emotional transition, time passing)                                                          | **`break`**             | crossfade / blur-crossfade (when colors clash)                    |
-| `zoom`     | Camera pushes / scales through to the next focal point (zoom into a detail, pull back to the big picture)                                   | **`break`**             | zoom-through                                                      |
+| Intent     | Narrative meaning                                                                                                                                                        | Pairs with (soft hint) | Downstream translation direction (visual-design decides values)                           |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- | ----------------------------------------------------------------------------------------- |
+| `morph`    | **One shared element transforms across scenes** (the shared element is open-ended: a diagram node that becomes a chart bar, a word that becomes an icon — only examples) | `continue`             | worker carries a shared element across the continue run (it owns the shared visual stage) |
+| `cut`      | Clean switch; scenes are not continuous (topic/tone shift, new list item, high-energy beat)                                                                              | **`break`**            | hard cut / crossfade                                                                      |
+| `slide`    | Directional slide / push (matches narrative flow: next step, next point)                                                                                                 | **`break`**            | push-slide (direction set by visual-design)                                               |
+| `dissolve` | Soft dissolve / focus shift (enter atmosphere, emotional transition, time passing)                                                                                       | **`break`**            | crossfade / blur-crossfade (when colors clash)                                            |
+| `zoom`     | Camera pushes / scales through to the next focal point (zoom into a detail, pull back to the big picture)                                                                | **`break`**            | zoom-through                                                                              |
 
 `continuity` is **decoupled from `intent`** — `intent` is a soft hint. `morph` naturally pairs with `continue` (same worker carries the element); `cut` / `slide` / `dissolve` / `zoom` naturally pair with `break`. Nothing enforces this; choose `continuity` by whether the scenes share a continuous stage.
 
@@ -192,20 +188,9 @@ Concrete direction for downstream: what morphs/slides/dissolves, where the eye l
 
 Strong explainer scripts have these traits. The failure mode is reading the article aloud, or bullet-point prose.
 
-**Strong (clear, voiced, memorable):**
+**Strong:** _Concretization_: "Compound interest isn't addition, it's a snowball — every turn picks up the snow from the last turn, then more." — turns an abstract formula into a moving image.
 
-- _Concretization_: "Compound interest isn't addition, it's a snowball — every turn picks up the snow from the last turn, then more." — turns an abstract formula into a moving image.
-- _Progressive disclosure_: "First, just the principal. Now add one year of interest. Now let *that* earn interest too. That third step is the whole trick." — paces the reveal so each clause adds exactly one idea.
-- _Rule of three / imperative_: "Notice it. Name it. Let it pass." — monosyllabic triplet, easy to retain.
-- _Callback_: "Remember that spotlight? Every notification is a hand on the switch." — pays off the hook's image so the piece feels whole.
-- _Disarming specificity_: "Your brain files a boring Tuesday and a thrilling first kiss in the same drawer — one timestamp each." — a concrete, slightly surprising detail grounds the claim.
-
-**Weak (failure modes to avoid):**
-
-- _Article-paraphrase in order_: "The study, published in 2019, examined three cohorts and found that…" — that is reading, not explaining. Compress to the one fact that matters and lead with it.
-- _Noun-phrase bullet lists_: "Efficiency. Scalability. Lower costs." — sounds like slide bullets, not narration (a deliberate triplet is fine; a list of abstractions is not).
-- _Vague capability claims_: "This changes everything." — says nothing; say *what* changes for *whom*.
-- _Encyclopedia voice_: "X is a phenomenon whereby…" — define by showing, not by dictionary syntax.
+**Weak:** _Article-paraphrase in order_: "The study, published in 2019, examined three cohorts and found that…" — that is reading, not explaining. Compress to the one fact that matters and lead with it.
 
 ### Empty / Silent Scripts Are Allowed
 
@@ -293,9 +278,8 @@ Downstream agents expect these **exact** field names. Wrong names (e.g. `scene_i
 }
 ```
 
-Field rules:
+Field rules (use exact field names above; wrong names are fatal in `validate.mjs narrator`):
 
-- Use `sceneNumber` (not `scene_id`), `sceneName` (not `scene_name`), `script` (not `narration`), and nest intent fields inside `narrativeIntent` (do not flatten them onto the scene object).
 - Every scene must have a `transition` field (`continuity` + `intent` + `description`; add `sharedMotif` for morph), including scene 1 (`continuity: "break"` + `intent: "cut"`). **Scene 1 has no previous scene, so its `transition` does not generate any transition downstream (downstream ignores it) — `intent: "cut"` is just a placeholder.**
 - `continuity` is **decoupled from `intent`** (a soft hint). `continue` = same worker (a run of up to 3 scenes); `break` = new worker. `validate.mjs narrator` checks only enum membership + scene 1 = `break`.
 - `assetCandidates` is a **required** field and must be an array. For FE it is `[]` on essentially every scene; only a user-provided `public/<basename>` image yields a `{path, description}` entry.
@@ -304,9 +288,3 @@ Field rules:
 ### Captions (not owned by scriptwriting)
 
 Do not write a `captions: string[]` field. `<em>/<brand>/<emph>/<cta>` tags inside `script` are stripped by TTS; whether you include them does not drive downstream visuals.
-
-## See Also
-
-- `phases/scriptwriting/structures/<name>/overview.md` — the four explainer structures (concept-explainer / how-to-process / listicle / story-explainer) with samples.
-- `phases/visual-design/guide.md` — visual treatment for each scene (downstream; consumes only `transition`, `narrativeIntent`, and `assetCandidates` from `narrator_scripts.json`; invents faceless visuals).
-- `/faceless-explainer` (this skill's `SKILL.md`) — orchestrator, which invokes this guide during Phase 2 of the faceless-explainer pipeline.

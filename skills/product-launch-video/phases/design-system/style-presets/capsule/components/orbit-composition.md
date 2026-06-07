@@ -1,5 +1,5 @@
 ```html
-<!-- Signature: 160px circular pill anchor surrounded by 4–6 candy-colored satellite pills tilted at -25deg to +25deg. The center numeral is decorative ("01"); satellites are short uppercase verbs. -->
+<!-- Signature: 160px circular pill anchor surrounded by 4–6 candy-colored satellite pills tilted at -25deg to +25deg. Satellites are short uppercase verbs. -->
 <div class="cap-orbit">
   <div class="cap-orbit-center">01</div>
   <div class="cap-orbit-sat cap-orbit-sat-1">{LABEL}</div>

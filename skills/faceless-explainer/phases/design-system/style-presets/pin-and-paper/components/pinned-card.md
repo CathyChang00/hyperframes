@@ -1,6 +1,6 @@
 ```html
 <div class="pp-pinned-card">
-  <!-- TODO: nest a pp-safety-pin and/or pp-scribble-note inside as the scene calls for it -->
+  <!-- Nest a pp-safety-pin and/or pp-scribble-note inside as the scene calls for it. -->
   <span class="pp-pinned-card-num">{KICKER}</span>
   <h3 class="pp-pinned-card-title">{HEADLINE}</h3>
   <p class="pp-pinned-card-body">{LEDE}</p>

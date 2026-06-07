@@ -6,7 +6,7 @@ This guide describes **creative intent**, not code. The downstream build agent (
 
 ## Flow Overview
 
-1. **All inputs are already inlined in dispatch** (`## Effects catalog` / `## SFX library` / `## Design rules` [full text of 4 rules] / `## Design chunks` [`index.json` + actually present hints/voice/tokens/easings] / `## Narrator scripts` / `## Audio meta`) - **use them directly; do not Read from disk**
+1. **All inputs are already inlined in dispatch** — use them directly
 2. For each scene: choose effects from `## Effects catalog` (timeline layering order; count rules in §2), decide Continuity, write anchor block + 8 prose requirements; in prose, describe desired visual components by **role** ("a stat block", "a framed quote"), while the worker chooses concrete components from the `## Design chunks` library
 3. Run validator until exit 0
 
@@ -23,7 +23,7 @@ This guide describes **creative intent**, not code. The downstream build agent (
 
 Chunks are split by Phase 1b `emit-chunks.mjs` and **already inlined in the dispatch `## Design chunks` block**: full `index.json` + actually present `composition-hints.md` / `voice.md` / `tokens.css` / `easings.js` (chunks absent from the preset have `*_file=null` and do not appear in the block).
 
-**Whenever this guide says "find X in `## Design chunks`", do not read from disk.** Plan does not touch `design.html` or component HTML bodies.
+Plan does not touch `design.html` or component HTML bodies.
 
 > **Positioning (core):** `## Design chunks` is the brand's **style reference library**, not a contract for the plan. It only answers "what does this brand look like" - palette (tokens), motion curves (easings), DOM text register (voice), and a set of **paste-ready components**. Visual **authority lives in `## Effects catalog` (animation) and `## Design rules` (design judgment)**; chunks only make the result **look like this brand**. **Plan does not pre-cite components, declare surfaces, or filter components** - it describes desired structures by **role / purpose / intent** in prose, and Phase 4b worker chooses concrete components from the full library by visual judgment.
 
@@ -231,7 +231,7 @@ Neither register is a fallback for the other - a typographic scene is a full, de
 
 **Do not** write pixel values, GSAP timeline code, composition HTML, concrete hex / font names / ease curves - that is build-agent work. But give enough constraints that the result clearly belongs to _this scene_, not a generic interpretation: concrete intent roles, duration by ratio, font references by purpose, palette distribution by role, specific phase order.
 
-**Do not restate global rules that workers already receive through dedicated channels** (saves tokens, avoids drift): each worker already receives `voice_file` (full DOM text recipe), `Captions` flag + its keep-out contract (bottom ~17% caption-band geometry), `tokens.css` / `easings.js` (all token values and curves). Therefore prose should **not repeat** mechanical voice recipe details (strip/case/line breaks), caption-band geometric constants, or any hex/font/curve values scene by scene - write only **scene-specific application or risk** (e.g. voice: "hero resolves as one-line UPPERCASE stacked words; `<mark>` binds 'videos'", not the whole recipe; caption: "CTA bottom edge stays just above caption band", not "bottom 17% is caption territory, anchor 0.42×height" every time). **Global rules without a dedicated channel still need to be carried scene by scene** (e.g. "no neon / no italic / 60-30-10 palette allocation / hard cut / stillness-before-climax beat") - worker only learns those from this scene's prose, so they are load-bearing, not repetition.
+**Do not restate global rules that workers already receive through dedicated channels** (`voice_file`, `Captions` flag, `tokens.css`/`easings.js`) — write only scene-specific application or risk; global rules without a dedicated channel (e.g. "no neon / 60-30-10 palette allocation / stillness-before-climax") must still appear scene by scene.
 
 ### Complete Scene Block Example (with anchors)
 

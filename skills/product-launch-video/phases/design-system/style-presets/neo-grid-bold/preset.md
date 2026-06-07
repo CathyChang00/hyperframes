@@ -28,13 +28,11 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Space Grotesk + JetBrains Mono — instead of the brand DNA fonts. Neo-Grid Bold is a two-face system: Space Grotesk weight 700 carries every display moment and weight 400 carries body; JetBrains Mono is reserved for labels and metadata. The `script` slot also points at Space Grotesk because the system refuses a third face. Brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §T type-role atlas uses `.preset-native-scope` so `var(--font-display/body/mono)` re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Neo-Grid Bold is a two-face system: Space Grotesk 700 carries every display moment and 400 carries body; JetBrains Mono is reserved for labels and metadata; the `script` slot also points at Space Grotesk because the system refuses a third face.
 
 ## §A Director's intent
 
 Editorial poster on a strict 12-column × 8-row grid, inset 40px, with 12-18px gutters revealing a putty frame around every composition. Three working colors only — paper (canvas), ink (structure), and one electric signal (the brand accent stands in for the template's neon yellow). Depth is panel adjacency, never shadow. Every display moment is uppercase Space-Grotesk-class with negative letter-spacing scaled to size; body is mixed-case at weight 400; every label is mono uppercase with 0.08-0.12em tracking. Motion is brief and structural — panels slam in on a beat, mono labels tick on after, the grid never breaks. The class-prefix `ng-` is used on every component CSS so design.html previews compose cleanly.
-
-Best for: design-led pitches, brand decks, founder talks, stat-heavy slides, comparison matrices. Avoid for: warm, traditional, or quiet brand voices — the accent and the uppercase commit to an editorial-graphic register.
 
 ## §B Decoration tokens
 
@@ -96,9 +94,7 @@ Best for: design-led pitches, brand decks, founder talks, stat-heavy slides, com
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/decoration. Phase 4b scene workers may cite roles by `id` ("use a `stat-num` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas Neo-Grid Bold ships in its Typography section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `section-num` numeral that isn't covered by §6 components, the worker reads role `section-num` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Neo-Grid Bold's identity collapses if display weights drift below 700 or if mono labels lose their positive tracking.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — Neo-Grid Bold's identity collapses if display weights drift below 700 or if mono labels lose their positive tracking.
 
 ```type-roles
 [
@@ -210,8 +206,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the block-stamp / corner-mark / QR-tile (decorative brand-mark gestures, not text roles) and the photo-region tag (a placeholder for real photography).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -241,10 +235,7 @@ const DUR = {
 
 ### §E.5 Motion choreography
 
-- **Allowed primitives**: opacity + translate (≤24px) for panel entries; scaleX(0→1) with left transform-origin for the `<mark>` highlighter swatch; numeric tween for stat counters; mono-character stagger for mono labels (0.06-0.10s per char).
-- **Forbidden gestures**: no rotation, no skew, no scale on panels (they are grid-sized rectangles — scaling them mis-aligns the grid), no crossfades between scenes (use a hard cut), no parallax, no spring/elastic.
-- **Transition defaults**: scene-to-scene is a hard cut on the panel that carries the loudest signal (the yellow / brand-primary panel). Within a scene, panels enter in z-order by visual weight: ink panels first, paper panels second, signal panel last.
-- **Type-in-motion**: display headlines arrive as a single block (no per-word stagger); only the `<mark>`-wrapped words sweep in via scaleX after the headline lands.
+Scale on panels mis-aligns the grid — forbidden. Scene-to-scene: hard cut on the loudest-signal (brand-primary) panel. Display headlines arrive as a single block; only `<mark>`-wrapped words sweep in via scaleX after the headline lands.
 
 ## §G Voice transform recipe
 
@@ -262,7 +253,7 @@ const DUR = {
 ## §H Scene composition hints
 
 - **Universal frame**: every scene composes inside a 12-column × 8-row CSS grid inset 40px from the canvas edge, gap `var(--grid-gap)` (12px) or `var(--grid-gap-lg)` (18px) for breathing room. The 40px putty surround is the system's identity — never let a panel bleed through it.
-- **Surface alternation**: per scene, fill the grid corner-to-corner with 4-8 panels. Default panel is paper; alternate one or two ink panels for contrast weight; add exactly **one** signal panel (brand-primary fill) to draw the eye. Three signal panels reads as aggressive editorial; one reads as confident.
+- **Surface alternation**: per scene, fill the grid corner-to-corner with 4-8 panels. Default panel is paper; alternate one or two ink panels for contrast weight; add exactly **one** signal panel (brand-primary fill).
 - **Focal sizing**: stat numerals scale to 156-240px, section ordinals to 320px. Type is allowed to dominate an entire panel. Display headlines run 88-132px, card headlines 30-44px.
 - **Brand-color role contract**:
   - `var(--brand-primary)` — the signal fill (template's neon yellow). One panel per scene. Also: `<mark>` background, affirmative pill fill, second chart series.
@@ -279,15 +270,7 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Space Grotesk + JetBrains Mono regardless
- * of which brand DNA the preset is applied to. The §6 component preview
- * and §T type-role atlas also read these via .preset-native-scope.
- *
- * Neo-Grid Bold is a two-face system — the script slot points at Space Grotesk
- * because the preset refuses a third face. Fallback chains end in a heavy
- * grotesque (Archivo / Inter / system-ui) that still carries the editorial
- * uppercase register. Falling all the way to generic should never happen. */
+/* ── Preset-native typography vars — doc chrome + .preset-native-scope (Space Grotesk + JetBrains Mono). */
 :root {
   --f-disp-native:
     "Space Grotesk", "Archivo", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -300,12 +283,7 @@ const DUR = {
     "JetBrains Mono", "Space Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Space Grotesk / JetBrains Mono regardless of the
- * brand DNA tokens emitted in :root. The paste-ready component source is
- * untouched — Phase 4b still grep + paste original `var(--font-display)`
- * tokens, which resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: rebinds var(--font-*) to native families for §6 previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -345,12 +323,7 @@ code {
   border-radius: 0 !important;
 }
 
-/* ── §T Type-role atlas. Container = flat paper card with hairline ink border.
- * Each .t-trole-* class encodes the role's family / size / weight / leading /
- * tracking / case. Family selectors use var(--font-*) tokens so the atlas
- * renders in BRAND DNA fonts; only the recipe is preset-declared. Color
- * decisions follow Neo-Grid Bold's three-color contract — ink on paper,
- * brand-primary as the single signal accent, never a third color. */
+/* ── §T Type-role atlas container. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -377,9 +350,7 @@ code {
   }
 }
 
-/* ── Type-role samples. var(--font-display/body/mono) resolves to brand DNA.
- * Color uses Neo-Grid Bold's three-color contract: ink on paper, brand-primary
- * as the signal accent, mono labels muted via opacity. */
+/* ── Type-role samples. var(--font-*) resolves to brand DNA; three-color contract (ink/paper/signal). */
 .t-trole-section-num {
   font-family: var(--font-display);
   font-weight: 700;

@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Fraunces + Inter + JetBrains Mono — instead of the brand DNA fonts. The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components.
 
 ## §A Director's intent
 
@@ -48,8 +48,6 @@ Three editorial voices, each in its own face: **Fraunces** carries every display
 **Brand DNA drives the chrome color, preset drives the structure.** `--brand-primary` maps to the ink role (every word, every border, every 1px shadow). `--brand-accent` maps to the coral voltage — rationed to at most ONE moment per scene (the CTA, OR the inline link, OR the full-bleed band). `--brand-secondary` maps to the warm-paper secondary slot: the pressed / strong tile tone shown in Brand DNA. The navy product-chrome surface (`--cl-navy`) where code and dark cards live is a structural anchor, not a brand slot. The cream + tile grounds are **technical-signature anchors** — without the warm paper the system reads as just another cool SaaS deck — declared in §B so brand DNA tints via `color-mix()` without losing the warm-paper reading.
 
 Motion is **quiet and considered** — short fades, no overshoot, no bounce. The brand reads first and answers second; the camera holds and the eye reads. Scene transitions are cross-dissolves; coral underlines may draw on; numbers count up; the code window types on line by line.
-
-**Best for** editorial explainers, research narratives, considered product stories, long-form concept pieces, developer walkthroughs. Avoid for high-energy hype, neon maximalism, or playful children's content — the warm restraint reads as grown-up and deliberate.
 
 **Density philosophy: editorial, not packed.** Claude reads as authoritative with ONE clear focal per scene and generous cream around it — a hero line and a single artifact, a stat and its caption, a quote and its attribution. A scene crammed edge-to-edge breaks the considered voice; a scene with a single centered line and acres of cream is exactly right.
 
@@ -65,7 +63,11 @@ Claude declares **structural** tokens here (warm tile surface, navy product-chro
    collapses into a generic cool SaaS deck. Brand DNA tints via color-mix() so the
    warm-paper register survives every brand palette. Declared once, never scattered. */
 --cl-cream: var(--canvas); /* the 60% floor */
---cl-tile: color-mix(in srgb, var(--brand-primary) 5%, #f3eee4); /* the 30% card surface, one warm step down */
+--cl-tile: color-mix(
+  in srgb,
+  var(--brand-primary) 5%,
+  #f3eee4
+); /* the 30% card surface, one warm step down */
 --cl-tile-strong: color-mix(in srgb, var(--brand-primary) 9%, #ece3d4); /* pressed / active tile */
 
 /* Navy product-chrome family — the dark surface where the product shows itself.
@@ -111,7 +113,11 @@ Claude declares **structural** tokens here (warm tile surface, navy product-chro
 --cl-focus-ring: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 22%, transparent);
 
 /* Optional atmospheric gradient — coral deepening into ink. Used sparingly. */
---brand-gradient: linear-gradient(135deg, var(--brand-accent), color-mix(in srgb, var(--brand-accent) 55%, var(--ink)));
+--brand-gradient: linear-gradient(
+  135deg,
+  var(--brand-accent),
+  color-mix(in srgb, var(--brand-accent) 55%, var(--ink))
+);
 
 /* Radii — hierarchical, restrained (editorial, never pill-y except true pills) */
 --cl-radius-xs: 4px;
@@ -144,8 +150,6 @@ Claude depends on the three-voice editorial pairing (optical serif display / hum
 The serif is load-bearing: the entire thesis is "a serif reads like a person thought about it." If Fraunces fails, fall through to another high-contrast optical serif — never to a sans. Component CSS forces these families directly; brand DNA does not override them.
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
-
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/decoration. Phase 4b scene workers may cite roles by `id` ("use a `number-hero` here"); the preset-native fonts plug in automatically via `var(--font-*)` tokens. All sizes respect the ≥24px video floor.
 
 The atlas is the **sole authoring source** for non-component text. If a scene needs a `number-hero` numeral not covered by a §6 component, the worker reads role `number-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — the editorial rhythm (Fraunces display / Inter body / mono index) collapses if sizes drift.
 
@@ -245,8 +249,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits the hairline elevation, the navy product chrome, and the ✱ spike illustration (composition decoration, declared in §B and the §6 components).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -294,7 +296,7 @@ const DUR = {
 
 **Stagger budget**
 
-180–260ms between elements. Total scene-in stagger ≤ 700ms. The eye should have time to read the kicker → headline → lede rhythm before the next block arrives. Editorial pacing, not a cascade.
+180–260ms between elements. Total scene-in stagger ≤ 700ms. The eye should have time to read the kicker → headline → lede rhythm before the next block arrives.
 
 ## §G Voice transform recipe (apply to the script's text)
 
@@ -328,7 +330,8 @@ Take the scene's idea. Transform with:
   --f-disp-native: "Fraunces", "Tiempos Headline", "Cormorant", Garamond, "Times New Roman", serif;
   --f-body-native: "Inter", "Inter Tight", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --f-script-native: "Fraunces", "Tiempos Headline", "Cormorant", Garamond, serif;
-  --f-mono-native: "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Menlo, ui-monospace, monospace;
+  --f-mono-native:
+    "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Menlo, ui-monospace, monospace;
 }
 
 /* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
@@ -347,7 +350,12 @@ body {
   background: var(--canvas);
   position: relative;
   color: var(--brand-primary);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 .title-card {
   background: var(--canvas);

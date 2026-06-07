@@ -11,16 +11,9 @@
     font-weight: 500;
     cursor: pointer;
   }
-  .ed-button:hover {
-    border-bottom-color: var(--brand-accent, var(--ink));
-  }
   .ed-arrow {
     display: inline-block;
     margin-left: 8px;
-    transition: transform 0.32s;
-  }
-  .ed-button:hover .ed-arrow {
-    transform: translateX(4px);
   }
 </style>
 ```

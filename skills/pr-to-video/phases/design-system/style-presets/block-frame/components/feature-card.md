@@ -1,10 +1,8 @@
 ```html
 <!--
-  TODO: feature-icon letter is hardcoded. When Phase 4b plan agent renders
-  N>1 feature-card instances in one scene, manually cycle the `bf-feature-icon-*`
-  class (a / b / c) and the letter inside the div (A / B / C). To go dynamic,
-  extend placeholderFor() in build-design.mjs with a {LETTER} cycling substitution
-  and document in README §5.
+  Note: feature-icon letter is hardcoded. When rendering N>1 feature-card instances
+  in one scene, manually cycle the `bf-feature-icon-*` class (a / b / c) and the
+  letter inside the div (A / B / C).
 -->
 <div class="bf-feature-card">
   <div class="bf-feature-deco-notch"></div>
@@ -46,8 +44,7 @@
     color: var(--ink);
   }
   /* Variants for multi-instance scenes — pick a/b/c per card so a 3-up row
-     reads as 3 distinct icons without rendering the literal letter "A" three
-     times. The brand-color cycle echoes §H's role contract. */
+     reads as 3 distinct icons without rendering the literal letter "A" three times. */
   .bf-feature-icon-a {
     background: var(--brand-primary);
   }

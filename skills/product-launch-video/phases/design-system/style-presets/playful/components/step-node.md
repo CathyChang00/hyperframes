@@ -1,7 +1,7 @@
 ```html
 <div class="pf-step-node">
   <div class="pf-step-node-circle">
-    <!-- TODO: cycle 1/2/3/4/5 per instance when used in a process / timeline sequence -->
+    <!-- Cycle the digit 1/2/3/4/5 per instance in a process / timeline sequence. -->
     1
   </div>
   <div class="pf-step-node-title">{HEADLINE}</div>

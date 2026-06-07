@@ -1,9 +1,5 @@
 # Visual Design (Phase 3)
 
-Input story (Phase 2 - `narrator_scripts.json`) + brand design system (Phase 1b - `design-system/chunks/`). Design visual treatment and animation choreography for each scene, outputting `section_plan.md`.
-
-This guide describes **creative intent**, not code. The downstream build agent (`/hyperframes-core` + `/hyperframes-animation`) translates it into HTML composition + GSAP timeline.
-
 ## Flow Overview
 
 1. **All inputs are already inlined in dispatch** (`## Effects catalog` / `## SFX library` / `## Design rules` [full text of 4 rules] / `## Design chunks` [`index.json` + actually present hints/voice/tokens/easings] / `## Narrator scripts` / `## Audio meta`) - **use them directly; do not Read from disk**
@@ -25,7 +21,7 @@ Chunks are split by Phase 1b `emit-chunks.mjs` and **already inlined in the disp
 
 **Whenever this guide says "find X in `## Design chunks`", do not read from disk.** Plan does not touch `design.html` or component HTML bodies.
 
-> **Positioning (core):** `## Design chunks` is the brand's **style reference library**, not a contract for the plan. It only answers "what does this brand look like" - palette (tokens), motion curves (easings), DOM text register (voice), and a set of **paste-ready components**. Visual **authority lives in `## Effects catalog` (animation) and `## Design rules` (design judgment)**; chunks only make the result **look like this brand**. **Plan does not pre-cite components, declare surfaces, or filter components** - it describes desired structures by **role / purpose / intent** in prose, and Phase 4b worker chooses concrete components from the full library by visual judgment.
+> **`## Design chunks` is the brand's style reference library** — palette (tokens), motion curves (easings), DOM text register (voice), and paste-ready components. Authority lives in `## Effects catalog` and `## Design rules`; chunks make the result **look like this brand**. Plan describes structures by **role / purpose / intent** in prose; Phase 4b worker chooses concrete components by visual judgment.
 
 Plan uses chunks in these ways:
 
@@ -186,9 +182,7 @@ Rules:
 
 ## 3. Design Principles (inlined in `## Design rules`)
 
-Four rule files cover plan-layer design judgment - all organized by **role / intent / decision**, with no hex / px / ms / code. They are **already inlined in dispatch `## Design rules`; read them there, not from disk**. Concrete values are looked up by the build agent in `/hyperframes-core` + `/hyperframes-animation` + chunks, and **plan does not copy them** (see §4 item 4 and the "Name this vs do not copy" table in §1).
-
-Four rule files:
+Four rule files (already inlined in dispatch; do not read from disk):
 
 - `rules/typography.md` - 7-level type role ladder / multi-dimensional hierarchy / font pairing / forbidden pairs / CJK
 - `rules/color-system.md` - 7 palette roles / 60-30-10 / cross-scene consistency / dangerous combinations / background layering
@@ -207,7 +201,7 @@ Compose freely from `## Effects catalog` to fit the scene's `narrativeRole` + `k
 
 ## 4. Writing Prose (after anchors)
 
-**Step 0 (before writing, mandatory):** first restate this run's direction to yourself (Voice register for each scene) - full instructions live in the **agent prompt "Restate the contract before writing" section** (that persistent prompt is the single source of truth, not repeated here). Key constraint: restatement **only sets direction in your head; never write it into `section_plan.md`** (writing it = project-level preface = forbidden by §2 whole-file shape = validator fatal).
+**Step 0 (before writing, mandatory):** restate voice register to yourself; **never write it into `section_plan.md`** (writing it = project-level preface = forbidden by §2 whole-file shape = validator fatal).
 
 Then write one free-prose paragraph in the following 8-item order. This prose is passed **verbatim** to the downstream build agent - write as if briefing a senior animator who has not seen this brand.
 
@@ -230,8 +224,6 @@ Faceless explainers have no captured assets; the scene's primary visual is inven
 Neither register is a fallback for the other - a typographic scene is a full, deliberate composition (composition.md "Frame Density"), and a diagram scene is not "more real" for having boxes. Vary the register across the film the way you vary composition templates (§5 Variety): an all-typography film reads flat, an all-chart film reads like a dashboard. Name the chosen register in prose item 3.
 
 **Do not** write pixel values, GSAP timeline code, composition HTML, concrete hex / font names / ease curves - that is build-agent work. But give enough constraints that the result clearly belongs to _this scene_, not a generic interpretation: concrete intent roles, duration by ratio, font references by purpose, palette distribution by role, specific phase order.
-
-**Do not restate global rules that workers already receive through dedicated channels** (saves tokens, avoids drift): each worker already receives `voice_file` (full DOM text recipe), `Captions` flag + its keep-out contract (bottom ~17% caption-band geometry), `tokens.css` / `easings.js` (all token values and curves). Therefore prose should **not repeat** mechanical voice recipe details (strip/case/line breaks), caption-band geometric constants, or any hex/font/curve values scene by scene - write only **scene-specific application or risk** (e.g. voice: "hero resolves as one-line UPPERCASE stacked words; `<mark>` binds 'videos'", not the whole recipe; caption: "CTA bottom edge stays just above caption band", not "bottom 17% is caption territory, anchor 0.42×height" every time). **Global rules without a dedicated channel still need to be carried scene by scene** (e.g. "no neon / no italic / 60-30-10 palette allocation / hard cut / stillness-before-climax beat") - worker only learns those from this scene's prose, so they are load-bearing, not repetition.
 
 ### Complete Scene Block Example (with anchors)
 
@@ -272,14 +264,6 @@ Beyond core content, every scene needs:
 1. **Background swell** - dual-radial overlay in brand-adjacent hues; or architectural grid for workspace scenes
 2. **Ambient particles / scanline / halftone** - brand-color float particles, low-opacity scanline, or beat-deforming halftone field
 3. **Emphasis moment** - at least one impact beat (ripple / glow burst / impact lines / screen-shatter)
-
-### Multi-Phase Choreography
-
-```
-entry -> ambient drift -> major transition (morph / pivot / collapse) -> stillness-before-climax (~0.3-0.75s) -> result / emphasis -> idle breathing -> exit
-```
-
-An element that springs in and then sits still = slide, not video.
 
 ### Forbidden Patterns (most common failures)
 

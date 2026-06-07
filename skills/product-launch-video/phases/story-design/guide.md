@@ -76,14 +76,7 @@ Write `narrativeArchetype` as `"<outer> with <inner>"`. The downstream visual-de
 
 ## Narrative Architecture
 
-Define each scene's role in the story. Every scene has five narrative fields (type, narrativeRole, keyMessage, persuasion, emotionalBeat), plus a separate transition spec:
-
-- **Type** - one of: `hook` / `pain_point` / `product_intro` / `feature_showcase` / `benefit_highlight` / `social_proof` / `branding` / `cta`. `branding` is a _philosophical_ product-positioning scene (integrating a value statement, tagline, or category claim), distinct from `product_intro` that names the product and distinct from `cta` that asks for action.
-- **Narrative Role** - what this scene does in the story (its _job_, e.g. "Highlights the massive financial loss when linking data to decisions", not "Shows the dashboard").
-- **Key Message** - what the viewer should take away (one sentence).
-- **Persuasion** - a _named_ persuasion mechanism (see Persuasion catalog below). "Show benefits" is a failure mode; the standard is "Visual Proof of automation mechanics" / "Authority by association with logos (AWS, GCP, Snowflake)" / "Anchoring bias via explicit pricing combined with premium card design."
-- **Emotional Beat** - target feeling (see Emotional beat vocabulary below). One word or a short compound phrase (e.g. "Intrigue and awe"). Avoid generic "positive" / "interested".
-- **Transition** - `{ continuity, intent, description, sharedMotif? }`, defining how this scene arrives from the **previous** scene. Every scene must have one, including scene 1 (use `continuity: "break"` + `intent: "cut"`). This is a **narrative-layer judgment** (whether the seam is continuous and what kind of connection it is), not visual implementation detail (specific ease / blur amount / direction is translated downstream by visual-design according to preset/palette). See Transition taxonomy below.
+Define each scene's role in the story. Every scene has five narrative fields (`type`, `narrativeRole`, `keyMessage`, `persuasion`, `emotionalBeat`) plus a `transition` spec — see the canonical `narrator_scripts.json` schema at the bottom of this guide for field definitions. Note: `branding` is a philosophical product-positioning scene (tagline / category claim), distinct from `product_intro` and `cta`.
 
 ### Hook Strategy Taxonomy
 
@@ -181,10 +174,6 @@ Only set `intent: "morph"` when all three are true; if only one or two are true,
 #### `description` - 10-30 word visual direction (existing, keep)
 
 Concrete direction for downstream: what morphs/slides/dissolves, where the eye lands, and what color/shape guides it. For `morph`, be especially clear about the handoff point (what shape is handed to the next scene).
-
-> **Why 5 intentions instead of the old 7 visual types:** the old taxonomy (ui_morphing / match_cut / kinetic_typography / camera_zoom_pan / fade_color_bleed / vector_shape_wipe / none_first_scene) mixed "narrative intent" and "visual implementation" into one layer, forcing downstream to infer continuity from prose. The new model lets story-design express only **narrative intent + continuity**, leaving "which exact transition + blur/direction/duration" to visual-design, which has preset/palette context. `morph` intent covers old ui_morphing/match_cut (shared-element class); the rest merge according to the table above.
-
-> **Archetype samples need iteration:** if reverse-engineered samples under `archetypes/*/` still reference old `transition.type` values (ui_morphing, etc.), those are legacy schema remnants and should be updated one by one to the new `{continuity, intent, sharedMotif}` model based on golden sample videos. The new model in this section is authoritative.
 
 ### Script Voice Quality Bar
 
@@ -336,9 +325,3 @@ Field rules:
 ### Captions (not owned by story-design)
 
 Do not write a `captions: string[]` field. `<em>/<brand>/<emph>/<cta>` tags inside `script` are stripped by TTS; whether you include them does not drive downstream visuals.
-
-## See Also
-
-- `phases/visual-design/guide.md` - visual treatment for each scene (downstream; consumes only `transition`, `narrativeIntent`, and `assetCandidates` from `narrator_scripts.json`, and never reads `capture/`).
-- `phases/capture/guide.md` - upstream Phase 1. Responsible for capture script and writing into `capture/`.
-- `/product-launch-video` (this skill's `SKILL.md`) - orchestrator, which invokes this guide during Phase 2 of the product-launch-video pipeline.

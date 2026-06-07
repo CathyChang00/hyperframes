@@ -27,13 +27,11 @@
 }
 ```
 
-> `chromeFonts` makes the design.html doc chrome (title-card, section heads, h2/h3, lede paragraphs, eyebrows) render in the preset's NATIVE typography — Archivo Black + Space Grotesk + JetBrains Mono — instead of the brand DNA fonts. Creative Mode is a three-face system; the `script` slot points at Archivo Black because the preset refuses a script face (the editorial-zine register has no hand-script voice). The brand fonts still apply to §6 component code (paste-ready for Phase 4b). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Creative Mode refuses a fourth face — the `script` slot points at Archivo Black (no hand-script voice in the editorial-zine register).
 
 ## §A Director's intent
 
-Creative Mode is a **neo-brutalist editorial poster system** on a warm cream canvas. Edges are square, borders are heavy 4px ink, depth comes from hard offset color shadows (no blur, ever), and the type is Archivo Black uppercase pushed to extreme sizes with tight 0.92 line-height. Three accents collide per scene — never blended, never gradiented — sitting on flat color-blocks that screen-print across each other. Voice is part Bauhaus grid, part punk zine, part Swiss editorial: short imperative fragments in caps, mono labels carrying the "technical artifact" register.
-
-**Best for:** creative-agency / design-studio sites, brand-led launches, editorial-confident product stories. **Avoid for:** institutional restraint or quiet authority — the multi-accent palette reads expressive, not formal.
+Creative Mode is a **neo-brutalist editorial poster system** on a warm cream canvas. Edges are square, borders are heavy 4px ink, depth comes from hard offset color shadows (no blur, ever), and the type is Archivo Black uppercase pushed to extreme sizes with tight 0.92 line-height. Three accents collide per scene — never blended, never gradiented — sitting on flat color-blocks that screen-print across each other. Short imperative fragments in caps; mono labels carry the "technical artifact" register.
 
 **Brand-aware color contract.** The four template accents (forest green, hot pink, burnt orange, sunshine yellow) are mapped to brand DNA: `--brand-primary` (hero accent / closing canvas), `--brand-secondary` (offset-shadow color on featured blocks), `--brand-accent` (third hit / stat block), `--ink` (borders + text), `--canvas` (cream base). No literal hex appears in component CSS — the cream/ink defaults come from site DNA when present. **Class prefix is `cm-`** (creative-mode initialism, 3 chars).
 
@@ -81,9 +79,7 @@ Creative Mode is a **neo-brutalist editorial poster system** on a warm cream can
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-Each entry is a **named type role** with concrete render parameters at 1920×1080 — family token, px range, weight, leading, tracking, case, and any color/decoration. Phase 4b scene workers may cite roles by `id` ("use a `step-num` here"); the brand DNA fonts plug in automatically via `var(--font-*)` tokens. This is the same atlas Creative Mode ships in its Typography section, ported as machine-readable JSON.
-
-The atlas is the **sole authoring source** for non-component text. If a scene needs a `stat-num` numeral that isn't covered by §6 components, the worker reads role `stat-num` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Creative Mode's identity collapses if Archivo Black drifts below 0.92 leading or loses uppercase lock.
+The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — Creative Mode's identity collapses if Archivo Black drifts below 0.92 leading or loses uppercase lock.
 
 ```type-roles
 [
@@ -202,8 +198,6 @@ The atlas is the **sole authoring source** for non-component text. If a scene ne
 ]
 ```
 
-The atlas omits chrome layout (topbar / meta footer — declared in §H), hard offset shadows (depth treatment declared in §B), and the rotated stamp / badge surface treatment (those are component / decoration surfaces, not text roles).
-
 ## §E Motion (GSAP consts — REPLACES site ease)
 
 ```js
@@ -308,14 +302,8 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
- * These let the doc chrome render in Archivo Black / Space Grotesk / JetBrains Mono
- * regardless of which brand DNA the preset is applied to. The §6 component preview
- * and §T type-role atlas also read these via .preset-native-scope.
- *
- * Creative Mode has no script face — the script slot points at Archivo Black because
- * the preset refuses a fourth family. Fallback chains end in heavy grotesques /
- * system mono so the editorial-zine register survives a missing webfont. */
+/* ── Preset-native typography vars (chromeFonts). No script face — script slot
+ * points at Archivo Black (refuses a fourth family). */
 :root {
   --f-disp-native:
     "Archivo Black", "Anton", "Space Grotesk", -apple-system, BlinkMacSystemFont, system-ui,
@@ -330,12 +318,8 @@ const DUR = {
     "JetBrains Mono", "IBM Plex Mono", "Space Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families.
- * Wraps §6 component previews and §T type-role atlas so
- * var(--font-*) resolves to Archivo Black / Space Grotesk / JetBrains Mono
- * regardless of brand DNA. The paste-ready component source is untouched —
- * Phase 4b still grep + paste original `var(--font-display)` tokens, which
- * resolve to brand DNA at scene-render time. */
+/* .preset-native-scope: rebinds var(--font-*) to preset-native families for
+ * component previews + §T atlas. Component source is untouched. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -377,14 +361,8 @@ h3 {
   font-family: "JetBrains Mono", monospace;
 }
 
-/* ── §T Type-role atlas. Container = cream canvas card with 4px ink border.
- * Each .t-trole-* class encodes the role's family / size / weight / leading /
- * tracking / case. Family selectors use var(--font-*) tokens so the atlas
- * renders in BRAND DNA fonts (with .preset-native-scope flipping back to
- * Archivo Black + Space Grotesk + JetBrains Mono in the live preview); only
- * the recipe is preset-declared. Color decisions follow Creative Mode's
- * four-accent contract — ink-on-cream by default, brand-secondary / accent
- * for decorative accents. */
+/* ── §T Type-role atlas. var(--font-*) → brand DNA; .preset-native-scope
+ * flips to preset-native for live preview. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;
@@ -411,11 +389,7 @@ h3 {
   }
 }
 
-/* ── Type-role samples. var(--font-display/body/mono) resolves to brand DNA at
- * scene-render time; .preset-native-scope on the atlas container rebinds them
- * to Archivo Black + Space Grotesk + JetBrains Mono for the design.html
- * preview. Color decisions stay ink-on-cream except for accent-bearing roles
- * (marker / badge / kicker) which carry the four-accent palette directly. */
+/* ── Type-role samples. var(--font-*) → brand DNA at render time. */
 .t-trole-display-jumbo {
   font-family: var(--font-display);
   font-weight: 400;
