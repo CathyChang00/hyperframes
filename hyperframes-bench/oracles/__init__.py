@@ -4,12 +4,11 @@ human-readable `note` so an agent consumer can see WHY).
 
 Every oracle has the same signature:  score(parsed, expect, installed, cfg) -> dict
 """
-from oracles import route, router_first, intent
+from oracles import route, router_first
 
 REGISTRY = {
     "route": route.score,
     "router_first": router_first.score,
-    "intent": intent.score,
 }
 
 

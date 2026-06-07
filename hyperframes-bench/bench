@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """bench — the hyperframes-bench CLI. Primary consumer: an agent.
 
-  bench list [datasets|envs|plans|models] [--json]
+  bench list [datasets|envs|plans|models|cases] [--dataset D] [--json]
+  bench schema [--json]      # the full machine-readable driving contract (self-describing)
   bench run  [--plan NAME] [--dataset D] [--models ...] [--envs ...]
              [--cases r01 r06 | --tags adversarial] [--repeats N]
-             [--concurrency C] [--dry-run] [--force] [--reuse-env] [--keep] [--label L] [--out DIR]
-  bench score  <run-dir>      # re-run oracles over saved traces (no agent calls)
-  bench report <run-dir>      # regenerate report.md from results.jsonl
-  bench show   <run-dir> <cell-key>
+             [--concurrency C] [--dry-run] [--force] [--reuse-env] [--keep]
+             [--label L] [--out DIR] [--json]
+  bench score  <run-dir> [--json]   # re-run oracles over saved traces (no agent calls)
+  bench report <run-dir>            # regenerate report.md from results.jsonl
+  bench show   <run-dir> <cell-key> [--json]
 
 An unspecified axis falls back to the plan (or `default_plan` in bench.config.json); any
 explicit flag overrides that field. Cells with a matching content-hash are reused unless
@@ -15,6 +17,12 @@ explicit flag overrides that field. Cells with a matching content-hash are reuse
 competitor skills) so each run tests the latest; pass --reuse-env to reuse the last build.
 Results are written under results/<run-id>/ as results.jsonl (machine), aggregate.json
 (summary), and report.md (human).
+
+Agent entry points: `bench schema --json` returns the whole driving contract (every command,
+flag, valid values, NL->call recipes, verdict glossary) in one call — introspected from the
+parser so it can't drift. `bench list --json` is the live catalog. `bench run --json` prints
+{run_id, run_dir, selection, aggregate, report} to stdout (progress goes to stderr) so a run
+closes the loop in a single parseable object.
 """
 import os
 import sys
@@ -25,8 +33,39 @@ from datetime import datetime, timezone
 BENCH_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BENCH_ROOT)
 
-from core import load_config, load_json, plan_file, dataset_dir  # noqa: E402
-from core import matrix, runner, score as score_mod              # noqa: E402
+from core import load_config, load_json, load_jsonl, plan_file, dataset_dir  # noqa: E402
+from core import matrix, runner, score as score_mod                          # noqa: E402
+
+DEFAULT_DATASET = "routing"
+
+# Natural-language ask -> the exact call, for an agent mapping a user's request. Mirrors the
+# README "Expressing the test I want" table; surfaced as data via `bench schema`.
+RECIPES = [
+    {"want": "quick sanity check after editing a skill", "call": "bench run --plan smoke"},
+    {"want": "install env + render prompts but DON'T pay for agent calls", "call": "bench run --plan smoke --dry-run"},
+    {"want": "did routing regress against my local edits", "call": "bench run --plan routing-full"},
+    {"want": "do competitors steal the route (Remotion/video-use installed)", "call": "bench run --plan collision"},
+    {"want": "just the adversarial cases on opus", "call": "bench run --tags C-adversarial --models opus --envs hf-local"},
+    {"want": "one case, many repeats, to check flakiness", "call": "bench run --cases cand-p20 --repeats 9 --models sonnet"},
+    {"want": "test the ONLINE published skills (pin a branch in envs/hf-online.json)", "call": "bench run --envs hf-online"},
+    {"want": "re-judge saved traces after tweaking an oracle (no agent calls)", "call": "bench score results/<run-id>"},
+    {"want": "machine-readable run summary for parsing", "call": "bench run --plan smoke --json"},
+    {"want": "inspect one cell's trace / prompt / verdict", "call": "bench show results/<run-id> <cell-key>"},
+]
+
+# route oracle verdict glossary (kept in sync with oracles/route.py).
+VERDICT_GLOSSARY = {
+    "correct": "routed to the expected workflow (good)",
+    "asked_ok": "in-scope, but the referenced input wasn't supplied; agent asked for it instead of routing (good)",
+    "clarify_ok": "expected 'clarify'; agent asked a clarifying question instead of routing (good)",
+    "oos_ok": "expected 'out-of-scope'; agent did NOT pull in a HyperFrames workflow (good)",
+    "soft": "a clear request met with clarifying questions instead of a route (failure)",
+    "miss": "real routing failure; `kind` ∈ overreach / wrong_workflow / premature / refused (failure)",
+    "competitor": "a competitor skill (remotion / video-use) won the route (failure)",
+    "unavailable": "the expected workflow skill isn't installed in this env (excluded from accuracy)",
+    "inline": "no workflow routed; the agent built the composition itself (excluded from accuracy)",
+    "unparsed": "the oracle couldn't read a decision — a measurement gap, not an agent failure (excluded)",
+}
 
 
 def _flatten(values):
@@ -47,8 +86,40 @@ def _ls(d, suffix=None):
     return sorted(n for n in os.listdir(d) if not n.startswith(".") and os.path.isdir(os.path.join(d, n)))
 
 
+def _cases_catalog(dataset):
+    """Each case reduced to the fields an agent picks `--cases`/`--tags` on."""
+    path = os.path.join(dataset_dir(dataset), "cases.jsonl")
+    if not os.path.exists(path):
+        return []
+    return [{"id": c.get("id"), "category": c.get("category"),
+             "expected": (c.get("expect") or {}).get("route"), "tags": c.get("tags", [])}
+            for c in load_jsonl(path)]
+
+
+# ----------------------------------------------------------------------------- list
+
 def cmd_list(args):
     cfg = load_config()
+
+    if args.what == "cases":
+        dataset = args.dataset or DEFAULT_DATASET
+        cases = _cases_catalog(dataset)
+        if args.json:
+            print(json.dumps({"dataset": dataset, "count": len(cases), "cases": cases},
+                             indent=2, ensure_ascii=False))
+            return
+        from collections import Counter
+        bycat = Counter(c["category"] for c in cases)
+        byexp = Counter(c["expected"] for c in cases)
+        print(f"cases ({len(cases)}) in dataset '{dataset}':")
+        print(f"  by category: {dict(sorted(bycat.items()))}")
+        print(f"  by expected route: {dict(sorted(byexp.items(), key=lambda x: -x[1]))}")
+        print()
+        for c in cases:
+            tags = (" [" + ",".join(c["tags"]) + "]") if c["tags"] else ""
+            print(f"  {c['id']:13} {c['category']:14} {c['expected']}{tags}")
+        return
+
     catalog = {
         "datasets": _ls(os.path.join(BENCH_ROOT, "datasets")),
         "envs": _ls(os.path.join(BENCH_ROOT, "envs"), ".json"),
@@ -77,12 +148,102 @@ def cmd_list(args):
                 print(f"  {n:16} {load_json(plan_file(n)).get('description', '')}")
             else:
                 print(f"  {n}")
+    if args.what == "all":
+        print("cases:\n  (run `bench list cases` — 1 dataset's contract is large)")
+
+
+# ----------------------------------------------------------------------------- schema
+
+def _parser_schema(parser):
+    """Introspect the argparse parser into a per-command flag schema. Derived from the real
+    parser so it can NEVER drift from the actual flags an agent would pass."""
+    out = {}
+    subs = next((a for a in parser._actions if isinstance(a, argparse._SubParsersAction)), None)
+    if not subs:
+        return out
+    for name, sp in subs.choices.items():
+        positionals, options = [], []
+        for a in sp._actions:
+            if isinstance(a, argparse._HelpAction):
+                continue
+            entry = {"dest": a.dest, "help": a.help or ""}
+            if a.choices:
+                entry["choices"] = list(a.choices)
+            if a.option_strings:
+                entry["flags"] = a.option_strings
+                if a.nargs == 0:
+                    entry["type"] = "bool"
+                else:
+                    if a.nargs in ("+", "*"):
+                        entry["multi"] = True
+                    if a.type:
+                        entry["type"] = getattr(a.type, "__name__", str(a.type))
+                options.append(entry)
+            else:
+                entry["required"] = True
+                positionals.append(entry)
+        out[name] = {"positionals": positionals, "options": options}
+    return out
+
+
+def cmd_schema(args):
+    cfg = load_config()
+    parser = build_parser()
+    schema = {
+        "tool": "bench",
+        "purpose": ("Routing benchmark engine: given a natural user request, does the HyperFrames "
+                    "agent route it to the right workflow (or correctly clarify / decline)? "
+                    "Primary consumer is an agent."),
+        "default_plan": cfg.get("default_plan"),
+        "commands": _parser_schema(parser),
+        "axes": {
+            "dataset": {"flag": "--dataset", "values": _ls(os.path.join(BENCH_ROOT, "datasets")),
+                        "discover": "bench list datasets --json"},
+            "models": {"flag": "--models", "multi": True, "values": list(cfg.get("models", {}).keys()),
+                       "discover": "bench list models --json"},
+            "envs": {"flag": "--envs", "multi": True, "values": _ls(os.path.join(BENCH_ROOT, "envs"), ".json"),
+                     "discover": "bench list envs --json"},
+            "plan": {"flag": "--plan", "values": _ls(os.path.join(BENCH_ROOT, "plans"), ".json"),
+                     "discover": "bench list plans --json"},
+            "cases": {"flag": "--cases", "multi": True, "discover": "bench list cases --json",
+                      "note": "specific case ids; or select a group with --tags (a tag OR a category name)"},
+            "repeats": {"flag": "--repeats", "type": "int",
+                        "note": "repeats per cell; >1 surfaces flakiness (see aggregate.consistency)"},
+        },
+        "recipes": RECIPES,
+        "verdicts": VERDICT_GLOSSARY,
+        "accuracy": {
+            "good_verdicts": sorted(score_mod.GOOD),
+            "excluded_from_accuracy": sorted(score_mod.EXCLUDE_FROM_ACC),
+            "formula": ("accuracy = good / scorable, where scorable excludes the excluded verdicts; "
+                        "everything that is neither good nor excluded (miss / competitor / soft) is a failure"),
+        },
+        "output": {
+            "run_dir": "results/<run-id>/",
+            "files": {
+                "results.jsonl": "one JSON line per cell (machine-readable)",
+                "aggregate.json": "run summary: route.accuracy + verdicts + miss_breakdown, router_first, "
+                                  "by_category, scope_matrix (accept/clarify/refuse confusion), consistency, cost",
+                "report.md": "short plain-language answer to 'is routing good?'",
+                "trace_report.html": "reviewable triage dashboard (generated by `bench dashboard <run-dir>`)",
+            },
+            "run_json": "`bench run --json` prints {run_id, run_dir, selection, cells, aggregate, report} to stdout "
+                        "(progress to stderr) — a single parseable object per run",
+        },
+    }
+    print(json.dumps(schema, indent=2, ensure_ascii=False))
+
+
+# ----------------------------------------------------------------------------- run
+
+def _has_axes(args):
+    return any([args.dataset, args.models, args.envs, args.cases, args.tags, args.repeats is not None])
 
 
 def _resolve_selection(args, cfg):
     plan_name = args.plan or (None if _has_axes(args) else cfg.get("default_plan"))
     sel = load_json(plan_file(plan_name)) if plan_name else {
-        "dataset": "routing", "models": ["haiku"], "envs": ["hf-local"], "cases": None, "repeats": 1}
+        "dataset": DEFAULT_DATASET, "models": ["haiku"], "envs": ["hf-local"], "cases": None, "repeats": 1}
     sel.setdefault("cases", None)
     sel.setdefault("tags", None)
     # explicit flags override the plan
@@ -101,10 +262,6 @@ def _resolve_selection(args, cfg):
     return plan_name, sel
 
 
-def _has_axes(args):
-    return any([args.dataset, args.models, args.envs, args.cases, args.tags, args.repeats is not None])
-
-
 def cmd_run(args):
     cfg = load_config()
     plan_name, sel = _resolve_selection(args, cfg)
@@ -120,14 +277,33 @@ def cmd_run(args):
     out_dir = args.out or os.path.join(BENCH_ROOT, "results", run_id)
     os.makedirs(out_dir, exist_ok=True)
 
+    # in --json mode all human progress goes to stderr so stdout is a single clean JSON object
+    stream = sys.stderr if args.json else sys.stdout
     print(f"plan={plan_name or '(flags)'}  dataset={sel['dataset']}  "
           f"models={sel['models']}  envs={sel['envs']}  repeats={sel['repeats']}  "
-          f"cells={len(cells)}{'  [DRY RUN]' if args.dry_run else ''}")
+          f"cells={len(cells)}{'  [DRY RUN]' if args.dry_run else ''}", file=stream)
     out = runner.run_matrix(cells, cfg, out_dir, label=label,
                             concurrency=args.concurrency, dry_run=args.dry_run,
                             force=args.force, keep=args.keep,
-                            rebuild_env=not args.reuse_env)
+                            rebuild_env=not args.reuse_env, out_stream=stream)
     agg = out["aggregate"]
+
+    if args.json:
+        print(json.dumps({
+            "run_id": run_id,
+            "run_dir": out_dir,
+            "plan": plan_name,
+            "dry_run": bool(args.dry_run),
+            "selection": {"dataset": sel["dataset"], "models": sel["models"], "envs": sel["envs"],
+                          "cases": sel.get("cases"), "tags": sel.get("tags"), "repeats": sel["repeats"]},
+            "cells": len(cells),
+            "aggregate": agg,
+            "report": os.path.join(out_dir, "report.md"),
+            "results_jsonl": os.path.join(out_dir, "results.jsonl"),
+            "aggregate_json": os.path.join(out_dir, "aggregate.json"),
+        }, indent=2, ensure_ascii=False))
+        return
+
     print(f"\n→ {out_dir}")
     print(f"  route accuracy: {agg['route']['accuracy']}  "
           f"({agg['route']['good']}/{agg['route']['scorable']})  "
@@ -135,9 +311,15 @@ def cmd_run(args):
     print(f"  report: {os.path.join(out_dir, 'report.md')}")
 
 
+# ----------------------------------------------------------------------------- score / report / show
+
 def cmd_score(args):
     cfg = load_config()
     out = score_mod.rescore_run(args.run_dir, cfg)
+    if args.json:
+        print(json.dumps({"run_dir": args.run_dir, "cells": len(out["results"]),
+                          "aggregate": out["aggregate"]}, indent=2, ensure_ascii=False))
+        return
     print(f"re-scored {len(out['results'])} cells → {os.path.join(args.run_dir, 'results.jsonl')}")
     print(f"route accuracy: {out['aggregate']['route']['accuracy']}")
 
@@ -152,8 +334,24 @@ def cmd_report(args):
     print(f"wrote {os.path.join(args.run_dir, 'report.md')}")
 
 
+def cmd_dashboard(args):
+    from core import dashboard as dashboard_mod
+    dashboard_mod.build(args.run_dir)
+
+
 def cmd_show(args):
     cdir = os.path.join(args.run_dir, "cells", args.cell_key)
+    if args.json:
+        def _maybe(fn, reader):
+            p = os.path.join(cdir, fn)
+            return reader(p) if os.path.exists(p) else None
+        print(json.dumps({
+            "cell": args.cell_key,
+            "result": _maybe("result.json", load_json),
+            "trace": _maybe("trace.json", load_json),
+            "prompt": _maybe("prompt.rendered.txt", lambda p: open(p).read().rstrip()),
+        }, indent=2, ensure_ascii=False))
+        return
     for fn in ("result.json", "trace.json", "prompt.rendered.txt"):
         p = os.path.join(cdir, fn)
         if os.path.exists(p):
@@ -162,50 +360,74 @@ def cmd_show(args):
             print()
 
 
-def main():
+# ----------------------------------------------------------------------------- parser
+
+def build_parser():
     p = argparse.ArgumentParser(prog="bench", description="hyperframes-bench — routing benchmark engine")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    pl = sub.add_parser("list", help="list datasets/envs/plans/models")
+    pl = sub.add_parser("list", help="list datasets/envs/plans/models/cases (use --json for machine output)")
     pl.add_argument("what", nargs="?", default="all",
-                    choices=["all", "datasets", "envs", "plans", "models"])
-    pl.add_argument("--json", action="store_true")
+                    choices=["all", "datasets", "envs", "plans", "models", "cases"],
+                    help="which catalog to list; 'cases' lists each case's id/category/expected/tags")
+    pl.add_argument("--dataset", help="dataset for `list cases` (default: routing)")
+    pl.add_argument("--json", action="store_true", help="machine-readable JSON output")
     pl.set_defaults(fn=cmd_list)
 
-    pr = sub.add_parser("run", help="run a matrix of cells")
-    pr.add_argument("--plan")
-    pr.add_argument("--dataset")
-    pr.add_argument("--models", nargs="+")
-    pr.add_argument("--envs", nargs="+")
-    pr.add_argument("--cases", nargs="+")
-    pr.add_argument("--tags", nargs="+")
-    pr.add_argument("--repeats", type=int)
-    pr.add_argument("--concurrency", type=int)
+    psc = sub.add_parser("schema", help="print the full machine-readable driving contract (for agents)")
+    psc.add_argument("--json", action="store_true", help="(default) emit JSON")
+    psc.set_defaults(fn=cmd_schema)
+
+    pr = sub.add_parser("run", help="run a matrix of cells (case × env × model × repeat)")
+    pr.add_argument("--plan", help="named matrix slice (see `bench list plans`); unspecified axes fall back to it")
+    pr.add_argument("--dataset", help="dataset name (see `bench list datasets`); default 'routing'")
+    pr.add_argument("--models", nargs="+",
+                    help="model aliases to test (see `bench list models`), e.g. opus sonnet haiku; overrides the plan")
+    pr.add_argument("--envs", nargs="+",
+                    help="env(s) = which skills are installed (see `bench list envs`): hf-local / hf-online / hf+all")
+    pr.add_argument("--cases", nargs="+",
+                    help="specific case ids (see `bench list cases`); overrides the plan's case set")
+    pr.add_argument("--tags", nargs="+",
+                    help="select cases by a tag OR a category name (e.g. C-adversarial, multimodal, E-oos)")
+    pr.add_argument("--repeats", type=int, help="repeats per cell; >1 surfaces flakiness (aggregate.consistency)")
+    pr.add_argument("--concurrency", type=int, help="parallel cells (default from bench.config.json)")
     pr.add_argument("--dry-run", action="store_true",
                     help="install envs + render prompts but DON'T launch the agent (no cost)")
-    pr.add_argument("--force", action="store_true", help="ignore the cell cache")
+    pr.add_argument("--force", action="store_true", help="ignore the cell cache; re-run every cell")
     pr.add_argument("--reuse-env", action="store_true",
                     help="reuse the last-built env template instead of rebuilding fresh "
                          "(default rebuilds: re-installs local skills + re-fetches competitors)")
-    pr.add_argument("--keep", action="store_true", help="keep each cell's cloned workspace")
-    pr.add_argument("--label")
-    pr.add_argument("--out")
+    pr.add_argument("--keep", action="store_true", help="keep each cell's cloned workspace for inspection")
+    pr.add_argument("--label", help="run label; becomes part of the run-id and the report title")
+    pr.add_argument("--out", help="output dir (default: results/<run-id>)")
+    pr.add_argument("--json", action="store_true",
+                    help="print {run_id, run_dir, selection, aggregate, report} to stdout (progress to stderr)")
     pr.set_defaults(fn=cmd_run)
 
     ps = sub.add_parser("score", help="re-run oracles over a finished run (no agent calls)")
-    ps.add_argument("run_dir")
+    ps.add_argument("run_dir", help="a results/<run-id>/ directory")
+    ps.add_argument("--json", action="store_true", help="print {run_dir, cells, aggregate} as JSON")
     ps.set_defaults(fn=cmd_score)
 
-    prp = sub.add_parser("report", help="regenerate report.md")
-    prp.add_argument("run_dir")
+    prp = sub.add_parser("report", help="regenerate report.md (short plain-text answer) from results.jsonl")
+    prp.add_argument("run_dir", help="a results/<run-id>/ directory")
     prp.set_defaults(fn=cmd_report)
 
+    pd = sub.add_parser("dashboard", help="generate the HTML triage dashboard (trace_report.html) for a run")
+    pd.add_argument("run_dir", nargs="?", help="a results/<run-id>/ directory (default: most recent run)")
+    pd.set_defaults(fn=cmd_dashboard)
+
     psh = sub.add_parser("show", help="dump one cell's result/trace/prompt")
-    psh.add_argument("run_dir")
-    psh.add_argument("cell_key")
+    psh.add_argument("run_dir", help="a results/<run-id>/ directory")
+    psh.add_argument("cell_key", help="a cell key, e.g. cand-p02__hf-local__sonnet__r1")
+    psh.add_argument("--json", action="store_true", help="emit {result, trace, prompt} as one JSON object")
     psh.set_defaults(fn=cmd_show)
 
-    args = p.parse_args()
+    return p
+
+
+def main():
+    args = build_parser().parse_args()
     args.fn(args)
 
 

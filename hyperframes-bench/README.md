@@ -10,15 +10,15 @@ HyperFrames agent route it to the right workflow** (or correctly clarify / decli
 
 ## The five concepts (keep them separate)
 
-| concept    | what it is                                                   | where                                        | MVP                                 |
-| ---------- | ------------------------------------------------------------ | -------------------------------------------- | ----------------------------------- |
-| **case**   | the contract: a request + its expected route                 | `datasets/routing/cases.jsonl`               | ● live                              |
-| **env**    | which skills are installed (local / online / +competitors)   | `envs/*.json`                                | ● live                              |
-| **plan**   | a named matrix slice (which cases × models × envs × repeats) | `plans/*.json`                               | ● live                              |
-| **oracle** | how a trace is judged                                        | `oracles/*.py` (route, router_first, intent) | ● live                              |
-| **result** | the raw evidence of one run                                  | `results/<run-id>/`                          | ● live                              |
-| _golden_   | human-approved exemplar video                                | `references/`                                | ✗ N/A for routing (E2E only)        |
-| _baseline_ | frozen results from a known-good version                     | `baselines/`                                 | ◇ reserved (add `bench diff` later) |
+| concept    | what it is                                                   | where                                | MVP                                 |
+| ---------- | ------------------------------------------------------------ | ------------------------------------ | ----------------------------------- |
+| **case**   | the contract: a request + its expected route                 | `datasets/routing/cases.jsonl`       | ● live                              |
+| **env**    | which skills are installed (local / online / +competitors)   | `envs/*.json`                        | ● live                              |
+| **plan**   | a named matrix slice (which cases × models × envs × repeats) | `plans/*.json`                       | ● live                              |
+| **oracle** | how a trace is judged                                        | `oracles/*.py` (route, router_first) | ● live                              |
+| **result** | the raw evidence of one run                                  | `results/<run-id>/`                  | ● live                              |
+| _golden_   | human-approved exemplar video                                | `references/`                        | ✗ N/A for routing (E2E only)        |
+| _baseline_ | frozen results from a known-good version                     | `baselines/`                         | ◇ reserved (add `bench diff` later) |
 
 Routing has **no golden** — its oracle compares the invoked workflow to `expect.route`, there is
 no video to score.
@@ -26,19 +26,29 @@ no video to score.
 ## Quickstart
 
 ```bash
+./bench schema                     # the whole driving contract for an agent (commands, flags,
+                                   #   live valid values, NL→call recipes, verdict glossary) as JSON
 ./bench list                       # what can I run? (datasets / envs / plans / models)
 ./bench list --json                # same, machine-readable (+ plan/env descriptions)
+./bench list cases [--json]        # every case's id / category / expected route / tags
 
-./bench run --plan smoke            # fast sanity: 1 model × local × 6 cases
+./bench run --plan smoke            # fast sanity: 1 model × local × 7 cases
 ./bench run --plan smoke --dry-run  # install env + render prompts, DON'T call the agent (free)
+./bench run --plan smoke --json     # stdout = one JSON {run_id, run_dir, selection, aggregate, report}
 
 ./bench run --plan routing-full     # full matrix vs local edits
 ./bench run --plan collision        # all cases × sonnet × competitor-collision env
 
-./bench score  results/<run-id>     # re-judge saved traces (no agent calls)
-./bench report results/<run-id>     # regenerate report.md
-./bench show   results/<run-id> cand-p02__hf-local__sonnet__r1   # inspect one cell
+./bench score     results/<run-id> [--json]   # re-judge saved traces (no agent calls)
+./bench report    results/<run-id>            # regenerate report.md (short plain-text answer)
+./bench dashboard results/<run-id>            # generate the HTML triage dashboard (trace_report.html)
+./bench show      results/<run-id> cand-p02__hf-local__sonnet__r1 [--json]   # inspect one cell
 ```
+
+**Agent entry point:** start at `bench schema --json` — it returns every command/flag (introspected
+from the parser, so it never drifts), the live set of valid models/envs/plans/cases, a table of
+natural-language ask → exact call, and the verdict glossary. Then drive `bench run … --json` and read
+the `aggregate` straight off stdout.
 
 ## Expressing "the test I want" (agent guide)
 
@@ -54,7 +64,8 @@ the plan (or `default_plan`); explicit flags win.
 | one case, many repeats, for flakiness | `bench run --cases cand-p20 --repeats 9 --models sonnet`                       |
 | test the **online** published skills  | `bench run --envs hf-online` (pin a branch via `envs/hf-online.json`'s `ref`)  |
 
-Then parse `results/<run-id>/aggregate.json` (or `results.jsonl`) and report back.
+Then parse the run's `aggregate` and report back — either off `bench run … --json` stdout directly, or
+from `results/<run-id>/aggregate.json` (or `results.jsonl`).
 
 ## Local vs online (the two run paths)
 
@@ -85,8 +96,7 @@ heygen-com/hyperframes[#<ref>]`. `ref` pins a branch/tag. ⚠️ default branch 
   "expected": { "route": "pr-to-video" },
   "oracles": {
     "route": { "verdict": "correct", "observed": "pr-to-video", "how": "invoked", "note": "" },
-    "router_first": { "router_first": true, "first_skill": "hyperframes-read-first" },
-    "intent": { "intent": "make-a-video", "match": true }
+    "router_first": { "router_first": true, "first_skill": "hyperframes-read-first" }
   },
   "skills_invoked": ["hyperframes-read-first", "pr-to-video"],
   "cost_usd": 0.04,

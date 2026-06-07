@@ -13,6 +13,7 @@ Design commitments:
   * env templates are built once and cloned per cell, so every cell gets a fresh workspace.
 """
 import os
+import sys
 import json
 import shutil
 import hashlib
@@ -244,7 +245,10 @@ def _git_describe(path):
 
 
 def run_matrix(cells, cfg, out_dir, label="run", concurrency=None, dry_run=False, force=False,
-               keep=False, rebuild_env=True):
+               keep=False, rebuild_env=True, out_stream=None):
+    # progress goes to out_stream (default stdout); `bench run --json` points it at stderr so
+    # stdout stays a single clean JSON object the agent can parse.
+    stream = out_stream or sys.stdout
     os.makedirs(os.path.join(out_dir, "cells"), exist_ok=True)
     concurrency = concurrency or cfg.get("concurrency", 4)
     registry = _fixtures_registry()
@@ -258,7 +262,7 @@ def run_matrix(cells, cfg, out_dir, label="run", concurrency=None, dry_run=False
         env_states[env] = st
         tag = "reused" if st.get("cached") else ("FAILED" if not st["ok"] else "built fresh")
         print(f"  env {env}: {tag} ({len(st.get('installed', []))} skills)"
-              + (f"\n    {st['error']}" if st.get("error") else ""))
+              + (f"\n    {st['error']}" if st.get("error") else ""), file=stream)
 
     git = _git_describe(REPO_ROOT)
     manifest = {"label": label, "out_dir": out_dir, "cells": len(cells),
@@ -272,7 +276,7 @@ def run_matrix(cells, cfg, out_dir, label="run", concurrency=None, dry_run=False
     if dry_run or concurrency <= 1:
         for c in cells:
             results.append(run_cell(c, env_states[c["env"]], cfg, out_dir, dry_run, force, keep, registry))
-            print(f"  · {results[-1]['key']}  [{results[-1]['status']}]")
+            print(f"  · {results[-1]['key']}  [{results[-1]['status']}]", file=stream)
     else:
         with ThreadPoolExecutor(max_workers=concurrency) as ex:
             futs = {ex.submit(run_cell, c, env_states[c["env"]], cfg, out_dir, dry_run, force, keep, registry): c
@@ -281,7 +285,7 @@ def run_matrix(cells, cfg, out_dir, label="run", concurrency=None, dry_run=False
                 r = fut.result()
                 results.append(r)
                 rv = (r.get("oracles", {}).get("route", {}) or {}).get("verdict", r["status"])
-                print(f"  · {r['key']}  [{rv}]")
+                print(f"  · {r['key']}  [{rv}]", file=stream)
 
     results.sort(key=lambda r: r["key"])
     with open(os.path.join(out_dir, "results.jsonl"), "w") as f:

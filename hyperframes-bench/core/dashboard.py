@@ -11,11 +11,13 @@ Reads a finished run dir (results/<run-id>/) and emits:
                          page is scannable; expand one card, or "expand all", as needed.
   - stdout / .md       — a compact markdown table.
 
-Usage: trace_report.py [RUN_DIR]   (default: most-recent results/* dir)
+Invoke via `bench dashboard [RUN_DIR]` (default: most-recent results/* dir); the engine
+calls build(run_dir). This is the HTML sibling of core/report.py's plain-text report.md.
 """
 import os, sys, json, html, glob, re
 
-BENCH = os.path.dirname(os.path.abspath(__file__))
+# this file lives in core/, so the bench root is two levels up
+BENCH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROUTER_ALIASES = {"hyperframes-read-first", "video-workflows"}
 WORKFLOWS = {"product-launch-video", "faceless-explainer", "footage-recut",
              "pr-to-video", "remotion-to-hyperframes", "general-video"}
@@ -227,10 +229,11 @@ def confusion_html(recs):
         '</details>')
 
 
-def main():
-    run_dir = sys.argv[1] if len(sys.argv) > 1 else latest_run()
+def build(run_dir=None):
+    """Generate trace_report.html + trace_report.md for a run dir (default: most recent)."""
+    run_dir = run_dir or latest_run()
     if not run_dir or not os.path.isdir(run_dir):
-        sys.exit(f"no run dir found ({run_dir})")
+        raise SystemExit(f"no run dir found ({run_dir})")
     rp = os.path.join(run_dir, "results.jsonl")
     if not os.path.exists(rp):
         sys.exit(f"no results.jsonl in {run_dir}")
@@ -491,7 +494,8 @@ document.getElementById('collapse').onclick=()=>document.querySelectorAll('.tl')
         f.write("\n".join(md) + "\n")
     print("\n".join(md[:3]) + f"\n… {len(recs)} rows")
     print(f"\nHTML: {os.path.join(run_dir, 'trace_report.html')}")
+    return run_dir
 
 
 if __name__ == "__main__":
-    main()
+    build(sys.argv[1] if len(sys.argv) > 1 else None)

@@ -10,7 +10,7 @@ from collections import Counter, defaultdict
 from core import load_json, load_jsonl
 import oracles as oracle_pkg
 
-DEFAULT_ORACLES = ["route", "router_first", "intent"]
+DEFAULT_ORACLES = ["route", "router_first"]
 GOOD = {"correct", "clarify_ok", "oos_ok", "asked_ok"}   # "the agent did the right thing"
 # "no fair routing decision observed" → excluded from accuracy (NOT counted as a failure):
 # capability absent / agent built it inline / oracle couldn't read a decision. The real

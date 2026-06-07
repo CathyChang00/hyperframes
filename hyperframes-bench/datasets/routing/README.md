@@ -32,7 +32,7 @@ prompt equals the case text verbatim. The contract below is richer than that and
 - `pdf/image/video` reference a fixture by `asset_id` (see `../../fixtures/assets.registry.jsonl`),
   not a hard path.
 - `expect.route` is one of the workflows, or `clarify` / `out-of-scope` (see `taxonomy.json`).
-- `oracles` is optional; default is `["route", "router_first", "intent"]`.
+- `oracles` is optional; default is `["route", "router_first"]`.
 
 ## Add or edit a case
 
