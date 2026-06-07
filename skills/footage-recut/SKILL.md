@@ -1,6 +1,6 @@
 ---
 name: footage-recut
-description: footage-recut video workflow - existing local video (MP4) -> metadata + word-level transcript -> AI-designed HTML info-cards (GSAP) layered over the source video -> re-rendered MP4. Transforms / repurposes EXISTING footage (re-edit, recut, annotate); does NOT scrape a URL and does NOT generate visuals from text. No fixed length (short reels to hour-long talks).
+description: footage-recut video workflow - existing local video (MP4) -> metadata + word-level transcript -> AI-designed HTML info-cards (GSAP) layered OVER the source video -> re-rendered MP4. It ONLY adds an HTML card layer on top; the source plays UNCHANGED underneath. It does not modify the underlying footage itself (no re-timing, recoloring, reframing/cropping, reordering, or audio replacement) — that is NLE-style editing of an encoded video, which HyperFrames does not do. Annotate-on-top only; does NOT scrape a URL and does NOT generate visuals from text. No fixed length (short reels to hour-long talks).
 metadata:
   tags: orchestrator, pipeline, footage-recut, footage-repurpose, video-recut, existing-footage, card-overlay
 ---
@@ -11,7 +11,9 @@ metadata:
 
 # footage-recut - dispatch entry
 
-Input is an **existing local video file** (MP4, any aspect / duration / fps). Output is the **same footage re-edited**: the source video plays as a background layer with AI-designed, transcript-synced HTML info-cards (GSAP) overlaid on top, re-rendered to MP4. This is a **transform / repurpose** workflow — nothing is generated from a URL or from a text brief; the "script" is whatever the speaker already said, recovered by ASR. There is **no length constraint**.
+Input is an **existing local video file** (MP4, any aspect / duration / fps). Output is the **same footage with an HTML card layer added on top**: the source video plays **unchanged** as a background layer, and AI-designed, transcript-synced HTML info-cards (GSAP) are overlaid above it, re-rendered to MP4. This is an **overlay / annotate** workflow — it composes a card layer over the source; it does **not** touch the underlying video stream. Re-timing (speed / slow-mo), recoloring, reframing / cropping, reordering, or replacing the audio (dub / translate) all mean editing the footage _itself_ — that is NLE-style editing, which HyperFrames cannot do; decline rather than route here. Nothing is generated from a URL or a text brief; the "script" is whatever the speaker already said, recovered by ASR. There is **no length constraint**.
+
+> **NOT SUPPORTED — decline, do not run this workflow.** footage-recut only _overlays_ a card layer; it cannot alter the source video itself. If the request is to change the footage's **timing** (speed-ramp / slow-mo / time-remap), **color** (grade / LUT), **framing** (crop / reframe / aspect-convert / speaker-track), **order** (reorder / trim / cut silences), or **audio** (dub / translate / replace / denoise), that is NLE-style editing of an encoded video — outside what HyperFrames can do. Say so and point the user at a real video editor (DaVinci Resolve, Premiere, Final Cut, FFmpeg); do **not** invoke this skill for it.
 
 All artifacts go to `PROJECT_DIR = videos/<project-name>/` (created in Step 0); all paths below are relative to it.
 

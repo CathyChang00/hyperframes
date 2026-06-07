@@ -7,7 +7,7 @@ metadata:
 
 # pr-to-video - dispatch entry
 
-Input is a **GitHub pull request** (a code change), supplied as a PR URL, an `<owner>/<repo>#<N>` ref, or "this PR" while a repo with an open PR is checked out. Output is a **code-change explainer**: what shipped, why, and how it works — rendered from the diff/commits as before-after, diff-highlight, file-tree, and impact scenes. Default length **up to ~2 min** (sweet spot ~30-90s; changelog / feature-reveal register). There is **no website scrape and no headless Chrome for ingest** — ingest is the `gh` CLI. The shipped style preset is always **claude** (warm editorial; signature navy code window).
+Input is a **GitHub pull request** (a code change), supplied as a PR URL, an `<owner>/<repo>#<N>` ref, or "this PR" while a repo with an open PR is checked out. Output is a **code-change explainer**: what shipped, why, and how it works — rendered from the diff/commits as before-after, diff-highlight, file-tree, and impact scenes. Default length **up to ~3 min** (sweet spot ~30-90s; changelog / feature-reveal register); a genuinely longer or exhaustive every-file walkthrough (5 min+) is a different register → `/general-video`. There is **no website scrape and no headless Chrome for ingest** — ingest is the `gh` CLI. The shipped style preset is always **claude** (warm editorial; signature navy code window).
 
 This workflow owns only the PR-specific front (**ingest + story-design**); every phase marked _shared_ reuses the engine copied from faceless-explainer unchanged (it lives under this skill's own `scripts/` + `agents/` + `phases/`, so `<SKILL_DIR>` resolves to pr-to-video).
 
@@ -367,6 +367,6 @@ Read `$PROJECT_DIR/context.log` and resume from:
 ## Routing note (for the hyperframes-read-first router)
 
 - **Input:** a **GitHub PR** — a code change (PR URL, `owner/repo#N`, or "this PR"). A URL, but **a `github.com/.../pull/N` link, not a product/marketing website**.
-- **Output:** code-change explainer, up to ~2 min (sweet spot ~30-90s) (changelog / feature-reveal / fix / refactor walkthrough).
+- **Output:** code-change explainer, up to ~3 min (sweet spot ~30-90s) (changelog / feature-reveal / fix / refactor walkthrough); 5 min+ exhaustive deep-dives → `/general-video`.
 - **Triggers:** "make a video about this PR", "turn PR #1187 into a changelog video", "explain what this pull request does as a video", "release-notes video from github.com/org/repo/pull/123", "把这个 PR 做成视频".
 - **Do NOT use for:** a product/marketing website URL (-> `/product-launch-video`); a topic/article/text with no PR (-> `/faceless-explainer`); existing video footage (-> `/footage-recut`); a whole-repo tour or multi-PR release (no workflow yet -> 通用).

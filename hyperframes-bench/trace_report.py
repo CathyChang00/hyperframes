@@ -21,14 +21,14 @@ WORKFLOWS = {"product-launch-video", "faceless-explainer", "footage-recut",
              "pr-to-video", "remotion-to-hyperframes", "general-video"}
 
 VERDICT_COLOR = {
-    "correct": "#1a7f37", "clarify_ok": "#0969da", "oos_ok": "#0969da",
+    "correct": "#1a7f37", "clarify_ok": "#0969da", "oos_ok": "#0969da", "asked_ok": "#0969da",
     "soft": "#9a6700", "miss": "#cf222e", "competitor": "#bc4c00",
     "unavailable": "#6e7781", "inline": "#6e7781", "unparsed": "#9a6700",
 }
 # review priority: the things you most want to look at first sort to the top.
 VERDICT_RANK = {"miss": 0, "competitor": 1, "unparsed": 2, "soft": 3,
-                "inline": 4, "unavailable": 5, "clarify_ok": 6, "oos_ok": 7, "correct": 8}
-GOOD_VERDICTS = {"correct", "clarify_ok", "oos_ok"}
+                "inline": 4, "unavailable": 5, "clarify_ok": 6, "asked_ok": 6, "oos_ok": 7, "correct": 8}
+GOOD_VERDICTS = {"correct", "clarify_ok", "oos_ok", "asked_ok"}
 # "no fair decision observed" — neither a pass nor a fail; kept off the red fail count
 # (mirrors score.py EXCLUDE_FROM_ACC). A high `unparsed` rate means the ORACLE is blind.
 EXCLUDED_VERDICTS = {"unavailable", "inline", "unparsed"}
@@ -181,6 +181,52 @@ def chip_row(label, kind, items, active="all"):
     return f'<div class="chiprow">{"".join(out)}</div>'
 
 
+_CM_SHORT = {"product-launch-video": "PLV", "faceless-explainer": "faceless",
+             "footage-recut": "footage", "pr-to-video": "pr", "remotion-to-hyperframes": "remotion",
+             "general-video": "general", "out-of-scope": "out-of-scope", "clarify": "clarify",
+             "—": "— none", "None": "— none"}
+_CM_ROW = ["product-launch-video", "faceless-explainer", "footage-recut", "pr-to-video",
+           "remotion-to-hyperframes", "general-video", "out-of-scope", "clarify"]
+_CM_COL = ["product-launch-video", "faceless-explainer", "footage-recut", "pr-to-video",
+           "remotion-to-hyperframes", "general-video", "—"]
+
+
+def confusion_html(recs):
+    """Expected route (rows) × observed route (cols) confusion matrix, summed over all cells.
+    On-target = expected==observed, or (out-of-scope/clarify expected with no route taken)."""
+    from collections import defaultdict
+    conf = defaultdict(lambda: defaultdict(int))
+    rseen, cseen = set(), set()
+    for x in recs:
+        e, o = x["expected"], str(x["observed"] or "—")
+        conf[e][o] += 1
+        rseen.add(e)
+        cseen.add(o)
+    rows = [r for r in _CM_ROW if r in rseen] + sorted(rseen - set(_CM_ROW))
+    cols = [c for c in _CM_COL if c in cseen] + sorted(cseen - set(_CM_COL))
+    sh = lambda s: html.escape(_CM_SHORT.get(s, s))
+    th = "".join(f'<th>{sh(c)}</th>' for c in cols)
+    body = ""
+    for r in rows:
+        rtot = sum(conf[r].values())
+        tds = ""
+        for c in cols:
+            n = conf[r].get(c, 0)
+            good = (r == c) or (r in ("out-of-scope", "clarify") and c in ("—", "None"))
+            cls = "d" if good else ("m" if n else "z")
+            tds += f'<td class="{cls}">{n or ""}</td>'
+        body += f'<tr><th class="rh">{sh(r)}</th>{tds}<td class="rt">{rtot}</td></tr>'
+    return (
+        '<details class="cm" open><summary>confusion matrix — expected (row) × observed route (col)'
+        ', all cells</summary>'
+        f'<table class="cmtab"><tr><th></th>{th}<th class="rt">Σ</th></tr>{body}</table>'
+        '<div class="cmnote"><span class="sw d"></span> on-target — for <b>out-of-scope</b> / '
+        '<b>clarify</b> rows the on-target column is <b>— none</b> (declined / asked, no route). '
+        '<span class="sw m"></span> mis-route. Note the <b>— none</b> column on a workflow row also '
+        'includes legitimate <i>asked-for-missing-input</i> (agent asked for an asset the bench didn\'t supply).</div>'
+        '</details>')
+
+
 def main():
     run_dir = sys.argv[1] if len(sys.argv) > 1 else latest_run()
     if not run_dir or not os.path.isdir(run_dir):
@@ -195,7 +241,7 @@ def main():
     # ---- build per-case records (and the markdown table) ----------------------------
     recs, md = [], ["| case | cat | expected | observed | how | rf | verdict |",
                     "|---|---|---|---|---|---|---|"]
-    cat_counts, verdict_counts = {}, {}
+    cat_counts, verdict_counts, model_counts, env_counts, expected_counts = {}, {}, {}, {}, {}
     pos_total = pos_correct = artifact_fails = 0
     for r in rows:
         ro = r.get("oracles", {}).get("route", {}) or {}
@@ -224,14 +270,22 @@ def main():
                 pos_correct += 1
         if artifact:
             artifact_fails += 1
+        model = r.get("model", "")
+        env = r.get("env", "")
         cat_counts[cat] = cat_counts.get(cat, 0) + 1
         verdict_counts[verdict] = verdict_counts.get(verdict, 0) + 1
+        if model:
+            model_counts[model] = model_counts.get(model, 0) + 1
+        if env:
+            env_counts[env] = env_counts.get(env, 0) + 1
+        expected_counts[expected] = expected_counts.get(expected, 0) + 1
 
         md.append(f"| {r['case']} | {cat} | {expected} | {observed} | {how} | {rf_txt} | **{verdict}** |")
         recs.append(dict(case=r["case"], cat=cat, verdict=verdict, how=how, observed=observed,
                          expected=expected, prompt=prompt, steps=steps, asked=asked, rl=rl,
                          final=final, rf_txt=rf_txt, turns=trace.get("turns", "?"),
-                         is_fail=is_fail, artifact=artifact, kind=ro.get("kind")))
+                         is_fail=is_fail, artifact=artifact, kind=ro.get("kind"),
+                         model=model, env=env))
 
     # failures first, then by category, then case id
     recs.sort(key=lambda x: (VERDICT_RANK.get(x["verdict"], 9), x["cat"], x["case"]))
@@ -258,14 +312,18 @@ def main():
                      '⚠ asked-for-missing-input</span>') if x["artifact"] else ""
         timeline = "".join(step_html(k, p) for k, p in x["steps"]) or '<div class="muted">no trace captured</div>'
         search_blob = html.escape((x["case"] + " " + x["cat"] + " " + x["expected"] + " "
-                                   + str(x["observed"]) + " " + x["prompt"]).lower())
+                                   + str(x["observed"]) + " " + x["model"] + " " + x["env"]
+                                   + " " + x["prompt"]).lower())
         cards.append(f"""
         <div class="card{' fail' if x['is_fail'] else ' pass'}" data-verdict="{verdict}"
              data-cat="{html.escape(x['cat'])}" data-fail="{1 if x['is_fail'] else 0}"
+             data-model="{html.escape(x['model'])}" data-env="{html.escape(x['env'])}"
+             data-expected="{html.escape(x['expected'])}"
              data-artifact="{1 if x['artifact'] else 0}" data-search="{search_blob}">
           <div class="hdr">
             <span class="cid">{html.escape(x['case'])}</span>
             <span class="cat">{html.escape(x['cat'])}</span>
+            <span class="me">🤖 {html.escape(x['model'] or '?')} · 🌐 {html.escape(x['env'] or '?')}</span>
             <span class="badge" style="background:{vcol}">{verdict}</span>
             <span class="badge" style="background:{hcol}">{htxt}</span>{art_badge}{rl_badge}
             <span class="rf">router-first: {x['rf_txt']} · turns: {x['turns']}</span>
@@ -289,13 +347,18 @@ def main():
     # chip rows: verdicts present (sorted by rank) + categories present (sorted)
     vchips = [(v, v, verdict_counts[v]) for v in sorted(verdict_counts, key=lambda v: VERDICT_RANK.get(v, 9))]
     cchips = [(c, c, cat_counts[c]) for c in sorted(cat_counts)]
+    mchips = [(m, m, model_counts[m]) for m in sorted(model_counts)]
+    echips = [(e, e, env_counts[e]) for e in sorted(env_counts)]
+    xorder = [e for e in _CM_ROW if e in expected_counts] + sorted(set(expected_counts) - set(_CM_ROW))
+    xchips = [(e, _CM_SHORT.get(e, e), expected_counts[e]) for e in xorder]
+    model_row = chip_row("model", "model", mchips) if mchips else ""
+    env_row = chip_row("env", "env", echips) if echips else ""
+    expected_row = chip_row("expected", "expected", xchips) if xchips else ""
+    cm_html = confusion_html(recs)
 
     summary_chips = (
         f'<span class="kpi"><b>{agg.get("cells","?")}</b> cells</span>'
         f'<span class="kpi"><b>{acc}</b> route-acc <span class="muted">({good}/{scorable})</span></span>'
-        f'<span class="kpi big"><b>{pos_pct}</b> on positives <span class="muted">({pos_correct}/{pos_total} concrete-workflow cases)</span></span>'
-        f'<span class="kpi warn"><b>{n_fail}</b> fails · <b>{artifact_fails}</b> flagged missing-input</span>'
-        f'<span class="kpi"><b>{rfr}</b> router-first</span>'
         f'<span class="kpi"><b>${agg.get("cost_usd_total")}</b></span>'
     )
     meta = (f"model: {', '.join(man.get('models', []))} · env: {', '.join(man.get('envs', []))} · "
@@ -305,7 +368,8 @@ def main():
 <style>
  :root{{--bd:#d0d7de;--mut:#57606a;--bg:#f6f8fa}}
  *{{box-sizing:border-box}}
- body{{font:14px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;max-width:1080px;margin:0 auto;padding:0 16px 60px;color:#1f2328}}
+ html{{background:#fff}}
+ body{{font:14px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;max-width:1080px;margin:0 auto;padding:0 16px 60px;color:#1f2328;background:#fff}}
  .bar{{position:sticky;top:0;background:#fffd;backdrop-filter:blur(8px);border-bottom:1px solid var(--bd);
        padding:12px 0 10px;margin:0 -16px 14px;padding-left:16px;padding-right:16px;z-index:5}}
  h1{{font-size:17px;margin:0 0 6px}} .meta{{color:var(--mut);font-size:12px;margin-bottom:8px}}
@@ -347,6 +411,18 @@ def main():
  .step.think{{border-color:#bf8700}} .step.think>summary{{cursor:pointer;color:#9a6700;font-size:12.5px}}
  .step.tool .opts{{color:var(--mut);font-size:12px}} .muted{{color:#8c959f}}
  pre{{background:var(--bg);padding:8px;border-radius:6px;overflow:auto;font-size:12px;white-space:pre-wrap;margin:4px 0}}
+ .me{{color:var(--mut);font-size:11.5px;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:1px 8px}}
+ .cm{{margin:0 0 14px}} .cm>summary{{cursor:pointer;font-weight:600;font-size:13px;color:#1f2328;padding:4px 0}}
+ .cmtab{{border-collapse:collapse;margin:8px 0;font-size:12px}}
+ .cmtab th,.cmtab td{{border:1px solid var(--bd);padding:4px 9px;text-align:center;min-width:30px;background:#fff}}
+ .cmtab .rh{{text-align:right;font-weight:600;background:var(--bg);white-space:nowrap}}
+ .cmtab td.d{{background:#dafbe1;font-weight:700;color:#1a7f37}}
+ .cmtab td.m{{background:#ffebe9;color:#cf222e;font-weight:600}}
+ .cmtab td.z{{color:#d8dee4}}
+ .cmtab .rt{{background:var(--bg);font-weight:600;color:var(--mut)}}
+ .cmnote{{font-size:11px;color:var(--mut);margin-top:5px;max-width:780px}}
+ .sw{{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin:0 2px}}
+ .sw.d{{background:#dafbe1;border:1px solid #a2d8ab}} .sw.m{{background:#ffebe9;border:1px solid #f0b3b0}}
  .empty{{text-align:center;color:#8c959f;padding:30px}}
 </style>
 <div class="bar">
@@ -355,6 +431,9 @@ def main():
   <div class="kpis">{summary_chips}</div>
   {chip_row("verdict", "verdict", vchips)}
   {chip_row("category", "cat", cchips)}
+  {expected_row}
+  {model_row}
+  {env_row}
   <div class="tools">
     <button class="tbtn" data-quick="fail">❌ failures only</button>
     <button class="tbtn" data-quick="artifact">⚠ flagged missing-input</button>
@@ -366,20 +445,24 @@ def main():
   <div class="legend">cards sorted worst-verdict first; ✅passes dimmed. <b>⚠ asked-for-missing-input</b> = heuristic flag:
    the agent asked for an asset the bench didn't supply (likely artifact, not a real miss). timeline: 🧠reasoning · 💬text · 🎯Skill · ❓ask · 🔧tool · ↩result.</div>
 </div>
+{cm_html}
 {''.join(cards)}
 <div class="empty" id="empty" style="display:none">no cases match these filters</div>
 <script>
 const cards=[...document.querySelectorAll('.card')];
-const state={{verdict:'all',cat:'all',q:'',artifact:false}};
+const state={{verdict:'all',cat:'all',expected:'all',model:'all',env:'all',q:'',artifact:false}};
 function apply(){{
   let n=0;
   for(const c of cards){{
     const okV = state.verdict==='all' || (state.verdict==='__fail' && c.dataset.fail==='1')
               || c.dataset.verdict===state.verdict;
     const okC = state.cat==='all' || c.dataset.cat===state.cat;
+    const okX = state.expected==='all' || c.dataset.expected===state.expected;
+    const okM = state.model==='all' || c.dataset.model===state.model;
+    const okE = state.env==='all' || c.dataset.env===state.env;
     const okA = !state.artifact || c.dataset.artifact==='1';
     const okQ = !state.q || c.dataset.search.includes(state.q);
-    const show = okV&&okC&&okA&&okQ;
+    const show = okV&&okC&&okX&&okM&&okE&&okA&&okQ;
     c.style.display = show?'':'none'; if(show)n++;
   }}
   document.getElementById('shown').textContent=n;

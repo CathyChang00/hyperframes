@@ -1,6 +1,6 @@
 ---
 name: faceless-explainer
-description: faceless-explainer video workflow - arbitrary text (article / notes / topic / brief) -> narrator_scripts.json + audio (voice + BGM) + section_plan.md -> typography / abstract-graphics / diagram / data-viz video. No website capture, no real product screenshots.
+description: faceless-explainer video workflow - arbitrary text (article / notes / topic / brief) -> narrator_scripts.json + audio (voice + BGM) + section_plan.md -> typography / abstract-graphics / diagram / data-viz video. Typical length up to ~3 min (sweet spot ~60-90s); a genuinely longer piece is general-video, not this workflow. Generates its OWN narration (TTS) — it does not sync to a user-supplied / pre-recorded voiceover (that is general-video). No website capture, no real product screenshots.
 metadata:
   tags: orchestrator, pipeline, faceless-explainer, text-to-video
 ---
@@ -11,29 +11,29 @@ Input is **arbitrary text** (article / notes / topic / brief). Output is a **fac
 
 All artifacts go to `PROJECT_DIR = videos/<project-name>/` (created in Step 0); all paths below are relative to it.
 
-| Phase                    | Execution                                                                                                  | Primary artifact                                            | Detailed flow                                              |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------- |
-| init                     | Bash                                                                                                       | `hyperframes.json`                                          | Step 0                                                     |
-| scaffold                 | Bash (no agent)                                                                                            | `capture/extracted/tokens.json` + `visible-text.txt`        | Step 1                                                     |
-| design-system            | Bash (no agent, deterministic `pin-and-paper`)                                                             | `design-system/design.html` + `chunks/`                     | Step 1b                                                    |
-| scriptwriting            | subagent (`general-purpose`)                                                                               | `narrator_scripts.json`                                     | `agents/scriptwriting.md`                                  |
-| audio                    | `audio.mjs` in Bash                                                                                        | `audio_meta.json`                                           | `phases/audio/guide.md`                                    |
-| visual-design            | subagent (`general-purpose`)                                                                               | `section_plan.md`                                           | `agents/visual-design.md`                                  |
-| prep                     | `prep.mjs` in Bash                                                                                         | `group_spec.json`                                           | `scripts/prep.mjs`                                         |
-| captions (deterministic) | `captions.mjs group` -> `captions.mjs html` in Bash (no subagent)                                          | `caption_groups.json` + `compositions/captions.html`        | `scripts/captions.mjs`                                     |
-| scenes                   | N x subagent (`general-purpose`, parallel in the same message)                                             | `compositions/scene_*.html` or `compositions/group_w*.html` | `agents/hyperframes-scene.md`                              |
-| finalize (Phase 4c)      | Bash prelude (wait-bgm + assemble + inject/verify-transitions + sfx-verify + preflight) -> repair subagent | `renders/video.mp4`                                         | Step 7 / `agents/hyperframes-finalize.md`                  |
+| Phase                    | Execution                                                                                                  | Primary artifact                                            | Detailed flow                             |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------- |
+| init                     | Bash                                                                                                       | `hyperframes.json`                                          | Step 0                                    |
+| scaffold                 | Bash (no agent)                                                                                            | `capture/extracted/tokens.json` + `visible-text.txt`        | Step 1                                    |
+| design-system            | Bash (no agent, deterministic `pin-and-paper`)                                                             | `design-system/design.html` + `chunks/`                     | Step 1b                                   |
+| scriptwriting            | subagent (`general-purpose`)                                                                               | `narrator_scripts.json`                                     | `agents/scriptwriting.md`                 |
+| audio                    | `audio.mjs` in Bash                                                                                        | `audio_meta.json`                                           | `phases/audio/guide.md`                   |
+| visual-design            | subagent (`general-purpose`)                                                                               | `section_plan.md`                                           | `agents/visual-design.md`                 |
+| prep                     | `prep.mjs` in Bash                                                                                         | `group_spec.json`                                           | `scripts/prep.mjs`                        |
+| captions (deterministic) | `captions.mjs group` -> `captions.mjs html` in Bash (no subagent)                                          | `caption_groups.json` + `compositions/captions.html`        | `scripts/captions.mjs`                    |
+| scenes                   | N x subagent (`general-purpose`, parallel in the same message)                                             | `compositions/scene_*.html` or `compositions/group_w*.html` | `agents/hyperframes-scene.md`             |
+| finalize (Phase 4c)      | Bash prelude (wait-bgm + assemble + inject/verify-transitions + sfx-verify + preflight) -> repair subagent | `renders/video.mp4`                                         | Step 7 / `agents/hyperframes-finalize.md` |
 
 ## Prerequisites
 
 macOS Apple Silicon or Linux x64. System tools: `brew install python@3.11 node ffmpeg` (use Homebrew Python, **not** `/usr/bin/python3`, or `pip install` is blocked by PEP 668); then `npx hyperframes doctor` once (downloads Chrome). Optional cloud keys (else local fallbacks) — inject in Step 0.5:
 
-| Key                                | Used for                                | Default / fallback                                              |
-| ---------------------------------- | --------------------------------------- | --------------------------------------------------------------- |
-| `HEYGEN_API_KEY`                   | TTS (cloud, word-level timestamps)      | voice `1bd001e7e50f421d891986aad5158bc8`                        |
-| `ELEVENLABS_API_KEY`               | TTS (cloud; needs `pip install elevenlabs`) | voice `21m00Tcm4TlvDq8ikWAM` (Rachel)                       |
-| neither set                        | TTS                                     | local Kokoro, voice `am_michael` (non-English: pass `--voice`)  |
-| `GEMINI_API_KEY` / `GOOGLE_API_KEY` (aliases) | Lyria BGM                    | unset -> local MusicGen (first run downloads ~300 MB)           |
+| Key                                           | Used for                                    | Default / fallback                                             |
+| --------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------- |
+| `HEYGEN_API_KEY`                              | TTS (cloud, word-level timestamps)          | voice `1bd001e7e50f421d891986aad5158bc8`                       |
+| `ELEVENLABS_API_KEY`                          | TTS (cloud; needs `pip install elevenlabs`) | voice `21m00Tcm4TlvDq8ikWAM` (Rachel)                          |
+| neither set                                   | TTS                                         | local Kokoro, voice `am_michael` (non-English: pass `--voice`) |
+| `GEMINI_API_KEY` / `GOOGLE_API_KEY` (aliases) | Lyria BGM                                   | unset -> local MusicGen (first run downloads ~300 MB)          |
 
 ## Flow
 
@@ -302,18 +302,18 @@ Summarize per phase: input title / topic, preset (always `pin-and-paper`), expla
 
 Read `$PROJECT_DIR/context.log` and resume from:
 
-| State                                                                                                                        | Continue from                                                                                                                                                       |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| log missing or empty                                                                                                         | Full pipeline                                                                                                                                                        |
-| `capture/extracted/tokens.json` **or** `visible-text.txt` missing                                                            | Step 1 (scaffold)                                                                                                                                                   |
-| scaffold done, `design-system/inference.json` **or** `chunks/index.json` missing                                            | Step 1b (three deterministic commands)                                                                                                                              |
-| `chunks/index.json` exists, `narrator_scripts.json` missing                                                                  | Step 2 (scriptwriting). If the user supplied a final `narrator_scripts.json`, place it in `$PROJECT_DIR/` to skip this state                                        |
-| `narrator_scripts.json` exists, `audio_meta.json` missing                                                                    | Step 3 (audio)                                                                                                                                                      |
-| `audio_meta.json` exists, `section_plan.md` missing                                                                          | Step 4 (visual-design)                                                                                                                                              |
-| `section_plan.md` exists, `group_spec.json` missing                                                                          | Step 5 (prep)                                                                                                                                                       |
-| `group_spec.json` exists, any `visual_clips[].file` missing **or** `caption_groups.json` missing                             | Step 5.5+6 (run `captions.mjs group` -> `html`, then dispatch workers for missing clips). Captions-ran criterion = `caption_groups.json` exists (NOT `captions.html`, since a legal skip produces none) |
-| all `visual_clips[].file` exist + captions decided, `renders/video.mp4` missing                                              | Step 7 (rerun assemble + sfx-verify + preflight, overwriting `finalize_brief.json` / `index.html`, then dispatch finalize)                                          |
-| `renders/video.mp4` exists                                                                                                   | Report completed and stop                                                                                                                                            |
+| State                                                                                            | Continue from                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| log missing or empty                                                                             | Full pipeline                                                                                                                                                                                           |
+| `capture/extracted/tokens.json` **or** `visible-text.txt` missing                                | Step 1 (scaffold)                                                                                                                                                                                       |
+| scaffold done, `design-system/inference.json` **or** `chunks/index.json` missing                 | Step 1b (three deterministic commands)                                                                                                                                                                  |
+| `chunks/index.json` exists, `narrator_scripts.json` missing                                      | Step 2 (scriptwriting). If the user supplied a final `narrator_scripts.json`, place it in `$PROJECT_DIR/` to skip this state                                                                            |
+| `narrator_scripts.json` exists, `audio_meta.json` missing                                        | Step 3 (audio)                                                                                                                                                                                          |
+| `audio_meta.json` exists, `section_plan.md` missing                                              | Step 4 (visual-design)                                                                                                                                                                                  |
+| `section_plan.md` exists, `group_spec.json` missing                                              | Step 5 (prep)                                                                                                                                                                                           |
+| `group_spec.json` exists, any `visual_clips[].file` missing **or** `caption_groups.json` missing | Step 5.5+6 (run `captions.mjs group` -> `html`, then dispatch workers for missing clips). Captions-ran criterion = `caption_groups.json` exists (NOT `captions.html`, since a legal skip produces none) |
+| all `visual_clips[].file` exist + captions decided, `renders/video.mp4` missing                  | Step 7 (rerun assemble + sfx-verify + preflight, overwriting `finalize_brief.json` / `index.html`, then dispatch finalize)                                                                              |
+| `renders/video.mp4` exists                                                                       | Report completed and stop                                                                                                                                                                               |
 
 ## Directory shape
 

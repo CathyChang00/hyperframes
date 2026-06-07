@@ -28,6 +28,17 @@ This skill does two jobs:
 
 > The composition **authoring contract** (every timed element needs `data-start` / `data-duration` / `data-track-index`; timed elements need `class="clip"`; GSAP timelines are paused and registered on `window.__timelines`; deterministic logic only — no `Date.now()` / `Math.random()` / network) is **not duplicated here** — it lives in `/hyperframes-core`. Read that before writing composition HTML.
 
+## What HyperFrames cannot do — check this first
+
+HyperFrames authors an HTML composition and renders it to MP4 **from code**. That model has hard outer edges. A request past one of them is not a routing choice — it is **out of scope**, so decline (or point at the right tool) instead of reaching for a workflow. These follow from the architecture, not from any single request:
+
+- **The render is deterministic and self-contained.** Every value, asset, and piece of text is baked in when you author; the render does no network call and no live / at-render-time data pull (core rule: no `Date.now()` / `Math.random()` / network). "Refresh the numbers live at render time" is out — fetch the data once at author time and bake it in, or decline.
+- **Existing footage is overlaid, never edited.** `/footage-recut` lays an HTML card layer _on top of_ the source, which plays unchanged underneath. HyperFrames composes frames; it does not post-process an encoded video stream — so changing the footage _itself_ (its timing, color, framing, order, or audio) is NLE-style editing and out of scope, **not** a `/footage-recut` job.
+- **Remotion import is one-way.** `/remotion-to-hyperframes` translates the _Remotion framework's_ source into HyperFrames. There is no reverse (HyperFrames → Remotion, or → any other framework — out of scope), and a non-Remotion React / web-animation source has no Remotion source to translate — re-create it via `/general-video`.
+- **It cannot produce inputs it does not have.** No screen / session recording, no camera capture, no AI talking-head / lip-synced avatar generation. If the footage or asset does not exist yet, HyperFrames cannot conjure it — ask the user to supply it (or use the right capture tool) first.
+
+Everything else — a video from a URL, brief, topic, PR, footage-to-annotate, or a single element to animate — is in scope; route it below.
+
 ---
 
 # Video routing
@@ -38,18 +49,18 @@ This section knows ONLY top-level workflows. It does not load workflow-internal 
 
 ## Decision table
 
-**INPUT type (intent) is the primary axis; OUTPUT length is only a ceiling, not a gate.** For a matching input, the specialized workflows handle anything **up to ~2 min** — _which_ workflow you enter is decided by intent (the input type, and for text the subject), not by length. Length matters only at the top end: a genuinely longer piece (a 2-5 min tutorial, a 5 min+ deep dive) is a different register and routes to `/general-video`. Within the ≤2 min band, a third axis splits the two text-fed workflows — the **subject**: a product being _marketed_ vs a topic being _explained_ (see the disambiguation rule in step 3 below).
+**INPUT type (intent) is the primary axis; OUTPUT length is only a ceiling, not a gate.** For a matching input, the specialized workflows handle anything **up to ~3 min** — _which_ workflow you enter is decided by intent (the input type, and for text the subject), not by length. Length matters only at the top end: a genuinely longer piece (a 3-5 min tutorial, a 5 min+ deep dive) is a different register and routes to `/general-video`. Within the ≤~3 min band, a third axis splits the two text-fed workflows — the **subject**: a product being _marketed_ vs a topic being _explained_ (see the disambiguation rule in step 3 below).
 
 Cells marked `/general-video` are not dead-ends — they route to the length- and input-agnostic fallback (step 4). Only the **bolded specialized** workflows are dedicated paths.
 
 | Length / Input  | Product URL             | GitHub PR / code change | Product brief / script  | Topic / article / notes (no product, no URL) | Existing footage |
 | --------------- | ----------------------- | ----------------------- | ----------------------- | -------------------------------------------- | ---------------- |
-| **≤ ~2 min**    | `/product-launch-video` | `/pr-to-video`          | `/product-launch-video` | `/faceless-explainer`                        | `/footage-recut` |
+| **≤ ~3 min**    | `/product-launch-video` | `/pr-to-video`          | `/product-launch-video` | `/faceless-explainer`                        | `/footage-recut` |
 | 2-5min tutorial | `/general-video`        | `/general-video`        | `/general-video`        | `/general-video`                             | `/footage-recut` |
 | 5min+ deep dive | `/general-video`        | `/general-video`        | `/general-video`        | `/general-video`                             | `/footage-recut` |
 | Static / loop   | `/general-video`        | `/general-video`        | `/general-video`        | `/general-video`                             | `/general-video` |
 
-Coverage today: the **≤ ~2 min** band has dedicated workflows for **Product URL / GitHub PR / brief / topic** inputs (a URL splits by _kind_ — see step 3), and the **Existing footage** column is covered at **any length** by `/footage-recut` (input-type-first — see step 2). **Every other cell is `/general-video`** — the general HTML-composition authoring flow (input- and length-agnostic): everything **longer than ~2 min** (the 2-5 min / 5 min+ rows) and every **static / loop** format. The router never dead-ends on a creatable video; the only true "通用 / none" answer is a request outside HyperFrames itself (e.g. NLE-style editing of a finished video file).
+Coverage today: the **≤ ~3 min** band has dedicated workflows for **Product URL / GitHub PR / brief / topic** inputs (a URL splits by _kind_ — see step 3), and the **Existing footage** column is covered at **any length** by `/footage-recut` (input-type-first — see step 2). **Every other cell is `/general-video`** — the general HTML-composition authoring flow (input- and length-agnostic): everything **longer than ~3 min** (the 3-5 min / 5 min+ rows) and every **static / loop** format. The router never dead-ends on a creatable video; the only true "通用 / none" answer is a request outside HyperFrames itself (e.g. NLE-style editing of a finished video file).
 
 ## Migrating an existing composition (special case)
 
@@ -57,14 +68,14 @@ The table above is for **creating** a video from an input. One workflow sits out
 
 ## Routing procedure
 
-1. **Determine INPUT type + target length.** If either is unknown, ask at most 2 clarifying questions:
+1. **Determine INPUT type + target length.** Routing needs to know **what the video is about** — its subject and input. If the subject itself is unspecified (e.g. "make a video about our thing" with no URL, named product, topic, or asset to work from), or the input type is unknown, **ask before entering any workflow** — clarify first; do not invoke a workflow Skill and then ask, since committing to a workflow is itself the routing decision. Ask at most 2 clarifying questions:
    - "What's your input — a product URL, a GitHub PR / code change, a product brief / script, a topic or article to explain, or existing video footage?"
-   - "Target length — about 2 minutes or under, or longer (a 2-5 min tutorial / 5 min+ deep dive)?"
+   - "Target length — about 3 minutes or under, or longer (a 3-5 min tutorial / 5 min+ deep dive)?"
 2. **Pick by INPUT type (intent) first; length is only a ceiling, not a gate.**
    - **Existing video footage** (the user has a video to re-edit / repurpose) → `/footage-recut`, at **any length** (input type wins over length here).
-   - **GitHub PR / code change** (a `github.com/<owner>/<repo>/pull/<N>` link, an `owner/repo#N` ref, or "this PR") → `/pr-to-video` (up to ~2 min).
-   - **Otherwise** (product URL / brief / topic text): intent picks the workflow via step 3, and it handles anything **up to ~2 min** — a short 15-30 s promo and a ~100 s explainer both route by intent, not by length. Route to `/general-video` (the length-agnostic fallback — see step 4) only when the target is clearly **longer than ~2 min** (a 2-5 min tutorial, a 5 min+ deep dive). Never force a genuinely long piece into a ≤2 min workflow, but never dead-end a short one either — intent decides within the band, `/general-video` covers the rest.
-3. **Disambiguate the ≤2 min URL / text inputs (the intent split).** Two splits:
+   - **GitHub PR / code change** (a `github.com/<owner>/<repo>/pull/<N>` link, an `owner/repo#N` ref, or "this PR") → `/pr-to-video` (up to ~3 min).
+   - **Otherwise** (product URL / brief / topic text): intent picks the workflow via step 3, and it handles anything **up to ~3 min** — a short 15-30 s promo and a ~100 s explainer both route by intent, not by length. Route to `/general-video` (the length-agnostic fallback — see step 4) only when the target is clearly **longer than ~3 min** (a 3-5 min tutorial, a 5 min+ deep dive). Never force a genuinely long piece into a ≤~3 min workflow, but never dead-end a short one either — intent decides within the band, `/general-video` covers the rest.
+3. **Disambiguate the ≤~3 min URL / text inputs (the intent split).** Two splits:
    - **URL kind** — a URL no longer auto-wins for PLV; its _kind_ decides: a **GitHub PR** link (`.../pull/<N>`, `owner/repo#N`, "this PR") → `/pr-to-video`; any **other product / marketing website** URL → `/product-launch-video`. (Only product-site URLs get scraped with headless Chrome; PR URLs are read via `gh`.)
    - **Product vs topic** (text, no URL) — the decisive question is **what the video is about**, not the input format:
      - A specific **product / company / SaaS / app / website** being **marketed, launched, or promoted** → `/product-launch-video`.
@@ -80,37 +91,37 @@ The table above is for **creating** a video from an input. One workflow sits out
 ### `/product-launch-video`
 
 - **Input:** A product being marketed, supplied as one of: **(a) a product URL** → crawled with headless Chrome for assets, brand tokens, page structure; **(b) a script / brief that names a product site** (even without a pasted link) → PLV resolves the site by web search and crawls it for brand tokens + assets, _unless_ the user opts out of searching; **(c) a script / brief with no derivable site** (or an explicit "don't scrape") → no-capture mode, you pick a style preset that supplies the palette + design system (text/typography scenes, no scraped assets). A supplied script can be used **verbatim as the voice-over** or **restructured** into punchier per-scene narration — PLV asks which.
-- **Output:** product launch / SaaS explainer / promo video as a HyperFrames composition rendered to MP4 — **up to ~2 min** (sweet spot ~60-90s; longer still when a verbatim script runs long — verbatim length follows the script)
+- **Output:** product launch / SaaS explainer / promo video as a HyperFrames composition rendered to MP4 — **up to ~3 min** (sweet spot ~60-90s; longer still when a verbatim script runs long — verbatim length follows the script)
 - **Triggers:** "make me a launch video for X", "promo for our website", "explain my SaaS in a minute", "feature reveal for X.com", "marketing video for our product", "I have a script — turn it into a 60s promo", "here's my launch script for <brand>, our site is <name>", "use my script word-for-word as the voiceover", "make a text-only launch video, no website / don't scrape anything"
-- **Do NOT use for:** pure-text explainers about a topic / concept with **no product** (→ `/faceless-explainer`) — note a script that _names a product or its site_ is PLV, not faceless, even when no URL is pasted; a GitHub PR / code-change explainer (→ `/pr-to-video`); re-editing existing video footage (→ `/footage-recut`); anything clearly over ~2 min (tutorials, deep dives → `/general-video`); customer interviews, motion graphics without a product context, static brand assets (a short product promo, even 15-30 s, is still PLV — length is not the gate, the product intent is)
+- **Do NOT use for:** pure-text explainers about a topic / concept with **no product** (→ `/faceless-explainer`) — note a script that _names a product or its site_ is PLV, not faceless, even when no URL is pasted; a GitHub PR / code-change explainer (→ `/pr-to-video`); re-editing existing video footage (→ `/footage-recut`); anything clearly over ~3 min (tutorials, deep dives → `/general-video`); customer interviews, motion graphics without a product context, static brand assets (a short product promo, even 15-30 s, is still PLV — length is not the gate, the product intent is)
 
 ### `/faceless-explainer`
 
 - **Input:** Arbitrary text — a topic line, an article, notes, or a brief — being **explained**, with **no product being marketed and no site to capture**. (If the text names a product or its site, that is `/product-launch-video`, which can resolve + crawl the site — even when no URL is pasted.) Forked from `/product-launch-video`; the input phase needs no website scrape (no headless Chrome for input)
-- **Output:** faceless explainer video as a HyperFrames composition rendered to MP4 — **up to ~2 min** (sweet spot ~60-90s). Every visual is LLM-invented per scene (typography / abstract graphics / diagram / data-viz); ships the `pin-and-paper` style preset
+- **Output:** faceless explainer video as a HyperFrames composition rendered to MP4 — **up to ~3 min** (sweet spot ~60-90s). Every visual is LLM-invented per scene (typography / abstract graphics / diagram / data-viz); ships the `pin-and-paper` style preset
 - **Triggers:** "make a faceless explainer about X", "explain how DNS works as a video", "turn this article into an explainer video", "video explaining [concept], no product", "topic → short educational video", "explainer from my notes"
-- **Do NOT use for:** anything centered on a specific product / company being marketed, or a script that _names_ a product site even without a pasted URL (→ `/product-launch-video`, which web-searches + crawls it); a request that supplies a URL — a product site (→ `/product-launch-video`) or a GitHub PR (→ `/pr-to-video`); re-editing existing video footage (→ `/footage-recut`); anything clearly over ~2 min (tutorials, deep dives → `/general-video`); product ad / promo formats (→ `/product-launch-video`); videos that need real screenshots or scraped brand assets (a short explainer, even under 30 s, is still faceless — length is not the gate, the explain-a-topic intent is)
+- **Do NOT use for:** anything centered on a specific product / company being marketed, or a script that _names_ a product site even without a pasted URL (→ `/product-launch-video`, which web-searches + crawls it); a request that supplies a URL — a product site (→ `/product-launch-video`) or a GitHub PR (→ `/pr-to-video`); re-editing existing video footage (→ `/footage-recut`); anything clearly over ~3 min (tutorials, deep dives → `/general-video`); product ad / promo formats (→ `/product-launch-video`); a **pre-recorded / user-supplied voiceover or other media to time visuals to** — faceless invents every visual and generates its own narration (TTS), it does not sync to supplied audio (→ `/general-video`); videos that need real screenshots or scraped brand assets (a short explainer, even under 30 s, is still faceless — length is not the gate, the explain-a-topic intent is)
 
 ### `/footage-recut`
 
 - **Input:** An existing **local video file** (MP4, any aspect / duration / fps) the user wants re-edited / repurposed — actual footage, not a URL or a text brief. Ingested with the `vtake` CLI (extract + transcribe); no website scrape, no headless Chrome.
-- **Output:** The same footage re-rendered with transcript-synced, AI-designed HTML info-card overlays (the source video plays as a background layer). **Any length** — short reel to hour-long talk.
+- **Output:** The same footage with an HTML card layer added on top (transcript-synced, AI-designed) — the source video plays **unchanged** as a background layer; the workflow only overlays, it never alters the source stream. **Any length** — short reel to hour-long talk.
 - **Triggers:** "recut my webinar/talk/podcast into a card video", "repurpose this recording", "add info cards / annotations to my video", "turn my screen recording into a styled edit", "二次剪辑这段视频", "给我的录像叠卡片重剪"
-- **Do NOT use for:** generating a video from a URL (→ `/product-launch-video`); generating from a topic / article / text with no source footage (→ `/faceless-explainer`); a GitHub PR (→ `/pr-to-video`); a request with no existing video to transform
+- **Do NOT use for:** generating a video from a URL (→ `/product-launch-video`); generating from a topic / article / text with no source footage (→ `/faceless-explainer`); a GitHub PR (→ `/pr-to-video`); a request with no existing video to transform; **editing the footage itself** rather than annotating on top of it — re-timing, recoloring, reframing/cropping, reordering, audio replacement (this is NLE editing, out of scope — see § What HyperFrames cannot do); footage that does not exist yet and would have to be recorded/captured first (HyperFrames cannot record — ask the user to supply it)
 
 ### `/pr-to-video`
 
 - **Input:** A **GitHub pull request** — a code change, given as a PR URL (`github.com/<owner>/<repo>/pull/<N>`), an `owner/repo#N` ref, or "this PR" in a checked-out repo. A URL, but a **PR link** read via the `gh` CLI — NOT a marketing site to scrape.
-- **Output:** code-change explainer — **up to ~2 min** (sweet spot ~30-90s) — (changelog / feature-reveal / fix-explainer / refactor-walkthrough) — diff highlights, before/after, file-tree and impact scenes
+- **Output:** code-change explainer — **up to ~3 min** (sweet spot ~30-90s) — (changelog / feature-reveal / fix-explainer / refactor-walkthrough) — diff highlights, before/after, file-tree and impact scenes
 - **Triggers:** "make a video about this PR", "turn PR #1187 into a changelog video", "explain what this pull request does as a video", "release-notes video from github.com/org/repo/pull/123", "把这个 PR 做成视频"
 - **Do NOT use for:** a product / marketing website URL (→ `/product-launch-video`); a topic / article / text with no PR (→ `/faceless-explainer`); existing video footage (→ `/footage-recut`); a whole-repo tour or multi-PR release (no workflow yet → 通用)
 
 ### `/remotion-to-hyperframes`
 
-- **Input:** An existing **Remotion** (React) video composition's source — the user explicitly asks to port / convert / migrate / rewrite it as HyperFrames. This is NOT a creation-from-input workflow.
+- **Input:** An existing **Remotion** (React) video composition's source — the user explicitly asks to port / convert / migrate / rewrite it as HyperFrames. **Direction is one-way** (Remotion → HyperFrames) and specific to the _Remotion framework_; this is NOT a creation-from-input workflow.
 - **Output:** A HyperFrames HTML composition translated from the Remotion source, graded against the Remotion render with an SSIM eval harness + tiered test corpus
 - **Triggers:** "port my Remotion project to HyperFrames", "convert this Remotion comp", "migrate from Remotion", "rewrite this as HyperFrames HTML"
-- **Do NOT use for:** authoring a NEW composition (even while A/B-testing a Remotion video), a passing mention of Remotion, or "the same video as my Remotion one" without an explicit migrate request (→ creation workflows / `/hyperframes-core`)
+- **Do NOT use for:** authoring a NEW composition (even while A/B-testing a Remotion video), a passing mention of Remotion, or "the same video as my Remotion one" without an explicit migrate request (→ creation workflows / `/hyperframes-core`); the **reverse direction** — exporting HyperFrames back out to Remotion or any other framework (out of scope, see § What HyperFrames cannot do); a **non-Remotion** React / web-animation source (no Remotion source to translate → re-create it via `/general-video`)
 
 ### `/general-video`
 

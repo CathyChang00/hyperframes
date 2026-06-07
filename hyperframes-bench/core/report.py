@@ -55,7 +55,8 @@ def write_report(out_dir, results, agg, cfg, manifest):
     # three buckets that actually answer "is routing good"
     routeable = [r for r in results if _expected(r) in workflows]   # should pick a workflow
     graded = [r for r in routeable if _verdict(r) not in EXCLUDED]   # a routing decision was observed
-    route_ok = [r for r in graded if _verdict(r) == "correct"]
+    # pass = routed to the right workflow, OR correctly asked for an input the bench didn't supply
+    route_ok = [r for r in graded if _verdict(r) in ("correct", "asked_ok")]
     oos = [r for r in results if _expected(r) == "out-of-scope"]     # should decline
     oos_ok = [r for r in oos if _verdict(r) == "oos_ok"]
     vague = [r for r in results if _expected(r) == "clarify"]        # should ask

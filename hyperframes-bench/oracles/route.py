@@ -1,8 +1,11 @@
 """route oracle — did the agent route to the expected workflow?
 
-verdict ∈ {correct, soft, competitor, miss, unavailable, unparsed, inline, clarify_ok, oos_ok}
+verdict ∈ {correct, asked_ok, soft, competitor, miss, unavailable, unparsed, inline, clarify_ok, oos_ok}
 
   correct     observed workflow == expected (invoked the Skill, or named it AFFIRMATIVELY)
+  asked_ok    in-scope request whose referenced input was NOT supplied, and the agent asked for
+              it instead of routing — correct behaviour (per project rule: asking for a missing
+              input counts as correct; no need to pre-stage the asset). Counted as good.
   competitor  a competitor skill (remotion / video-use) won the route
   miss        a real routing failure. The kind is recorded in `kind`:
                 overreach      — reached for a HF workflow on an out-of-scope request
@@ -82,7 +85,14 @@ def _looks_like_decline(parsed):
             "i can't", "i cannot", "i'm unable", "im unable", "unable to", "not able to",
             "isn't something", "not within", "outside the scope", "out of the scope",
             "no way to", "there's no workflow", "there is no workflow", "no workflow that",
-            "not a video", "isn't a video")
+            "not a video", "isn't a video",
+            # broadened 2026-06-06: decline-by-redirect to an external NLE, and the
+            # "outside what my (available) tools can do" phrasing the agent uses for footage
+            # edits the overlay-only workflow can't perform. Caught a clean decline that named
+            # a workflow ("the footage-recut skill only overlays … it cannot re-time") and was
+            # therefore mis-read as a route.
+            "outside what", "nle-style", "nle editing", "dedicated video editor",
+            "a video editor", "use a dedicated", "would need a", "you'd need a")
     return any(c in tl for c in cues)
 
 
@@ -186,8 +196,13 @@ def score(parsed, expect, installed, cfg):
         return out("unavailable", route, f"expected skill '{expected}' not installed in this env")
 
     if expected == "clarify":
-        if route is None and response == "clarify":
-            return out("clarify_ok", None, "asked a clarifying question instead of routing (expected)")
+        # A genuine AskUserQuestion tool call IS the expected behaviour for an under-specified
+        # request — credit it even if the agent also loaded a workflow Skill to see what it needs.
+        # Headless denies the tool, so its presence in the trace means the agent really tried to
+        # ask the user before committing; that is the right move, not a premature route.
+        asked_q = "AskUserQuestion" in (parsed.get("tools_used") or [])
+        if asked_q or (route is None and (response == "clarify" or ami)):
+            return out("clarify_ok", route, "asked a clarifying question instead of committing (expected)")
         if route is not None:
             return out("miss", route, "routed when the request was under-specified", kind="premature")
         if built_inline:
@@ -206,6 +221,10 @@ def score(parsed, expect, installed, cfg):
 
     # expected is a concrete workflow
     if route is None:
+        if ami:
+            # the prompt referenced an input the bench never supplied; asking for it is the
+            # correct move (project rule: no need to pre-stage the asset — asking counts).
+            return out("asked_ok", None, "asked for the missing input the prompt referenced but never supplied (correct)")
         if response == "clarify":
             return out("soft", None, "clarified instead of routing a clear request")
         if response == "refuse":

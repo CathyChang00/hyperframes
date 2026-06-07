@@ -11,7 +11,7 @@ from core import load_json, load_jsonl
 import oracles as oracle_pkg
 
 DEFAULT_ORACLES = ["route", "router_first", "intent"]
-GOOD = {"correct", "clarify_ok", "oos_ok"}          # "the agent did the right thing"
+GOOD = {"correct", "clarify_ok", "oos_ok", "asked_ok"}   # "the agent did the right thing"
 # "no fair routing decision observed" → excluded from accuracy (NOT counted as a failure):
 # capability absent / agent built it inline / oracle couldn't read a decision. The real
 # routing failures (miss, competitor, soft) are everything that is neither GOOD nor excluded.
@@ -27,7 +27,7 @@ def _bucket(v):
 # invoked at all = "accept", regardless of which one.
 _VERDICT_TO_RESPONSE = {
     "correct": "accept", "miss": "accept", "competitor": "accept",
-    "clarify_ok": "clarify", "soft": "clarify",
+    "clarify_ok": "clarify", "soft": "clarify", "asked_ok": "clarify",
     "oos_ok": "refuse",
     # unavailable / inline / unparsed -> no scope decision observed (excluded)
 }
