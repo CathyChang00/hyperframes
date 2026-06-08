@@ -1,6 +1,6 @@
 ---
 name: hyperframes-media
-description: Asset preprocessing for HyperFrames compositions — text-to-speech narration (Kokoro), audio/video transcription (Whisper), interview/talking-head recut planning, and background removal for transparent overlays (u2net). Use when generating voiceover from text, transcribing speech for captions, cutting or reorganizing raw interview/口播 footage from transcripts, removing the background from a video or image to use as a transparent overlay, choosing a TTS voice or whisper model, or chaining these (TTS → transcribe → captions). Each command downloads its own model on first run.
+description: Asset preprocessing for HyperFrames compositions — text-to-speech narration (Kokoro), audio/video transcription (Whisper), 访谈/口播素材转写后的重组剪辑规划, and background removal for transparent overlays (u2net). Use when generating voiceover from text, transcribing speech for captions, cutting or reorganizing raw interview/口播 footage from transcripts, removing the background from a video or image to use as a transparent overlay, choosing a TTS voice or whisper model, or chaining these (TTS → transcribe → captions). Each command downloads its own model on first run.
 ---
 
 # HyperFrames Media Preprocessing
@@ -100,30 +100,30 @@ Compositions consume a flat array of word objects. The `id` field (`w0`, `w1`, .
 ]
 ```
 
-### Interview / Talking-Head Recut Workflow
+### 访谈 / 口播重剪 Workflow
 
-Use this when the user gives raw interview, street-interview, podcast, or 口播 footage and asks to cut by meaning rather than by simple time ranges.
+当用户给原始访谈、街采、podcast、真人口播素材，并且想按观点逻辑重剪，而不是简单按时间裁切时，用这套流程。
 
-1. **Transcribe first, then plan.** Do not jump straight to export. Create a readable transcript with timestamps, identify speakers, and tell the user when the transcript is machine-generated or manually corrected.
-2. **Find the host's throughline even if the host will be cut.** In interview footage, the interviewer often carries the structure. If the final cut removes the host, still use the host questions to infer the real question being answered.
-3. **Split the guest at sentence level.** Do not treat Whisper blocks or transcript paragraphs as final edit units. Break the guest's answer into sentence-level or claim-level segments: conclusion, evidence, exception, example, caveat, filler, topic shift.
-4. **Rebuild around a single thesis.** Start with the clearest direct answer, then attach the strongest immediate reason. Example pattern: conclusion → personal evidence → why the credential/title is not scarce → what actually matters → examples/exceptions → practical takeaway.
-5. **Delete filler by function, not by word alone.** Remove repeated setup like "again I don't think" when it adds no new claim. Keep imperfect speech if it is needed to preserve meaning or continuity.
-6. **Keep examples only when they serve the thesis.** A named example is useful when it clarifies the argument. Cut examples that pull the video into a different topic, even if the sentence sounds interesting.
-7. **Ask for approval before exporting when logic is being reorganized.** For subjective reordering, give the user a paper edit first: exact source time ranges, proposed order, keep/delete rationale, and optional endings. Export only after the user approves key lines and order.
-8. **After export, verify the technical basics.** Check duration, video dimensions, codec/audio, run a decode pass, and inspect a frame when rotation or portrait/landscape handling could be wrong.
+1. **先转写，再规划。** 不要直接导出剪辑版。先做带时间戳的可读 transcript，标出说话人，并说明 transcript 是机器转写还是已经人工校正过。
+2. **即使最后删掉主持人，也要先找主持人的主线。** 访谈里经常是主持人在维持问题结构。最终成片可以完全裁掉主持人，但剪辑前必须先用主持人的问题判断真正要回答的问题是什么。
+3. **把嘉宾按句子级别拆开。** 不要把 Whisper block 或 transcript 大段当成剪辑单位。把嘉宾回答拆成 sentence-level / claim-level segments：结论、论据、例外、案例、补充、口水词、跑题转向。
+4. **围绕一个主论点重组。** 开头先放最直接的回答，再接最强的直接理由。常见结构是：结论 → 个人证据 → 为什么 title/credential 不稀缺 → 真正重要的是什么 → 例子/例外 → 可执行 takeaway。
+5. **删口水词要看功能，不是只看词本身。** 例如 "again I don't think" 如果没有新增信息就删；但如果一句话虽然不完美，却承载了必要含义或转场，就保留。
+6. **案例只有服务主线才留。** named example 有用的前提是它能解释观点；如果一个例子听起来有意思但把视频带到另一个 topic，就删掉或另做一条视频。
+7. **涉及逻辑重排时，必须先让用户审批。** 先给 paper edit：精确 source time range、建议顺序、保留/删除理由、可选结尾。等用户确认关键句和顺序后，再导出视频。
+8. **导出后必须做技术检查。** 检查时长、分辨率、codec/audio，跑一遍 decode pass；如果原片有横竖屏旋转信息，必须抽帧确认人物没有被拉伸。
 
-For Cathy-style interview recuts, prefer this interaction:
+Cathy 的访谈口播剪辑默认交互流程：
 
-1. Transcript.
-2. Host hidden outline.
-3. Guest sentence-level claims.
-4. Proposed keep/delete/reorder plan.
-5. User approval.
-6. Rendered cut.
-7. Technical verification and a short notes file.
+1. Transcript。
+2. 主持人的 hidden outline。
+3. 嘉宾逐句 claim 拆分。
+4. 建议保留/删除/重排方案。
+5. 用户审批。
+6. 导出剪辑版。
+7. 技术检查 + 简短 notes 文件。
 
-Example opening logic from a VC-experience interview:
+例子：VC 经历这段的开头顺序应该是：
 
 ```text
 I don't think the VC experience was that helpful.
@@ -135,7 +135,7 @@ So many people have worked at a VC firm.
 I still feel like it's more important what you did at those roles, at those experiences, instead of the title or the firm.
 ```
 
-This works because the "many people have worked in VC" line is the reason the title is weak, so it belongs next to "the title doesn't really do much," not later as a separate topic.
+这组顺序成立，是因为 "So many people have worked at a VC firm" 是在解释为什么 "the title doesn't really do much"。它应该贴在 title 那句后面，而不是放到后面当成一个新 topic。
 
 ## Background Removal (`remove-background`)
 
