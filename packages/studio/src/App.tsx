@@ -35,6 +35,9 @@ import type { DomEditSelection } from "./components/editor/domEditing";
 import { AskAgentModal } from "./components/AskAgentModal";
 import { StudioGlobalDragOverlay } from "./components/StudioGlobalDragOverlay";
 import { StudioHeader } from "./components/StudioHeader";
+import { useGestureRecording } from "./hooks/useGestureRecording";
+import { simplifyGestureSamples } from "./utils/rdpSimplify";
+import { GestureTrailOverlay } from "./components/editor/GestureTrailOverlay";
 import { StudioLeftSidebar } from "./components/StudioLeftSidebar";
 import { StudioPreviewArea } from "./components/StudioPreviewArea";
 import { StudioRightPanel } from "./components/StudioRightPanel";
@@ -128,7 +131,7 @@ export function StudioApp() {
       return !v;
     });
   }, []);
-  const { appToast, showToast } = useToast();
+  const { appToast, showToast, dismissToast } = useToast();
   const panelLayout = usePanelLayout({
     rightCollapsed: initialUrlStateRef.current.rightCollapsed,
     rightPanelTab: initialUrlStateRef.current.rightPanelTab,
@@ -306,7 +309,9 @@ export function StudioApp() {
     onResetKeyframes: () => resetKeyframesRef.current(),
     onDeleteSelectedKeyframes: () => deleteSelectedKeyframesRef.current(),
     onAfterUndoRedo: () => invalidateGsapCacheRef.current(),
+    onToggleRecording: () => handleToggleRecordingRef.current(),
   });
+  const handleToggleRecordingRef = useRef(() => {});
   const selectSidebarTabStable = useCallback(
     (tab: SidebarTab) => leftSidebarRef.current?.selectTab(tab),
     [],
@@ -399,6 +404,76 @@ export function StudioApp() {
   } = useConsoleErrorCapture(previewIframe);
 
   const dragOverlay = useDragOverlay(fileManager.handleImportFiles);
+
+  // Gesture recording
+  const gestureRecording = useGestureRecording();
+  const [gestureState, setGestureState] = useState<"idle" | "recording">("idle");
+  const recordingAutoStopRef = useRef<ReturnType<typeof setInterval>>(undefined);
+  const recordingStartTimeRef = useRef(0);
+
+  const stopAndCommitRecording = useCallback(() => {
+    clearInterval(recordingAutoStopRef.current);
+    gestureRecording.stopRecording();
+    const store = usePlayerStore.getState();
+    store.setIsPlaying(false);
+
+    const sel = domEditSession.domEditSelection;
+    const animId = domEditSession.selectedGsapAnimations?.[0]?.id;
+    const samples = gestureRecording.samples;
+    const duration = gestureRecording.recordingDuration;
+
+    if (sel && animId && samples.length > 2 && duration > 0) {
+      const simplified = simplifyGestureSamples(samples, duration, 5);
+      const sortedPcts = Array.from(simplified.keys()).sort((a, b) => a - b);
+      for (const pct of sortedPcts) {
+        const props = simplified.get(pct);
+        if (!props) continue;
+        for (const [prop, value] of Object.entries(props)) {
+          domEditSession.handleGsapAddKeyframe?.(animId, pct, prop, value);
+        }
+      }
+      showToast(`Recorded ${sortedPcts.length} keyframes`, "info");
+    }
+
+    store.requestSeek(recordingStartTimeRef.current);
+    gestureRecording.clearSamples();
+    setGestureState("idle");
+  }, [gestureRecording, domEditSession, showToast]);
+
+  const handleToggleRecording = useCallback(() => {
+    if (gestureState === "recording") {
+      stopAndCommitRecording();
+      return;
+    }
+    const sel = domEditSession.domEditSelection;
+    if (!sel) {
+      showToast("Select an element first", "error");
+      return;
+    }
+    const iframe = previewIframeRef.current;
+    if (!iframe) return;
+
+    const store = usePlayerStore.getState();
+    recordingStartTimeRef.current = store.currentTime;
+    gestureRecording.startRecording(sel.element, iframe);
+    store.setIsPlaying(true);
+    setGestureState("recording");
+
+    clearInterval(recordingAutoStopRef.current);
+    recordingAutoStopRef.current = setInterval(() => {
+      const { currentTime: t, duration: d } = usePlayerStore.getState();
+      if (d > 0 && t >= d - 0.05) {
+        stopAndCommitRecording();
+      }
+    }, 100);
+  }, [
+    gestureState,
+    gestureRecording,
+    domEditSession.domEditSelection,
+    showToast,
+    stopAndCommitRecording,
+  ]);
+  handleToggleRecordingRef.current = handleToggleRecording;
 
   const handlePreviewIframeRef = useCallback(
     (iframe: HTMLIFrameElement | null) => {
@@ -554,6 +629,9 @@ export function StudioApp() {
                       setActiveBlockParams(null);
                       panelLayout.setRightPanelTab("design");
                     }}
+                    recordingState={gestureState}
+                    recordingDuration={gestureRecording.recordingDuration}
+                    onToggleRecording={handleToggleRecording}
                   />
                 )}
               </div>
@@ -585,8 +663,24 @@ export function StudioApp() {
                 />
               )}
 
+              {gestureState === "recording" && previewIframe && (
+                <GestureTrailOverlay
+                  samples={gestureRecording.samples}
+                  canvasRect={(() => {
+                    const r = previewIframe.getBoundingClientRect();
+                    return { left: r.left, top: r.top, width: r.width, height: r.height };
+                  })()}
+                  mode="recording"
+                />
+              )}
               {dragOverlay.active && <StudioGlobalDragOverlay />}
-              {appToast && <StudioToast message={appToast.message} tone={appToast.tone} />}
+              {appToast && (
+                <StudioToast
+                  message={appToast.message}
+                  tone={appToast.tone}
+                  onDismiss={dismissToast}
+                />
+              )}
             </div>
           </DomEditProvider>
         </FileManagerProvider>

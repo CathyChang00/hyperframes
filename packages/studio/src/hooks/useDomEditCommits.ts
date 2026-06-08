@@ -101,6 +101,8 @@ export interface UseDomEditCommitsParams {
   projectIdRef: React.MutableRefObject<string | null>;
   reloadPreview: () => void;
 
+  onCommitAnimatedOffset?: (selection: DomEditSelection, next: { x: number; y: number }) => void;
+
   // From useDomSelection
   domEditSelection: DomEditSelection | null;
   applyDomSelection: (
@@ -130,6 +132,7 @@ export function useDomEditCommits({
   projectId,
   projectIdRef,
   reloadPreview,
+  onCommitAnimatedOffset,
   domEditSelection,
   applyDomSelection,
   clearDomSelection,
@@ -321,13 +324,16 @@ export function useDomEditCommits({
   const handleDomPathOffsetCommit = useCallback(
     (selection: DomEditSelection, next: { x: number; y: number }) => {
       applyStudioPathOffset(selection.element, next);
-      if (isElementGsapTargeted(previewIframeRef.current, selection.element)) return;
+      if (isElementGsapTargeted(previewIframeRef.current, selection.element)) {
+        onCommitAnimatedOffset?.(selection, next);
+        return;
+      }
       commitPositionPatchToHtml(selection, buildPathOffsetPatches(selection.element), {
         label: "Move layer",
         coalesceKey: `path-offset:${getDomEditTargetKey(selection)}`,
       });
     },
-    [commitPositionPatchToHtml, previewIframeRef],
+    [commitPositionPatchToHtml, previewIframeRef, onCommitAnimatedOffset],
   );
 
   const handleDomGroupPathOffsetCommit = useCallback(

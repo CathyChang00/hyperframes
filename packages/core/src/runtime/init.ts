@@ -1002,24 +1002,11 @@ export function initSandboxRuntimeModular(): void {
     });
     // Stamp data-start / data-duration on GSAP-targeted elements that lack
     // them so the Studio timeline can discover individual animated elements.
-    // Skip elements whose ancestor already carries timing — stamping them
-    // would override the parent's clip visibility and cause preview/render
-    // parity drift.
     {
       const rootComp = resolveRootCompositionElement();
       const rootDuration = boundDuration > 0 ? boundDuration : 0;
       const dur = String(rootDuration > 0 ? rootDuration : 1);
       const seen = new Set<Element>();
-
-      const hasTimedAncestor = (el: HTMLElement): boolean => {
-        let cursor = el.parentElement;
-        while (cursor) {
-          if (cursor.hasAttribute("data-start")) return true;
-          if (cursor === rootComp) return false;
-          cursor = cursor.parentElement;
-        }
-        return false;
-      };
 
       // Stamp GSAP-targeted elements
       if (state.capturedTimeline.getChildren) {
@@ -1030,7 +1017,6 @@ export function initSandboxRuntimeModular(): void {
               if (!(target instanceof HTMLElement)) continue;
               if (target === rootComp) continue;
               if (target.hasAttribute("data-start")) continue;
-              if (hasTimedAncestor(target)) continue;
               if (seen.has(target)) continue;
               seen.add(target);
               target.setAttribute("data-start", "0");
@@ -1050,7 +1036,6 @@ export function initSandboxRuntimeModular(): void {
           if (!(el instanceof HTMLElement)) continue;
           if (el === rootComp) continue;
           if (el.hasAttribute("data-start")) continue;
-          if (hasTimedAncestor(el)) continue;
           if (seen.has(el)) continue;
           if (el.tagName === "SCRIPT" || el.tagName === "STYLE" || el.tagName === "LINK") continue;
           seen.add(el);

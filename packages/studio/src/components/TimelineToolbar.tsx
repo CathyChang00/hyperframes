@@ -155,6 +155,22 @@ function useKeyframeToggle(session?: DomEditSessionSlice) {
           }
         } else if (flatAnim) {
           session.handleGsapConvertToKeyframes(flatAnim.id);
+          const elStart = Number.parseFloat(sel.dataAttributes?.start ?? "0") || 0;
+          const elDuration = Number.parseFloat(sel.dataAttributes?.duration ?? "1") || 1;
+          const pct =
+            elDuration > 0
+              ? Math.max(0, Math.min(100, Math.round(((t - elStart) / elDuration) * 1000) / 10))
+              : 0;
+          if (pct > 1 && pct < 99) {
+            const runtimeValues = readRuntimeKeyframeValues(
+              session.previewIframeRef?.current ?? null,
+              sel,
+              [],
+            );
+            for (const [prop, val] of Object.entries(runtimeValues)) {
+              session.handleGsapAddKeyframe(flatAnim.id, pct, prop, val);
+            }
+          }
         } else {
           session.handleGsapAddAnimation("to");
         }

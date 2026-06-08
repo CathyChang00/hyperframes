@@ -216,6 +216,12 @@ export function scanAllRuntimeKeyframes(iframe: HTMLIFrameElement | null): Map<
 
   for (const entry of result.values()) {
     entry.keyframes.sort((a, b) => a.percentage - b.percentage);
+    const seen = new Set<number>();
+    entry.keyframes = entry.keyframes.filter((kf) => {
+      if (seen.has(kf.percentage)) return false;
+      seen.add(kf.percentage);
+      return true;
+    });
   }
   return result;
 }

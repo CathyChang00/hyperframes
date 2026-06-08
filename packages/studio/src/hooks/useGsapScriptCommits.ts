@@ -164,34 +164,24 @@ export function useGsapScriptCommits({
         });
       }
 
-      onCacheInvalidate();
-
       if (result.after != null) {
         onFileContentChanged?.(targetPath, result.after);
       }
 
+      if (options.skipReload) return;
+
+      onCacheInvalidate();
+
       if (result.parsed?.animations) {
         const { setKeyframeCache } = usePlayerStore.getState();
-        const idsWithKeyframes = new Set<string>();
         for (const anim of result.parsed.animations) {
           const id = anim.targetSelector.match(/^#([\w-]+)/)?.[1];
-          if (!id) continue;
-          if (anim.keyframes) {
-            idsWithKeyframes.add(id);
-            setKeyframeCache(`${targetPath}#${id}`, anim.keyframes);
-            if (targetPath !== "index.html") setKeyframeCache(`index.html#${id}`, anim.keyframes);
-          }
-        }
-        const targetId =
-          (mutation as { targetSelector?: string }).targetSelector?.match(/^#([\w-]+)/)?.[1] ??
-          selection.id;
-        if (targetId && !idsWithKeyframes.has(targetId)) {
-          setKeyframeCache(`${targetPath}#${targetId}`, undefined);
-          if (targetPath !== "index.html") setKeyframeCache(`index.html#${targetId}`, undefined);
+          if (!id || !anim.keyframes) continue;
+          setKeyframeCache(`${targetPath}#${id}`, anim.keyframes);
+          setKeyframeCache(id, anim.keyframes);
+          if (targetPath !== "index.html") setKeyframeCache(`index.html#${id}`, anim.keyframes);
         }
       }
-
-      if (options.skipReload) return;
 
       options.beforeReload?.();
 

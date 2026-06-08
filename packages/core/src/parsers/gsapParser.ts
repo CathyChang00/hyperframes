@@ -1291,10 +1291,25 @@ export function addKeyframeToScript(
   ease?: string,
   backfillDefaults?: Record<string, number | string>,
 ): string {
-  const loc = locateAnimation(script, animationId);
+  let loc = locateAnimation(script, animationId);
+  if (!loc) {
+    const convertedId = animationId.replace(/-from-|-fromTo-/, "-to-");
+    loc = locateAnimation(script, convertedId);
+  }
   if (!loc) return script;
-  const kfNode = findKeyframesObjectNode(loc.target.call.varsArg);
-  if (!kfNode) return script;
+  let kfNode = findKeyframesObjectNode(loc.target.call.varsArg);
+
+  if (!kfNode) {
+    script = convertToKeyframesInScript(script, animationId);
+    loc = locateAnimation(script, animationId);
+    if (!loc) {
+      const convertedId = animationId.replace(/-from-|-fromTo-/, "-to-");
+      loc = locateAnimation(script, convertedId);
+    }
+    if (!loc) return script;
+    kfNode = findKeyframesObjectNode(loc.target.call.varsArg);
+    if (!kfNode) return script;
+  }
 
   const pctKey = `${percentage}%`;
   const newValueNode = buildKeyframeValueNode(properties, ease);

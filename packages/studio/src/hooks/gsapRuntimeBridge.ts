@@ -249,13 +249,9 @@ async function commitGsapPositionFromDrag(
       callbacks,
       clearOffset,
     );
-  } else if (anim.method === "from") {
-    await commitFromPosition(selection, anim, studioOffset, callbacks, clearOffset);
-  } else if (anim.method === "fromTo") {
-    await commitFromToPosition(selection, anim, studioOffset, callbacks, clearOffset);
   } else {
-    // Flat to()/set() — convert to keyframes first so the drag position
-    // is captured at the current seek time, not just the tween endpoint.
+    // Flat to()/from()/fromTo()/set() — convert to keyframes first so the
+    // drag position is captured at the current seek time as a new keyframe.
     const runtimeProps = readAllAnimatedProperties(iframe, selector, anim);
     await commitFlatViaKeyframes(
       selection,
@@ -319,65 +315,6 @@ async function commitFlatViaKeyframes(
       properties,
     },
     { label: `Move layer (keyframe ${pct}%)`, softReload: true, beforeReload },
-  );
-}
-
-async function commitFromPosition(
-  selection: DomEditSelection,
-  anim: GsapAnimation,
-  delta: { x: number; y: number },
-  callbacks: GsapDragCommitCallbacks,
-  beforeReload: () => void,
-): Promise<void> {
-  const fromX = Math.round(Number(anim.properties.x ?? 0) + delta.x);
-  const fromY = Math.round(Number(anim.properties.y ?? 0) + delta.y);
-
-  await callbacks.commitMutation(
-    selection,
-    { type: "update-property", animationId: anim.id, property: "x", value: fromX },
-    { label: "Move layer (GSAP from x)", skipReload: true },
-  );
-  await callbacks.commitMutation(
-    selection,
-    { type: "update-property", animationId: anim.id, property: "y", value: fromY },
-    { label: "Move layer (GSAP from y)", softReload: true, beforeReload },
-  );
-}
-
-// fallow-ignore-next-line complexity
-async function commitFromToPosition(
-  selection: DomEditSelection,
-  anim: GsapAnimation,
-  delta: { x: number; y: number },
-  callbacks: GsapDragCommitCallbacks,
-  beforeReload: () => void,
-): Promise<void> {
-  if (anim.fromProperties) {
-    const fromX = Math.round(Number(anim.fromProperties.x ?? 0) + delta.x);
-    const fromY = Math.round(Number(anim.fromProperties.y ?? 0) + delta.y);
-    await callbacks.commitMutation(
-      selection,
-      { type: "update-from-property", animationId: anim.id, property: "x", value: fromX },
-      { label: "Move (GSAP from x)", skipReload: true },
-    );
-    await callbacks.commitMutation(
-      selection,
-      { type: "update-from-property", animationId: anim.id, property: "y", value: fromY },
-      { label: "Move (GSAP from y)", skipReload: true },
-    );
-  }
-
-  const toX = Math.round(Number(anim.properties.x ?? 0) + delta.x);
-  const toY = Math.round(Number(anim.properties.y ?? 0) + delta.y);
-  await callbacks.commitMutation(
-    selection,
-    { type: "update-property", animationId: anim.id, property: "x", value: toX },
-    { label: "Move (GSAP to x)", skipReload: true },
-  );
-  await callbacks.commitMutation(
-    selection,
-    { type: "update-property", animationId: anim.id, property: "y", value: toY },
-    { label: "Move (GSAP to y)", softReload: true, beforeReload },
   );
 }
 

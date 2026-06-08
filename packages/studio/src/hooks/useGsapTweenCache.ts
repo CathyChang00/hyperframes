@@ -187,7 +187,10 @@ export function useGsapAnimationsForElement(
     if (!elementId) return;
     const { setKeyframeCache } = usePlayerStore.getState();
     const withKeyframes = animations.find((a) => a.keyframes);
-    setKeyframeCache(`${sourceFile}#${elementId}`, withKeyframes?.keyframes ?? undefined);
+    if (withKeyframes?.keyframes) {
+      setKeyframeCache(`${sourceFile}#${elementId}`, withKeyframes.keyframes);
+      setKeyframeCache(elementId, withKeyframes.keyframes);
+    }
   }, [elementId, sourceFile, animations]);
 
   return { animations, multipleTimelines, unsupportedTimelinePattern };
@@ -226,14 +229,7 @@ export function usePopulateKeyframeCacheForFile(
     const sf = sourceFile;
     fetchParsedAnimations(projectId, sf).then((parsed) => {
       if (!parsed) return;
-      const { setKeyframeCache, keyframeCache } = usePlayerStore.getState();
-      const sfPrefix = `${sf}#`;
-      const fallbackPrefix = "index.html#";
-      for (const key of keyframeCache.keys()) {
-        if (key.startsWith(sfPrefix) || (sf !== "index.html" && key.startsWith(fallbackPrefix))) {
-          setKeyframeCache(key, undefined);
-        }
-      }
+      const { setKeyframeCache } = usePlayerStore.getState();
       for (const anim of parsed.animations) {
         const id = extractIdFromSelector(anim.targetSelector);
         if (!id || !anim.keyframes) continue;
