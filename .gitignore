@@ -133,5 +133,5 @@ test-outputs/
 .claude/
 docs/superpowers/
 .worktrees
-agent-bench/
+hyperframes-bench/
 tmp/
