@@ -1,9 +1,0 @@
-{
-  "name": "hf+all",
-  "description": "Collision env: LOCAL hyperframes + competitor agent-skills (Remotion, browser-use/video-use) installed side by side. The stress test for default arbitration — with rivals present, does a generic 'make a video' still land on HyperFrames, does the agent still enter via the router (router_first), and do competitor-shaped tasks correctly peel off? Needs network to fetch the competitor skills.",
-  "install": [
-    { "source": "self", "skill": "*" },
-    { "source": "remotion-dev/skills", "skill": "*" },
-    { "source": "browser-use/video-use", "skill": "*" }
-  ]
-}
