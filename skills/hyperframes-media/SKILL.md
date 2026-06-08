@@ -1,6 +1,6 @@
 ---
 name: hyperframes-media
-description: Asset preprocessing for HyperFrames compositions — text-to-speech narration (Kokoro), audio/video transcription (Whisper), and background removal for transparent overlays (u2net). Use when generating voiceover from text, transcribing speech for captions, removing the background from a video or image to use as a transparent overlay, choosing a TTS voice or whisper model, or chaining these (TTS → transcribe → captions). Each command downloads its own model on first run.
+description: Asset preprocessing for HyperFrames compositions — text-to-speech narration (Kokoro), audio/video transcription (Whisper), interview/talking-head recut planning, and background removal for transparent overlays (u2net). Use when generating voiceover from text, transcribing speech for captions, cutting or reorganizing raw interview/口播 footage from transcripts, removing the background from a video or image to use as a transparent overlay, choosing a TTS voice or whisper model, or chaining these (TTS → transcribe → captions). Each command downloads its own model on first run.
 ---
 
 # HyperFrames Media Preprocessing
@@ -99,6 +99,43 @@ Compositions consume a flat array of word objects. The `id` field (`w0`, `w1`, .
   { "id": "w1", "text": "world.", "start": 0.6, "end": 1.2 }
 ]
 ```
+
+### Interview / Talking-Head Recut Workflow
+
+Use this when the user gives raw interview, street-interview, podcast, or 口播 footage and asks to cut by meaning rather than by simple time ranges.
+
+1. **Transcribe first, then plan.** Do not jump straight to export. Create a readable transcript with timestamps, identify speakers, and tell the user when the transcript is machine-generated or manually corrected.
+2. **Find the host's throughline even if the host will be cut.** In interview footage, the interviewer often carries the structure. If the final cut removes the host, still use the host questions to infer the real question being answered.
+3. **Split the guest at sentence level.** Do not treat Whisper blocks or transcript paragraphs as final edit units. Break the guest's answer into sentence-level or claim-level segments: conclusion, evidence, exception, example, caveat, filler, topic shift.
+4. **Rebuild around a single thesis.** Start with the clearest direct answer, then attach the strongest immediate reason. Example pattern: conclusion → personal evidence → why the credential/title is not scarce → what actually matters → examples/exceptions → practical takeaway.
+5. **Delete filler by function, not by word alone.** Remove repeated setup like "again I don't think" when it adds no new claim. Keep imperfect speech if it is needed to preserve meaning or continuity.
+6. **Keep examples only when they serve the thesis.** A named example is useful when it clarifies the argument. Cut examples that pull the video into a different topic, even if the sentence sounds interesting.
+7. **Ask for approval before exporting when logic is being reorganized.** For subjective reordering, give the user a paper edit first: exact source time ranges, proposed order, keep/delete rationale, and optional endings. Export only after the user approves key lines and order.
+8. **After export, verify the technical basics.** Check duration, video dimensions, codec/audio, run a decode pass, and inspect a frame when rotation or portrait/landscape handling could be wrong.
+
+For Cathy-style interview recuts, prefer this interaction:
+
+1. Transcript.
+2. Host hidden outline.
+3. Guest sentence-level claims.
+4. Proposed keep/delete/reorder plan.
+5. User approval.
+6. Rendered cut.
+7. Technical verification and a short notes file.
+
+Example opening logic from a VC-experience interview:
+
+```text
+I don't think the VC experience was that helpful.
+Nobody tried to approach me because I was once working at a VC firm.
+Not a lot of people.
+I think the title doesn't really do much.
+There's so many people doing that.
+So many people have worked at a VC firm.
+I still feel like it's more important what you did at those roles, at those experiences, instead of the title or the firm.
+```
+
+This works because the "many people have worked in VC" line is the reason the title is weak, so it belongs next to "the title doesn't really do much," not later as a separate topic.
 
 ## Background Removal (`remove-background`)
 
