@@ -189,6 +189,20 @@ Pick by drama desired (the choice is discrete; coefficient is implicit):
 
 ## Variations
 
+### Direct `innerText` tween (no proxy object)
+
+The GSAP inspector reads `innerText` directly, so a number-only counter can skip the `state` proxy:
+
+```js
+tl.to(
+  counter,
+  { innerText: TARGET_VALUE, duration: COUNT_DUR, ease: COUNT_EASE, snap: { innerText: 1 } },
+  0,
+);
+```
+
+`snap: { innerText: 1 }` keeps it integer. Keep the proxy-object `onUpdate` form (above) whenever you must **co-drive** font-size, locale formatting (`toLocaleString`), or a suffix in the same tween — `innerText` alone can't do those, and dynamic scale is the whole point of this rule, so the proxy form is the default here.
+
 ### 3D depth entry
 
 Combine with `translateZ` for parallax-style depth on entry:

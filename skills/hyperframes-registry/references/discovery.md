@@ -186,6 +186,7 @@ A code/terminal window that **types a code or shell session per-character**. The
 | -------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `grain-overlay`      | Animated film grain texture overlay                                                                       | texture, grain, overlay, film                    |
 | `shimmer-sweep`      | CSS gradient light sweep for AI accents                                                                   | text, shimmer, highlight, effect                 |
+| `morph-text`         | Gooey text morph cycling an editable word list (SVG threshold + GSAP blur)                                | text, text-effect, typography, morph, gooey      |
 | `grid-pixelate-wipe` | Grid dissolve transition between scenes                                                                   | transition, wipe, grid, pixelate                 |
 | `parallax-zoom`      | Center card scales up to fill the frame while siblings parallax outward (single `--pz-progress` 0→1)      | transition, zoom, parallax, grid, hero           |
 | `parallax-unzoom`    | Reverse of `parallax-zoom` — focus card shrinks from full frame as siblings parallax in (`--pu-progress`) | transition, reveal, unzoom, parallax, grid, hero |

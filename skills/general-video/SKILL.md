@@ -34,7 +34,7 @@ Establish the visual identity first. If the project has a design spec, read it (
 Before writing ANY composition HTML, verify you have ALL FOUR:
 1. **A visual identity** grounded in the spec or `house-style.md` — not invented on the spot. (Reaching for `#333`, `#3b82f6`, or `Roboto`? You skipped it.)
 2. **A one-sentence concept angle** (the "find the angle" step) for anything beyond a trivial edit — not a literal restyle of the prompt words.
-3. **A font pairing from the embed list** (`hyperframes-creative/references/typography.md` → "Fonts that embed") chosen on purpose — not `Inter`/`Helvetica Neue`/`system-ui` by default, and never an un-embedded display font that will silently fall back at render.
+3. **A font pairing from the embed list** (`hyperframes-creative/references/typography.md` → "Fonts that embed") chosen on purpose — not `Inter`/`Helvetica Neue`/`system-ui` by default, and never an un-embedded display font you're just hoping renders (un-bundled names embed only if auto-captured locally — and cloud renders won't capture them).
 4. **A foreground/density plan from `video-composition.md`** — the anchor-to-edges, 8-10-elements, foreground-metadata, background-texture rules. (Centered stack on a flat color with fewer than ~6 elements and no edge-anchored detail? You skipped it — that is the generic tell.)
 </HARD-GATE>
 
