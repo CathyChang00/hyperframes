@@ -30,11 +30,8 @@ function ensureSource(project) {
       && !EXCL.has(path.basename(f, path.extname(f))) && !f.startsWith("index"))
     .map((f) => path.join(project, f));
   let found = cands.sort((a, b) => fs.statSync(b).size - fs.statSync(a).size)[0];
-  if (found) { try { fs.symlinkSync(path.basename(found), src); } catch (e) { fs.copyFileSync(found, src); } }
+  if (found) { try { fs.symlinkSync(path.basename(found), src); } catch { fs.copyFileSync(found, src); } }
   return src;
-}
-function usableWords(d) {
-  return d && Array.isArray(d.words) && d.words.some((w) => w && "start" in w && "end" in w);
 }
 
 function main() {
@@ -49,7 +46,7 @@ function main() {
     try {
       const d = JSON.parse(fs.readFileSync(out, "utf8"));
       if (d && d.words && d.language_code) { console.log("[transcribe] already normalized, skipping"); return; }
-    } catch (e) {}
+    } catch {}
   }
 
   const src = ensureSource(project);

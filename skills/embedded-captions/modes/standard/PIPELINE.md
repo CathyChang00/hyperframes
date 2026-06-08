@@ -27,6 +27,8 @@ the rail stays clean + active-word accent).
 
 ## Pipeline (Standard)
 
+`<project> = videos/<project-name>/` (the workspace-root convention shared with the other video workflows — derive the name from the clip, or use the directory the user named; the cwd stays the workspace root).
+
 ```
 1. hyperframes init <project> --non-interactive --video <video.mp4> --skip-skills
 2. node scripts/matte.cjs <project>          # RVM → frames_fg/*.png  (KEEP RVM)
