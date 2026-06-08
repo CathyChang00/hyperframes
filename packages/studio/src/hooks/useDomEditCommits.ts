@@ -35,6 +35,37 @@ import type { DomEditGroupPathOffsetCommit } from "../components/editor/DomEditO
 import type { EditHistoryKind } from "../utils/editHistory";
 import { useDomEditTextCommits } from "./useDomEditTextCommits";
 
+// ── Helpers ──
+
+type TimelineLike = { getChildren?: (nested: boolean) => Array<{ targets?: () => Element[] }> };
+
+function isElementGsapTargeted(iframe: HTMLIFrameElement | null, element: HTMLElement): boolean {
+  if (!iframe?.contentWindow) return false;
+  let timelines: Record<string, TimelineLike> | undefined;
+  try {
+    timelines = (iframe.contentWindow as Window & { __timelines?: Record<string, TimelineLike> })
+      .__timelines;
+  } catch {
+    return false;
+  }
+  if (!timelines) return false;
+  const id = element.id;
+  for (const tl of Object.values(timelines)) {
+    if (!tl?.getChildren) continue;
+    try {
+      for (const child of tl.getChildren(true)) {
+        if (!child.targets) continue;
+        for (const t of child.targets()) {
+          if (t === element || (id && t.id === id)) return true;
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+  return false;
+}
+
 // ── Types ──
 
 interface RecordEditInput {
@@ -290,12 +321,13 @@ export function useDomEditCommits({
   const handleDomPathOffsetCommit = useCallback(
     (selection: DomEditSelection, next: { x: number; y: number }) => {
       applyStudioPathOffset(selection.element, next);
+      if (isElementGsapTargeted(previewIframeRef.current, selection.element)) return;
       commitPositionPatchToHtml(selection, buildPathOffsetPatches(selection.element), {
         label: "Move layer",
         coalesceKey: `path-offset:${getDomEditTargetKey(selection)}`,
       });
     },
-    [commitPositionPatchToHtml],
+    [commitPositionPatchToHtml, previewIframeRef],
   );
 
   const handleDomGroupPathOffsetCommit = useCallback(
@@ -307,35 +339,38 @@ export function useDomEditCommits({
         .join(":");
       for (const { selection, next } of updates) {
         applyStudioPathOffset(selection.element, next);
+        if (isElementGsapTargeted(previewIframeRef.current, selection.element)) continue;
         commitPositionPatchToHtml(selection, buildPathOffsetPatches(selection.element), {
           label: `Move ${updates.length} layers`,
           coalesceKey: `group-path-offset:${coalesceKey}`,
         });
       }
     },
-    [commitPositionPatchToHtml],
+    [commitPositionPatchToHtml, previewIframeRef],
   );
 
   const handleDomBoxSizeCommit = useCallback(
     (selection: DomEditSelection, next: { width: number; height: number }) => {
       applyStudioBoxSize(selection.element, next);
+      if (isElementGsapTargeted(previewIframeRef.current, selection.element)) return;
       commitPositionPatchToHtml(selection, buildBoxSizePatches(selection.element), {
         label: "Resize layer box",
         coalesceKey: `box-size:${getDomEditTargetKey(selection)}`,
       });
     },
-    [commitPositionPatchToHtml],
+    [commitPositionPatchToHtml, previewIframeRef],
   );
 
   const handleDomRotationCommit = useCallback(
     (selection: DomEditSelection, next: { angle: number }) => {
       applyStudioRotation(selection.element, next);
+      if (isElementGsapTargeted(previewIframeRef.current, selection.element)) return;
       commitPositionPatchToHtml(selection, buildRotationPatches(selection.element), {
         label: "Rotate layer",
         coalesceKey: `rotation:${getDomEditTargetKey(selection)}`,
       });
     },
-    [commitPositionPatchToHtml],
+    [commitPositionPatchToHtml, previewIframeRef],
   );
 
   const handleDomManualEditsReset = useCallback(
@@ -494,6 +529,54 @@ export function useDomEditCommits({
     ],
   );
 
+  const handleDomZIndexReorderCommit = useCallback(
+    (
+      entries: Array<{
+        element: HTMLElement;
+        zIndex: number;
+        id?: string;
+        selector?: string;
+        selectorIndex?: number;
+        sourceFile: string;
+      }>,
+    ) => {
+      if (entries.length === 0) return;
+      const coalesceKey = `z-reorder:${entries.map((e) => e.id ?? e.selector ?? "el").join(":")}`;
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        entry.element.style.zIndex = String(entry.zIndex);
+        const patches: Array<{ type: "inline-style"; property: string; value: string }> = [
+          { type: "inline-style", property: "z-index", value: String(entry.zIndex) },
+        ];
+        try {
+          const win = entry.element.ownerDocument?.defaultView;
+          if (win && win.getComputedStyle(entry.element).position === "static") {
+            entry.element.style.position = "relative";
+            patches.push({ type: "inline-style", property: "position", value: "relative" });
+          }
+        } catch {
+          /* cross-origin or detached — skip */
+        }
+        commitPositionPatchToHtml(
+          {
+            element: entry.element,
+            id: entry.id ?? null,
+            selector: entry.selector,
+            selectorIndex: entry.selectorIndex,
+            sourceFile: entry.sourceFile,
+          } as unknown as DomEditSelection,
+          patches,
+          {
+            label: "Reorder layers",
+            coalesceKey,
+            skipRefresh: i < entries.length - 1,
+          },
+        );
+      }
+    },
+    [commitPositionPatchToHtml],
+  );
+
   return {
     resolveImportedFontAsset,
     handleDomStyleCommit,
@@ -512,5 +595,6 @@ export function useDomEditCommits({
     handleDomMotionCommit,
     handleDomMotionClear,
     handleDomEditElementDelete,
+    handleDomZIndexReorderCommit,
   };
 }

@@ -53,11 +53,10 @@ export const CAPTURE_CALIBRATION_TARGET_MS = 600;
 export const MAX_MEASURED_CAPTURE_COST_MULTIPLIER = 8;
 
 /**
- * CDP protocol timeout used while running calibration. Bounded below
- * the normal `cfg.protocolTimeout` so a wedged BeginFrame calibration
- * times out fast and falls back to screenshot mode (see the
- * `shouldFallbackToScreenshotAfterCalibrationError` path in the
- * sequencer).
+ * CDP protocol timeout used while running calibration. This is a ceiling,
+ * not a floor — a wedged BeginFrame must time out fast so the sequencer
+ * can fall back to screenshot mode via
+ * `shouldFallbackToScreenshotAfterCalibrationError`.
  */
 export const CAPTURE_CALIBRATION_PROTOCOL_TIMEOUT_MS = 30_000;
 
@@ -125,6 +124,18 @@ export function resolveRenderWorkerCount(
     log.warn(
       "[Render] html-in-canvas (drawElementImage) detected — pinning to 1 worker (Chrome concurrency limitation).",
       { requestedWorkers },
+    );
+    return 1;
+  }
+
+  // Low-memory safe profile pins capture to a single worker (unless the user
+  // asked for a specific count) so the pipeline never runs N concurrent
+  // Chrome instances on a constrained host. Kept here, alongside the other
+  // worker-count decisions, so the "why workers=N" log stays coherent across
+  // every path into capture.
+  if (cfg.lowMemoryMode && requestedWorkers === undefined) {
+    log.info(
+      "[Render] Low-memory profile — pinning to 1 capture worker (auto-worker calibration skipped).",
     );
     return 1;
   }
@@ -210,11 +221,15 @@ export async function measureCaptureCostFromSession(
   session: CaptureSession,
   totalFrames: number,
   fps: number,
+  log?: ProducerLogger,
 ): Promise<{ estimate: CaptureCostEstimate; samples: CaptureCalibrationSample[] }> {
   const sampledFrames = selectCaptureCalibrationFrames(totalFrames);
   const samples: CaptureCalibrationSample[] = [];
+  const totalSamples = sampledFrames.length;
 
-  for (const frameIndex of sampledFrames) {
+  for (let i = 0; i < sampledFrames.length; i++) {
+    const frameIndex = sampledFrames[i]!;
+    log?.info(`Calibration: capturing test frame ${i + 1}/${totalSamples}...`);
     const time = frameIndex / fps;
     const startedAt = Date.now();
     const result = await captureFrameToBuffer(session, frameIndex, time);
@@ -224,8 +239,13 @@ export async function measureCaptureCostFromSession(
     });
   }
 
+  const estimate = estimateMeasuredCaptureCostMultiplier(samples);
+  if (estimate.p95Ms !== undefined) {
+    log?.info(`Calibration complete, estimated cost: ${estimate.p95Ms}ms/frame (p95)`);
+  }
+
   return {
-    estimate: estimateMeasuredCaptureCostMultiplier(samples),
+    estimate,
     samples,
   };
 }
@@ -282,6 +302,7 @@ export interface CaptureCalibrationOutcome {
  * the fallback fires (BeginFrame is no longer the active capture mode,
  * so the probe session is no longer reusable).
  */
+// fallow-ignore-next-line complexity
 export async function runCaptureCalibration(input: {
   cfg: EngineConfig;
   fileServer: FileServerHandle;
@@ -322,6 +343,7 @@ export async function runCaptureCalibration(input: {
     sessionDir: string,
     sessionCfg: EngineConfig,
   ): Promise<{ estimate: CaptureCostEstimate; samples: CaptureCalibrationSample[] }> => {
+    log.info("Launching browser for capture calibration...");
     const session = await createCaptureSession(
       fileServer.url,
       sessionDir,
@@ -331,15 +353,32 @@ export async function runCaptureCalibration(input: {
     );
     sessionRef.current = session;
     if (!session.isInitialized) {
-      await initializeSession(session);
+      log.info("Initializing calibration session...");
+      const calInitStart = Date.now();
+      const calHeartbeat = setInterval(() => {
+        const elapsed = ((Date.now() - calInitStart) / 1000).toFixed(1);
+        log.info(`Still waiting for browser initialization... (${elapsed}s elapsed)`);
+      }, 30_000);
+      try {
+        await initializeSession(session);
+      } finally {
+        clearInterval(calHeartbeat);
+      }
     }
     assertNotAborted();
-    const result = await measureCaptureCostFromSession(session, totalFrames, fps);
+    log.info("Calibration session ready, capturing test frames...");
+    const result = await measureCaptureCostFromSession(session, totalFrames, fps, log);
     logCaptureCalibrationResult(result, log);
     return result;
   };
 
   const calibrationCfg = createCaptureCalibrationConfig({ ...cfg, forceScreenshot });
+  log.info("[Render] Calibration config", {
+    protocolTimeout: calibrationCfg.protocolTimeout,
+    parentProtocolTimeout: cfg.protocolTimeout,
+    forceScreenshot,
+    totalFrames,
+  });
   let calibration:
     | { estimate: CaptureCostEstimate; samples: CaptureCalibrationSample[] }
     | undefined;

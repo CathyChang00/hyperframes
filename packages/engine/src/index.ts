@@ -44,6 +44,11 @@ export type {
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 export { resolveConfig, DEFAULT_CONFIG, type EngineConfig } from "./config.js";
+export {
+  getSystemTotalMb,
+  isLowMemorySystem,
+  LOW_MEMORY_TOTAL_MB_THRESHOLD,
+} from "./services/systemMemory.js";
 
 // ── Browser management ─────────────────────────────────────────────────────────
 export {
@@ -183,7 +188,7 @@ export {
   type KeyframeAnalysis,
 } from "./utils/ffprobe.js";
 
-export { downloadToTemp, isHttpUrl } from "./utils/urlDownloader.js";
+export { assertPublicHttpsUrl, downloadToTemp, isHttpUrl } from "./utils/urlDownloader.js";
 export {
   runFfmpeg,
   formatFfmpegError,

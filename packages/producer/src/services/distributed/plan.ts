@@ -743,10 +743,22 @@ export async function plan(
     // Distributed renders fail closed on font-fetch errors so the planDir
     // is content-addressed against deterministic fonts only.
     failClosedFontFetch: config.failClosedFontFetch !== false,
+    // Distributed renders must not capture host-specific system fonts —
+    // the Lambda/worker filesystem won't have the same fonts installed.
+    allowSystemFontCapture: false,
   });
   let compiled = compileResult.compiled;
   const composition = compileResult.composition;
-  const { deviceScaleFactor, forceScreenshot } = compileResult;
+  const { deviceScaleFactor } = compileResult;
+  // Apply the same low-memory mode bump that renderOrchestrator does at
+  // renderOrchestrator.ts:1598-1606 — compileStage does not consult
+  // cfg.lowMemoryMode, so the probe would otherwise see forceScreenshot:false
+  // on a constrained host and launch in beginframe mode (the exact bug #1236
+  // fixed for the in-process path).
+  // TODO: move this bump into compileStage so both call sites simplify and
+  // the rule lives in one place (follow-up; out of scope for #1236 fix).
+  let forceScreenshot = compileResult.forceScreenshot;
+  if (cfg.lowMemoryMode) forceScreenshot = true;
   // composition.{width,height} are the authored page dimensions. The
   // post-supersample output dims are `compileResult.outputWidth/outputHeight`
   // — chunks render at output dims, but planHash + composition.json record
@@ -769,6 +781,7 @@ export async function plan(
     workDir,
     job,
     cfg,
+    forceScreenshot,
     log,
     assertNotAborted,
     compiled,

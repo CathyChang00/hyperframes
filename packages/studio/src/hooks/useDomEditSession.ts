@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { TimelineElement } from "../player";
+import { usePlayerStore } from "../player";
 import {
   STUDIO_INSPECTOR_PANELS_ENABLED,
   STUDIO_GSAP_PANEL_ENABLED,
@@ -16,7 +17,20 @@ import { useDomSelection } from "./useDomSelection";
 import { usePreviewInteraction } from "./usePreviewInteraction";
 import { useDomEditCommits } from "./useDomEditCommits";
 import { useGsapScriptCommits } from "./useGsapScriptCommits";
-import { useGsapAnimationsForElement, useGsapCacheVersion } from "./useGsapTweenCache";
+import {
+  useGsapAnimationsForElement,
+  useGsapCacheVersion,
+  usePopulateKeyframeCacheForFile,
+  fetchParsedAnimations,
+  getAnimationsForElement,
+} from "./useGsapTweenCache";
+import {
+  tryGsapDragIntercept,
+  tryGsapResizeIntercept,
+  tryGsapRotationIntercept,
+} from "./gsapRuntimeBridge";
+import { useAnimatedPropertyCommit } from "./useAnimatedPropertyCommit";
+import { useGsapSelectionHandlers } from "./useGsapSelectionHandlers";
 
 // ── Types ──
 
@@ -194,9 +208,29 @@ export function useDomEditSession({
     onClickToSource,
   });
 
+  // Sync DOM selection → timeline selectedElementId so that clip selection
+  // highlights and diamond playhead fills work on cold-load URL restore.
+  useEffect(() => {
+    if (!domEditSelection?.id) return;
+    const { selectedElementId, elements, setSelectedElementId } = usePlayerStore.getState();
+    const matchKey = elements.find(
+      (el) => el.domId === domEditSelection.id || el.id === domEditSelection.id,
+    );
+    const key = matchKey ? (matchKey.key ?? matchKey.id) : null;
+    if (key && key !== selectedElementId) setSelectedElementId(key);
+  }, [domEditSelection?.id]);
+
   // ── GSAP script editing ──
 
   const { version: gsapCacheVersion, bump: bumpGsapCache } = useGsapCacheVersion();
+
+  const gsapSourceFile = domEditSelection?.sourceFile || activeCompPath || "index.html";
+
+  usePopulateKeyframeCacheForFile(
+    STUDIO_GSAP_PANEL_ENABLED ? (projectId ?? null) : null,
+    gsapSourceFile,
+    gsapCacheVersion,
+  );
 
   const {
     animations: selectedGsapAnimations,
@@ -204,7 +238,7 @@ export function useDomEditSession({
     unsupportedTimelinePattern: gsapUnsupportedTimelinePattern,
   } = useGsapAnimationsForElement(
     STUDIO_GSAP_PANEL_ENABLED ? (projectId ?? null) : null,
-    domEditSelection?.sourceFile || activeCompPath || "index.html",
+    gsapSourceFile,
     domEditSelection
       ? { id: domEditSelection.id ?? null, selector: domEditSelection.selector ?? null }
       : null,
@@ -212,6 +246,7 @@ export function useDomEditSession({
   );
 
   const {
+    commitMutation: gsapCommitMutation,
     updateGsapProperty,
     updateGsapMeta,
     deleteGsapAnimation,
@@ -221,6 +256,10 @@ export function useDomEditSession({
     updateGsapFromProperty,
     addGsapFromProperty,
     removeGsapFromProperty,
+    addKeyframe,
+    removeKeyframe,
+    convertToKeyframes,
+    removeAllKeyframes,
   } = useGsapScriptCommits({
     projectIdRef,
     activeCompPath,
@@ -250,6 +289,7 @@ export function useDomEditSession({
     handleDomMotionCommit,
     handleDomMotionClear,
     handleDomEditElementDelete,
+    handleDomZIndexReorderCommit,
   } = useDomEditCommits({
     activeCompPath,
     previewIframeRef,
@@ -270,77 +310,144 @@ export function useDomEditSession({
     buildDomSelectionFromTarget,
   });
 
-  const handleGsapUpdateProperty = useCallback(
-    (animId: string, prop: string, value: number | string) => {
-      if (!domEditSelection) return;
-      updateGsapProperty(domEditSelection, animId, prop, value);
+  // GSAP-aware: intercept offset/resize/rotation to commit via script mutation when animated.
+  const handleGsapAwarePathOffsetCommit = useCallback(
+    async (selection: DomEditSelection, next: { x: number; y: number }) => {
+      if (gsapCommitMutation) {
+        const handled = await tryGsapDragIntercept(
+          selection,
+          next,
+          selectedGsapAnimations,
+          previewIframeRef.current,
+          gsapCommitMutation,
+          async () => {
+            const pid = projectId;
+            if (!pid) return [];
+            const parsed = await fetchParsedAnimations(pid, gsapSourceFile);
+            if (!parsed) return [];
+            const target = { id: selection.id ?? null, selector: selection.selector ?? null };
+            return getAnimationsForElement(parsed.animations, target);
+          },
+        );
+        if (handled) return;
+      }
+      handleDomPathOffsetCommit(selection, next);
     },
-    [domEditSelection, updateGsapProperty],
+    [
+      handleDomPathOffsetCommit,
+      selectedGsapAnimations,
+      gsapCommitMutation,
+      previewIframeRef,
+      projectId,
+      gsapSourceFile,
+    ],
   );
 
-  const handleGsapUpdateMeta = useCallback(
-    (animId: string, updates: { duration?: number; ease?: string; position?: number }) => {
-      if (!domEditSelection) return;
-      updateGsapMeta(domEditSelection, animId, updates);
+  const makeFetchFallback = useCallback(
+    (selection: DomEditSelection) => async () => {
+      const pid = projectId;
+      if (!pid) return [];
+      const parsed = await fetchParsedAnimations(pid, gsapSourceFile);
+      if (!parsed) return [];
+      return getAnimationsForElement(parsed.animations, {
+        id: selection.id ?? null,
+        selector: selection.selector ?? null,
+      });
     },
-    [domEditSelection, updateGsapMeta],
+    [projectId, gsapSourceFile],
   );
 
-  const handleGsapDeleteAnimation = useCallback(
-    (animId: string) => {
-      if (!domEditSelection) return;
-      deleteGsapAnimation(domEditSelection, animId);
+  const handleGsapAwareBoxSizeCommit = useCallback(
+    async (selection: DomEditSelection, next: { width: number; height: number }) => {
+      if (gsapCommitMutation) {
+        const handled = await tryGsapResizeIntercept(
+          selection,
+          next,
+          selectedGsapAnimations,
+          previewIframeRef.current,
+          gsapCommitMutation,
+          makeFetchFallback(selection),
+        );
+        if (handled) return;
+      }
+      handleDomBoxSizeCommit(selection, next);
     },
-    [domEditSelection, deleteGsapAnimation],
+    [
+      handleDomBoxSizeCommit,
+      selectedGsapAnimations,
+      gsapCommitMutation,
+      previewIframeRef,
+      makeFetchFallback,
+    ],
   );
 
-  const handleGsapAddAnimation = useCallback(
-    (method: "to" | "from" | "set" | "fromTo") => {
-      if (!domEditSelection) return;
-      addGsapAnimation(domEditSelection, method, currentTime);
+  const handleGsapAwareRotationCommit = useCallback(
+    async (selection: DomEditSelection, next: { angle: number }) => {
+      if (gsapCommitMutation) {
+        const handled = await tryGsapRotationIntercept(
+          selection,
+          next.angle,
+          selectedGsapAnimations,
+          previewIframeRef.current,
+          gsapCommitMutation,
+          makeFetchFallback(selection),
+        );
+        if (handled) return;
+      }
+      handleDomRotationCommit(selection, next);
     },
-    [domEditSelection, addGsapAnimation, currentTime],
+    [
+      handleDomRotationCommit,
+      selectedGsapAnimations,
+      gsapCommitMutation,
+      previewIframeRef,
+      makeFetchFallback,
+    ],
   );
 
-  const handleGsapAddProperty = useCallback(
-    (animId: string, prop: string) => {
-      if (!domEditSelection) return;
-      addGsapProperty(domEditSelection, animId, prop);
-    },
-    [domEditSelection, addGsapProperty],
-  );
+  const {
+    handleGsapUpdateProperty,
+    handleGsapUpdateMeta,
+    handleGsapDeleteAnimation,
+    handleGsapAddAnimation,
+    handleGsapAddProperty,
+    handleGsapRemoveProperty,
+    handleGsapUpdateFromProperty,
+    handleGsapAddFromProperty,
+    handleGsapRemoveFromProperty,
+    handleGsapAddKeyframe,
+    handleGsapRemoveKeyframe,
+    handleGsapConvertToKeyframes,
+    handleGsapRemoveAllKeyframes,
+    handleResetSelectedElementKeyframes,
+  } = useGsapSelectionHandlers({
+    domEditSelection,
+    updateGsapProperty,
+    updateGsapMeta,
+    deleteGsapAnimation,
+    addGsapAnimation,
+    addGsapProperty,
+    removeGsapProperty,
+    updateGsapFromProperty,
+    addGsapFromProperty,
+    removeGsapFromProperty,
+    addKeyframe,
+    removeKeyframe,
+    convertToKeyframes,
+    removeAllKeyframes,
+    currentTime,
+    handleDomManualEditsReset,
+    selectedGsapAnimations,
+  });
 
-  const handleGsapRemoveProperty = useCallback(
-    (animId: string, prop: string) => {
-      if (!domEditSelection) return;
-      removeGsapProperty(domEditSelection, animId, prop);
-    },
-    [domEditSelection, removeGsapProperty],
-  );
-
-  const handleGsapUpdateFromProperty = useCallback(
-    (animId: string, prop: string, value: number | string) => {
-      if (!domEditSelection) return;
-      updateGsapFromProperty(domEditSelection, animId, prop, value);
-    },
-    [domEditSelection, updateGsapFromProperty],
-  );
-
-  const handleGsapAddFromProperty = useCallback(
-    (animId: string, prop: string) => {
-      if (!domEditSelection) return;
-      addGsapFromProperty(domEditSelection, animId, prop);
-    },
-    [domEditSelection, addGsapFromProperty],
-  );
-
-  const handleGsapRemoveFromProperty = useCallback(
-    (animId: string, prop: string) => {
-      if (!domEditSelection) return;
-      removeGsapFromProperty(domEditSelection, animId, prop);
-    },
-    [domEditSelection, removeGsapFromProperty],
-  );
+  const commitAnimatedProperty = useAnimatedPropertyCommit({
+    selectedGsapAnimations,
+    gsapCommitMutation,
+    addGsapAnimation: (sel, method, time) => addGsapAnimation(sel, method, time),
+    convertToKeyframes: (sel, animId) => convertToKeyframes(sel, animId),
+    previewIframeRef,
+    bumpGsapCache,
+  });
 
   // Sync selection from preview document on load / refresh
   // eslint-disable-next-line no-restricted-syntax
@@ -431,10 +538,8 @@ export function useDomEditSession({
     agentModalAnchorPoint,
     copiedAgentPrompt,
     agentPromptSelectionContext,
-
     // Refs
     domEditSelectionRef,
-
     // Callbacks
     handleTimelineElementSelect,
     handlePreviewCanvasMouseDown,
@@ -445,10 +550,11 @@ export function useDomEditSession({
     handleDomStyleCommit,
     handleDomAttributeCommit,
     handleDomHtmlAttributeCommit,
-    handleDomPathOffsetCommit,
+    handleDomPathOffsetCommit: handleGsapAwarePathOffsetCommit,
     handleDomGroupPathOffsetCommit,
-    handleDomBoxSizeCommit,
-    handleDomRotationCommit,
+    handleDomZIndexReorderCommit,
+    handleDomBoxSizeCommit: handleGsapAwareBoxSizeCommit,
+    handleDomRotationCommit: handleGsapAwareRotationCommit,
     handleDomManualEditsReset,
     handleDomMotionCommit,
     handleDomMotionClear,
@@ -482,5 +588,13 @@ export function useDomEditSession({
     handleGsapUpdateFromProperty,
     handleGsapAddFromProperty,
     handleGsapRemoveFromProperty,
+    handleGsapAddKeyframe,
+    handleGsapRemoveKeyframe,
+    handleGsapConvertToKeyframes,
+    handleGsapRemoveAllKeyframes,
+    handleResetSelectedElementKeyframes,
+    commitAnimatedProperty,
+    invalidateGsapCache: bumpGsapCache,
+    previewIframeRef,
   };
 }

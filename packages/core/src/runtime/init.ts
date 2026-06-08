@@ -1,3 +1,4 @@
+// fallow-ignore-file code-duplication complexity
 import { installRuntimeControlBridge, postRuntimeMessage } from "./bridge";
 import { initRuntimeAnalytics, emitAnalyticsEvent } from "./analytics";
 import { createCssAdapter } from "./adapters/css";
@@ -952,6 +953,34 @@ export function initSandboxRuntimeModular(): void {
       if (typeof state.capturedTimeline.totalTime === "function") {
         state.capturedTimeline.totalTime(seekTime, false);
       }
+
+      // Strip stale CSS offset artifacts from GSAP-targeted elements.
+      // These leak into the HTML when the CSS offset path fires for a
+      // GSAP-animated element (stale cache race). On reload, both the
+      // offset and GSAP transform stack, doubling the visual position.
+      const staleEls = document.querySelectorAll("[data-hf-studio-path-offset]");
+      if (staleEls.length > 0 && state.capturedTimeline.getChildren) {
+        const tweenTargets = new Set<Element>();
+        try {
+          for (const child of state.capturedTimeline.getChildren(true)) {
+            if (typeof child.targets === "function") {
+              for (const t of child.targets()) tweenTargets.add(t);
+            }
+          }
+        } catch {
+          /* timeline access guard */
+        }
+        for (const el of staleEls) {
+          if (!tweenTargets.has(el)) continue;
+          const htmlEl = el as HTMLElement;
+          htmlEl.removeAttribute("data-hf-studio-path-offset");
+          htmlEl.removeAttribute("data-hf-studio-original-translate");
+          htmlEl.removeAttribute("data-hf-studio-original-inline-translate");
+          htmlEl.style.removeProperty("--hf-studio-offset-x");
+          htmlEl.style.removeProperty("--hf-studio-offset-y");
+          htmlEl.style.removeProperty("translate");
+        }
+      }
     }
     if (resolution.diagnostics) {
       postRuntimeMessage({
@@ -1319,19 +1348,11 @@ export function initSandboxRuntimeModular(): void {
         const context = resolveMediaCompositionContext(
           element as HTMLVideoElement | HTMLAudioElement,
         );
-        // resolveStartForElement resolves the element's position on the ROOT
-        // timeline, correctly summing ancestor composition-host offsets via
-        // resolveHostOffsetForElement. For elements WITH explicit data-start,
-        // the fallback is ignored and the host offset is always applied — this
-        // fixes the bug where data-start="0" audio inside a sub-composition at
-        // a non-zero host start was scheduled at global 0.
-        // For elements WITHOUT data-start (inherited timing), the fallback is
-        // set to inheritedStart to preserve the "fill the host window" behavior.
-        return resolveStartForElement(element, context.inheritedStart ?? 0);
+        return resolveMediaStartSeconds(element, context.inheritedStart ?? 0);
       },
       resolveDurationSeconds: (element) => {
         const context = resolveMediaCompositionContext(element);
-        const start = resolveStartForElement(element, context.inheritedStart ?? 0);
+        const start = resolveMediaStartSeconds(element, context.inheritedStart ?? 0);
         const mediaStart =
           Number.parseFloat(element.dataset.playbackStart ?? element.dataset.mediaStart ?? "0") ||
           0;
@@ -1495,6 +1516,10 @@ export function initSandboxRuntimeModular(): void {
     }
   };
 
+  let maybePublishRenderReady = () => {
+    window.__renderReady = false;
+  };
+
   if (!externalCompositionsReady) {
     const compositionLoaderParams = {
       injectedStyles: state.injectedCompStyles,
@@ -1519,14 +1544,10 @@ export function initSandboxRuntimeModular(): void {
       .then(() => loadInlineTemplateCompositions(compositionLoaderParams))
       .finally(() => {
         externalCompositionsReady = true;
-        bindRootTimelineIfAvailable();
-        window.__renderReady = true;
         bindMediaMetadataListeners();
-        runAdapters("discover", state.currentTime);
         installAssetFailureDiagnostics();
         applyCaptionOverrides();
-        postTimeline();
-        postState(true);
+        maybePublishRenderReady();
       });
   } else {
     // No external/inline compositions to load — apply caption overrides immediately
@@ -1686,34 +1707,6 @@ export function initSandboxRuntimeModular(): void {
     onDisablePickMode: () => picker.disablePickMode(),
   });
 
-  bindRootTimelineIfAvailable();
-  if (state.capturedTimeline) {
-    player._timeline = state.capturedTimeline;
-  }
-
-  // __renderReady = timeline binding attempted, safe for deterministic seeking.
-  // Set unconditionally: renderSeek works with or without a GSAP timeline
-  // (CSS/WAAPI/Lottie compositions use adapter-only seeking).
-  // fileServer.ts sets this immediately (no timeline to bind in its runtime).
-  window.__renderReady = true;
-
-  // When the bundler inlines compositions, data-composition-src is removed so
-  // loadExternalCompositions() is skipped. But inline scripts registering child
-  // timelines in __timelines haven't executed yet (they run in the browser's next
-  // microtask). Defer a rebinding attempt to catch them.
-  if (externalCompositionsReady) {
-    setTimeout(() => {
-      const prevTimeline = state.capturedTimeline;
-      if (bindRootTimelineIfAvailable() && state.capturedTimeline !== prevTimeline) {
-        player._timeline = state.capturedTimeline;
-      }
-      runAdapters("discover", state.currentTime);
-      window.__renderReady = true;
-      postTimeline();
-      postState(true);
-    }, 0);
-  }
-
   state.deterministicAdapters = [
     createWaapiAdapter(),
     createCssAdapter({
@@ -1741,6 +1734,61 @@ export function initSandboxRuntimeModular(): void {
   void webAudio.init().then((ok) => {
     webAudioReady = ok;
   });
+
+  const publishRenderReadyAfterTimelineBinding = () => {
+    const prevTimeline = state.capturedTimeline;
+    const rebound = bindRootTimelineIfAvailable();
+    if (
+      state.capturedTimeline &&
+      (rebound || state.capturedTimeline !== prevTimeline || !player._timeline)
+    ) {
+      player._timeline = state.capturedTimeline;
+    }
+    const boundDuration = getSafeTimelineDurationSeconds(state.capturedTimeline, 0);
+    if (boundDuration > 0) {
+      clock.setDuration(boundDuration);
+    }
+    runAdapters("discover", state.currentTime);
+    // __renderReady = timeline binding attempted, safe for deterministic seeking.
+    // Set after any GSAP batching has completed. renderSeek works with or
+    // without a GSAP timeline (CSS/WAAPI/Lottie compositions use adapters only).
+    window.__renderReady = true;
+    postTimeline();
+    postState(true);
+  };
+
+  maybePublishRenderReady = () => {
+    if (!externalCompositionsReady || window.__hfTimelinesBuilding) {
+      window.__renderReady = false;
+      return;
+    }
+    publishRenderReadyAfterTimelineBinding();
+  };
+
+  // When the GSAP tween-batching interceptor (HF_EARLY_STUB, fileServer.ts) is
+  // active, composition scripts queue tl.to() calls instead of executing them
+  // synchronously. Wait for the "hf-timelines-built" event before the first
+  // binding attempt so the transport clock receives the finished timeline
+  // duration instead of permanently publishing duration=0.
+  if (window.__hfTimelinesBuilding) {
+    window.__renderReady = false;
+    const onTimelinesBuilt = () => {
+      window.removeEventListener("hf-timelines-built", onTimelinesBuilt);
+      maybePublishRenderReady();
+    };
+    window.addEventListener("hf-timelines-built", onTimelinesBuilt);
+  }
+  maybePublishRenderReady();
+
+  // When the bundler inlines compositions, data-composition-src is removed so
+  // loadExternalCompositions() is skipped. But inline scripts registering child
+  // timelines in __timelines haven't executed yet (they run in the browser's next
+  // microtask). Defer a rebinding attempt to catch them.
+  if (externalCompositionsReady) {
+    setTimeout(() => {
+      maybePublishRenderReady();
+    }, 0);
+  }
   let transportTickCount = 0;
   let inTransportTick = false;
 
@@ -1907,13 +1955,13 @@ export function initSandboxRuntimeModular(): void {
           let foundActive = false;
           for (const rawEl of audioEls) {
             if (!(rawEl instanceof HTMLMediaElement) || !rawEl.isConnected) continue;
-            const start = resolveStartForElement(rawEl, 0);
+            const start = Number.parseFloat(rawEl.dataset.start ?? "");
             const durAttr = Number.parseFloat(rawEl.dataset.duration ?? "");
             const end = Number.isFinite(durAttr) && durAttr > 0 ? start + durAttr : Infinity;
             const mediaStart =
               Number.parseFloat(rawEl.dataset.playbackStart ?? rawEl.dataset.mediaStart ?? "0") ||
               0;
-            if (Number.isFinite(start) && state.currentTime >= start && state.currentTime < end) {
+            if (Number.isFinite(start) && state.currentTime >= start && state.currentTime <= end) {
               if (!rawEl.paused) {
                 clock.attachAudioSource({ el: rawEl, compositionStart: start, mediaStart });
                 foundActive = true;
@@ -1974,7 +2022,7 @@ export function initSandboxRuntimeModular(): void {
     for (const el of mediaEls) {
       if (!(el instanceof HTMLMediaElement)) continue;
       if (!el.isConnected) continue;
-      const start = resolveStartForElement(el, 0);
+      const start = Number.parseFloat(el.dataset.start ?? "");
       if (!Number.isFinite(start)) continue;
       const durAttr = Number.parseFloat(el.dataset.duration ?? "");
       const end = Number.isFinite(durAttr) && durAttr > 0 ? start + durAttr : Infinity;
@@ -2022,7 +2070,7 @@ export function initSandboxRuntimeModular(): void {
       const audioEls = document.querySelectorAll("audio[data-start]");
       for (const rawEl of audioEls) {
         if (!(rawEl instanceof HTMLMediaElement) || !rawEl.isConnected) continue;
-        const compStart = resolveStartForElement(rawEl, 0);
+        const compStart = Number.parseFloat(rawEl.dataset.start ?? "");
         if (!Number.isFinite(compStart)) continue;
         const mediaStart =
           Number.parseFloat(rawEl.dataset.playbackStart ?? rawEl.dataset.mediaStart ?? "0") || 0;

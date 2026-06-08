@@ -212,6 +212,7 @@ describe("materializeExtractedFramesForCompiledDir", () => {
     expect(extracted.framePaths.get(0)).toBe(framePath);
   });
 
+  // fallow-ignore-next-line code-duplication
   it("remaps Windows cache frames under compiledDir using only the frame basename", () => {
     const compiledDir = win32.resolve("C:\\compiled");
     const outputDir = win32.resolve("D:\\cache\\abc123");
@@ -219,6 +220,7 @@ describe("materializeExtractedFramesForCompiledDir", () => {
     const extracted = createExtractedFrames(outputDir, framePath);
     const symlinks: Array<{ target: string; path: string }> = [];
 
+    // fallow-ignore-next-line code-duplication
     materializeExtractedFramesForCompiledDir([extracted], compiledDir, {
       pathModule: win32,
       fileSystem: {
@@ -240,6 +242,7 @@ describe("materializeExtractedFramesForCompiledDir", () => {
     expect(symlinks).toEqual([{ target: outputDir, path: linkPath }]);
   });
 
+  // fallow-ignore-next-line code-duplication
   it("recursively copies frames into compiledDir when materializeSymlinks is true", () => {
     // Distributed plan() must produce a self-contained planDir — symlinks
     // don't survive S3 / GCS round-trips. With materializeSymlinks=true the
@@ -250,6 +253,7 @@ describe("materializeExtractedFramesForCompiledDir", () => {
     const extracted = createExtractedFrames(outputDir, framePath);
     const copies: Array<{ src: string; dest: string; recursive: boolean }> = [];
 
+    // fallow-ignore-next-line code-duplication
     materializeExtractedFramesForCompiledDir([extracted], compiledDir, {
       pathModule: win32,
       fileSystem: {
@@ -385,6 +389,7 @@ function createCompiledComposition(
   };
 }
 
+// fallow-ignore-next-line code-duplication
 function createConfig(): EngineConfig {
   return {
     fps: 30,
@@ -401,6 +406,7 @@ function createConfig(): EngineConfig {
     browserTimeout: 120000,
     protocolTimeout: 300000,
     forceScreenshot: false,
+    lowMemoryMode: false,
     enableChunkedEncode: false,
     chunkSizeFrames: 360,
     enableStreamingEncode: false,
@@ -421,6 +427,7 @@ function createConfig(): EngineConfig {
 }
 
 describe("applyRenderModeHints", () => {
+  // fallow-ignore-next-line code-duplication
   it("forces screenshot mode when compatibility hints recommend it", () => {
     const compiled = createCompiledComposition(["iframe", "requestAnimationFrame"]);
     const log = {
@@ -451,6 +458,7 @@ describe("applyRenderModeHints", () => {
     expect(log.warn).not.toHaveBeenCalled();
   });
 
+  // fallow-ignore-next-line code-duplication
   it("returns false when neither caller nor hint forces", () => {
     const compiled = createCompiledComposition([]);
     const log = {
@@ -561,6 +569,7 @@ describe("resolveRenderWorkerCount", () => {
     expect(workers).toBe(1);
   });
 
+  // fallow-ignore-next-line code-duplication
   it("forces single worker when html-in-canvas is detected", () => {
     const log = {
       error: vi.fn(),
@@ -587,6 +596,7 @@ describe("resolveRenderWorkerCount", () => {
     expect(log.warn).toHaveBeenCalledOnce();
   });
 
+  // fallow-ignore-next-line code-duplication
   it("overrides explicit --workers when html-in-canvas is detected", () => {
     const log = {
       error: vi.fn(),
@@ -611,6 +621,53 @@ describe("resolveRenderWorkerCount", () => {
 
     expect(workers).toBe(1);
     expect(log.warn).toHaveBeenCalledOnce();
+  });
+
+  // fallow-ignore-next-line code-duplication
+  it("pins to 1 worker in low-memory mode when no explicit --workers is set", () => {
+    const log = {
+      error: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+    };
+
+    const workers = resolveRenderWorkerCount(
+      900,
+      undefined,
+      { ...cfg, lowMemoryMode: true },
+      {
+        hasShaderTransitions: false,
+        renderModeHints: { recommendScreenshot: false, reasons: [] },
+      },
+      log,
+    );
+
+    expect(workers).toBe(1);
+    expect(log.info).toHaveBeenCalledOnce();
+  });
+
+  // fallow-ignore-next-line code-duplication
+  it("respects explicit --workers in low-memory mode (only the pin is bypassed)", () => {
+    const log = {
+      error: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+    };
+
+    const workers = resolveRenderWorkerCount(
+      900,
+      4,
+      { ...cfg, lowMemoryMode: true, coresPerWorker: 2.5 },
+      {
+        hasShaderTransitions: false,
+        renderModeHints: { recommendScreenshot: false, reasons: [] },
+      },
+      log,
+    );
+
+    expect(workers).toBe(4);
   });
 
   it("keeps baseline auto workers after screenshot fallback when measured capture is cheap", () => {
@@ -728,18 +785,21 @@ describe("selectCaptureCalibrationFrames", () => {
 });
 
 describe("capture calibration safeguards", () => {
-  it("uses a bounded protocol timeout for calibration probes", () => {
+  it("caps protocol timeout at calibration ceiling for fast fallback", () => {
     const cfg = createConfig();
     const calibrationCfg = createCaptureCalibrationConfig(cfg);
 
+    // Default 300s is above the 30s calibration ceiling — cap at 30s
+    // so a wedged BeginFrame times out fast and falls back to screenshot
     expect(calibrationCfg.protocolTimeout).toBe(30000);
     expect(cfg.protocolTimeout).toBe(300000);
   });
 
-  it("preserves smaller explicit protocol timeouts for calibration probes", () => {
+  it("preserves user timeout when already below calibration ceiling", () => {
     const cfg = createConfig();
     cfg.protocolTimeout = 5000;
 
+    // 5s is below the 30s ceiling — keep the user's value
     expect(createCaptureCalibrationConfig(cfg).protocolTimeout).toBe(5000);
   });
 

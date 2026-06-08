@@ -45,15 +45,20 @@ import { loadProducer } from "../utils/producer.js";
 import { c } from "../ui/colors.js";
 import { formatBytes, formatDuration, errorBox } from "../ui/format.js";
 import { renderProgress } from "../ui/progress.js";
-import { trackRenderComplete, trackRenderError } from "../telemetry/events.js";
+import {
+  trackRenderComplete,
+  trackRenderError,
+  trackRenderObservation,
+} from "../telemetry/events.js";
 import { maybePromptRenderFeedback } from "../telemetry/feedback.js";
+import { renderJobObservabilityTelemetryPayload } from "../telemetry/renderObservability.js";
 import { bytesToMb } from "../telemetry/system.js";
 import { VERSION } from "../version.js";
 import { isDevMode } from "../utils/env.js";
 import { buildDockerRunArgs, resolveDockerPlatform } from "../utils/dockerRunArgs.js";
 import { normalizeErrorMessage } from "../utils/errorMessage.js";
 import { findFFmpeg, getFFmpegInstallHint } from "../browser/ffmpeg.js";
-import type { RenderJob } from "@hyperframes/producer";
+import type { ProducerLogger, RenderJob } from "@hyperframes/producer";
 import {
   normalizeResolutionFlag,
   parseFps,
@@ -249,6 +254,29 @@ export default defineCommand({
         "readiness poll has its own 45s budget). " +
         "Env fallback: PRODUCER_PAGE_NAVIGATION_TIMEOUT_MS (MILLISECONDS).",
     },
+    "protocol-timeout": {
+      type: "string",
+      description:
+        "CDP protocol timeout in ms. Increase on slow/low-memory machines " +
+        "where Chrome operations time out. Default: 300000 (5 min). " +
+        "Env: PRODUCER_PUPPETEER_PROTOCOL_TIMEOUT_MS.",
+    },
+    "player-ready-timeout": {
+      type: "string",
+      description:
+        "Timeout in ms for the composition player to become ready. " +
+        "Increase for complex compositions on slow hardware. Default: 45000 (45 s). " +
+        "Env: PRODUCER_PLAYER_READY_TIMEOUT_MS.",
+    },
+    "low-memory-mode": {
+      type: "boolean",
+      description:
+        "Force the low-memory safe render profile on (--low-memory-mode) or " +
+        "off (--no-low-memory-mode). Safe mode pins to 1 worker, uses " +
+        "screenshot capture, and skips auto-worker calibration to avoid " +
+        "memory thrash on constrained machines. Default: auto-detected from " +
+        "total RAM (<= 8 GB). Env: PRODUCER_LOW_MEMORY_MODE.",
+    },
   },
   // `run` is the citty handler for `hyperframes render` — sequential flag
   // validation + render dispatch. Inherited CRITICAL on main (CRAP 1290);
@@ -326,9 +354,43 @@ export default defineCommand({
       workers = parsed;
     }
 
+    // ── Validate timeout overrides ─────────────────────────────────────
+    let protocolTimeout: number | undefined;
+    if (args["protocol-timeout"] != null) {
+      const parsed = parseInt(args["protocol-timeout"], 10);
+      if (isNaN(parsed) || parsed < 1000) {
+        errorBox(
+          "Invalid protocol-timeout",
+          `Got "${args["protocol-timeout"]}". Must be a number >= 1000 (ms).`,
+        );
+        process.exit(1);
+      }
+      protocolTimeout = parsed;
+    }
+    let playerReadyTimeout: number | undefined;
+    if (args["player-ready-timeout"] != null) {
+      const parsed = parseInt(args["player-ready-timeout"], 10);
+      if (isNaN(parsed) || parsed < 1000) {
+        errorBox(
+          "Invalid player-ready-timeout",
+          `Got "${args["player-ready-timeout"]}". Must be a number >= 1000 (ms).`,
+        );
+        process.exit(1);
+      }
+      playerReadyTimeout = parsed;
+    }
+
     // ── Wire opt-in: page-side compositing ───────────────────────────────
     if (args["page-side-compositing"] === false) {
       process.env.HF_PAGE_SIDE_COMPOSITING = "false";
+    }
+
+    // ── Override: low-memory safe profile (tri-state) ────────────────────
+    // Absent → auto-detect from total RAM inside resolveConfig. Explicit
+    // --low-memory-mode / --no-low-memory-mode forces it on/off via the env
+    // var the producer's resolveConfig reads.
+    if (args["low-memory-mode"] != null) {
+      process.env.PRODUCER_LOW_MEMORY_MODE = args["low-memory-mode"] ? "true" : "false";
     }
 
     // ── Validate max-concurrent-renders ─────────────────────────────────
@@ -347,6 +409,7 @@ export default defineCommand({
     // ── Resolve output path ───────────────────────────────────────────────
     const rendersDir = resolve("renders");
     const ext = FORMAT_EXT[format] ?? ".mp4";
+    // fallow-ignore-next-line code-duplication
     const now = new Date();
     const datePart = now.toISOString().slice(0, 10);
     const timePart = now.toTimeString().slice(0, 8).replace(/:/g, "-");
@@ -528,6 +591,8 @@ export default defineCommand({
         outputResolution,
         pageSideCompositing: args["page-side-compositing"] !== false,
         pageNavigationTimeoutMs,
+        protocolTimeout,
+        playerReadyTimeout,
         exitAfterComplete: true,
       });
     } else {
@@ -547,6 +612,8 @@ export default defineCommand({
         entryFile,
         outputResolution,
         pageNavigationTimeoutMs,
+        protocolTimeout,
+        playerReadyTimeout,
         exitAfterComplete: true,
       });
     }
@@ -583,6 +650,10 @@ interface RenderOptions {
    * producer's EngineConfig override.
    */
   pageNavigationTimeoutMs?: number;
+  /** CDP protocol timeout override (ms). */
+  protocolTimeout?: number;
+  /** Player-ready timeout override (ms). */
+  playerReadyTimeout?: number;
 }
 
 /**
@@ -848,6 +919,7 @@ async function renderDocker(
   if (options.exitAfterComplete) scheduleRenderProcessExit();
 }
 
+// fallow-ignore-next-line complexity
 export async function renderLocal(
   projectDir: string,
   outputPath: string,
@@ -865,6 +937,9 @@ export async function renderLocal(
   }
 
   const startTime = Date.now();
+  const logger = createRenderTelemetryLogger(
+    producer.createConsoleLogger?.("info") ?? createNoopProducerLogger(),
+  );
 
   // Pass the resolved browser path to the producer via env var so
   // resolveConfig() picks it up. This bridges the CLI's ensureBrowser()
@@ -880,11 +955,14 @@ export async function renderLocal(
     format: options.format,
     workers: options.workers,
     useGpu: options.gpu,
+    logger,
     producerConfig: producer.resolveConfig({
       browserGpuMode: options.browserGpuMode ?? "software",
       ...(options.pageNavigationTimeoutMs != null
         ? { pageNavigationTimeout: options.pageNavigationTimeoutMs }
         : {}),
+      ...(options.protocolTimeout != null && { protocolTimeout: options.protocolTimeout }),
+      ...(options.playerReadyTimeout != null && { playerReadyTimeout: options.playerReadyTimeout }),
     }),
     hdrMode: options.hdrMode,
     crf: options.crf,
@@ -910,6 +988,7 @@ export async function renderLocal(
       false,
       "Try --docker for containerized rendering",
       job.failedStage,
+      job,
     );
   }
 
@@ -950,6 +1029,89 @@ function getMemorySnapshot() {
   };
 }
 
+function metaString(meta: Record<string, unknown> | undefined, key: string): string | undefined {
+  const value = meta?.[key];
+  return typeof value === "string" ? value : undefined;
+}
+
+function metaNumber(meta: Record<string, unknown> | undefined, key: string): number | undefined {
+  const value = meta?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function metaBoolean(meta: Record<string, unknown> | undefined, key: string): boolean | undefined {
+  const value = meta?.[key];
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function trackRenderTraceFromLog(message: string, meta: Record<string, unknown> | undefined): void {
+  if (message !== "[Render:trace]") return;
+  const status = metaString(meta, "status");
+  if (status !== "checkpoint" && status !== "error") return;
+  trackRenderObservation({
+    source: "cli",
+    renderJobId: metaString(meta, "renderJobId"),
+    phase: metaString(meta, "phase"),
+    status,
+    compositionHash: metaString(meta, "compositionHash"),
+    elapsedMs: metaNumber(meta, "elapsedMs"),
+    durationMs: metaNumber(meta, "durationMs"),
+    message: metaString(meta, "message"),
+    workerCount: metaNumber(meta, "workerCount"),
+    forceScreenshot: metaBoolean(meta, "forceScreenshot"),
+    useStreamingEncode: metaBoolean(meta, "useStreamingEncode"),
+    useLayeredComposite: metaBoolean(meta, "useLayeredComposite"),
+    usePageSideCompositing: metaBoolean(meta, "usePageSideCompositing"),
+    hasHdrContent: metaBoolean(meta, "hasHdrContent"),
+    captureMode: metaString(meta, "captureMode"),
+    videoCount: metaNumber(meta, "videoCount"),
+    extractedVideoCount: metaNumber(meta, "extractedVideoCount"),
+    totalFramesExtracted: metaNumber(meta, "totalFramesExtracted"),
+    maxFramesPerVideo: metaNumber(meta, "maxFramesPerVideo"),
+    avgFramesPerExtractedVideo: metaNumber(meta, "avgFramesPerExtractedVideo"),
+    vfrPreflightCount: metaNumber(meta, "vfrPreflightCount"),
+    vfrPreflightMs: metaNumber(meta, "vfrPreflightMs"),
+    cacheHits: metaNumber(meta, "cacheHits"),
+    cacheMisses: metaNumber(meta, "cacheMisses"),
+  });
+}
+
+function createRenderTelemetryLogger(base: ProducerLogger): ProducerLogger {
+  return {
+    error(message, meta) {
+      base.error(message, meta);
+      trackRenderTraceFromLog(message, meta);
+    },
+    warn(message, meta) {
+      base.warn(message, meta);
+      trackRenderTraceFromLog(message, meta);
+    },
+    info(message, meta) {
+      base.info(message, meta);
+      trackRenderTraceFromLog(message, meta);
+    },
+    debug(message, meta) {
+      base.debug(message, meta);
+      trackRenderTraceFromLog(message, meta);
+    },
+    isLevelEnabled(level) {
+      return base.isLevelEnabled?.(level) ?? true;
+    },
+  };
+}
+
+function createNoopProducerLogger(): ProducerLogger {
+  return {
+    error() {},
+    warn() {},
+    info() {},
+    debug() {},
+    isLevelEnabled() {
+      return true;
+    },
+  };
+}
+
 function handleRenderError(
   error: unknown,
   options: RenderOptions,
@@ -957,6 +1119,7 @@ function handleRenderError(
   docker: boolean,
   hint: string,
   failedStage?: string,
+  job?: RenderJob,
 ): never {
   const message = normalizeErrorMessage(error);
   trackRenderError({
@@ -968,6 +1131,7 @@ function handleRenderError(
     elapsedMs: Date.now() - startTime,
     errorMessage: message,
     failedStage,
+    ...renderJobObservabilityTelemetryPayload(job),
     ...getMemorySnapshot(),
   });
   errorBox("Render failed", message, hint);
@@ -1030,6 +1194,7 @@ function trackRenderMetrics(
     extractPhase3Ms: extract?.extractMs,
     extractCacheHits: extract?.cacheHits,
     extractCacheMisses: extract?.cacheMisses,
+    ...renderJobObservabilityTelemetryPayload(job),
     ...getMemorySnapshot(),
   });
 }
