@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components.
 
 ## §A Director's intent
 
@@ -151,7 +151,7 @@ The serif is load-bearing: the entire thesis is "a serif reads like a person tho
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — the editorial rhythm (Fraunces display / Inter body / mono index) collapses if sizes drift.
+The atlas is the **sole authoring source** for non-component text. If a scene needs a `number-hero` numeral not covered by a §6 component, the worker reads role `number-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — the editorial rhythm (Fraunces display / Inter body / mono index) collapses if sizes drift.
 
 ```type-roles
 [
@@ -288,13 +288,15 @@ const DUR = {
 
 **Forbidden**
 
+- Slide-in / wipe / zoom between scenes (reads as digital chrome).
+- Bounce / overshoot / elastic on any primary motion.
 - Glyph-by-glyph reveals on Fraunces display — the serif is meant to be read as one set line, not assembled.
 - Heavy drop-shadow grows, glow pulses, or gradient sweeps — the system has no light to emit.
 - More than one coral motion per scene — the voltage is rationed in time as well as in space.
 
 **Stagger budget**
 
-180–260ms between elements. Total scene-in stagger ≤ 700ms. The eye should have time to read the kicker → headline → lede rhythm before the next block arrives. Editorial pacing, not a cascade.
+180–260ms between elements. Total scene-in stagger ≤ 700ms. The eye should have time to read the kicker → headline → lede rhythm before the next block arrives.
 
 ## §G Voice transform recipe (apply to the script's text)
 

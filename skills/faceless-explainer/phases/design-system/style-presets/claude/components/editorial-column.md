@@ -1,7 +1,9 @@
 ```html
 <article class="cl-editorial">
   <div class="cl-editorial-head">
-    <span class="cl-editorial-kicker"><span class="cl-editorial-spike">&#10033;</span> {EYEBROW}</span>
+    <span class="cl-editorial-kicker"
+      ><span class="cl-editorial-spike">&#10033;</span> {EYEBROW}</span
+    >
     <h2 class="cl-editorial-title">{HEADLINE}</h2>
   </div>
   <div class="cl-editorial-body">
@@ -42,18 +44,24 @@
     color: var(--cl-ink-muted);
     margin-bottom: 24px;
   }
-  .cl-editorial-spike { color: var(--brand-accent); font-size: 26px; }
+  .cl-editorial-spike {
+    color: var(--brand-accent);
+    font-size: 26px;
+  }
   .cl-editorial-title {
     font-family: "Fraunces", "Tiempos Headline", Garamond, serif;
     font-weight: 400;
     font-size: clamp(56px, 6vw, 112px);
-    line-height: 1.0;
+    line-height: 1;
     letter-spacing: -0.028em;
     color: var(--brand-primary);
     margin: 0;
     max-width: 18ch;
   }
-  .cl-editorial-title em { font-style: italic; color: var(--brand-accent); }
+  .cl-editorial-title em {
+    font-style: italic;
+    color: var(--brand-accent);
+  }
   .cl-editorial-body {
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr;

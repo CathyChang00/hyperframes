@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components.
 
 ## §A Director's intent
 
@@ -130,7 +130,7 @@ The handwritten layer (Caveat) is non-substitutable — if Caveat fails to load 
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — the three-voice editorial rhythm (print headline / handwritten scribble / mono archival tag) collapses if sizes drift.
+The atlas is the **sole authoring source** for non-component text. If a scene needs a `number-hero` numeral that isn't covered by §6 components, the worker reads role `number-hero` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — the three-voice editorial rhythm (print headline / handwritten scribble / mono archival tag) collapses if sizes drift.
 
 ```type-roles
 [
@@ -272,12 +272,16 @@ const DUR = {
 
 **Forbidden**
 
+- Slide-in / wipe / zoom-between-scenes (reads as digital chrome).
+- Bounce / overshoot / elastic on any primary motion.
 - Sub-pixel positions — keep transforms on integer pixel offsets.
+- Rotating a pin or scribble back to 0° on rest. The off-axis tilt is the identity.
+- Counter-rotating the rubber stamp away from −4°.
 - Particle systems / sparkles / glow filters — paper doesn't emit light.
 
 **Stagger budget**
 
-200–280ms between elements (slower than 8-bit-orbit's 80–120ms, faster than literary editorial). Total scene-in stagger ≤ 700ms. The eye should have time to read each card's pin → heading → body → margin-note rhythm before the next one arrives.
+200–280ms between elements. Total scene-in stagger ≤ 700ms. The eye should have time to read each card's pin → heading → body → margin-note rhythm before the next one arrives.
 
 ## §G Voice transform recipe (apply to brand's voice from §1 DNA)
 

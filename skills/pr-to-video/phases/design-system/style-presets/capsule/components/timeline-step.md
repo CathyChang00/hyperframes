@@ -1,6 +1,6 @@
 ```html
-<!-- TODO: cycle the step-node literal "1" / "2" / "3" / "4" / "5" across instances — decorative ordinal, intentionally hardcoded (no whitelist token for sequence index). -->
-<!-- TODO: cycle the step-node background through the brand palette: primary, secondary, accent, then repeat. -->
+<!-- Cycle the step-node literal "1" / "2" / "3" / "4" / "5" across instances (decorative ordinal, hardcoded). -->
+<!-- Cycle the step-node background through the brand palette: primary, secondary, accent, then repeat. -->
 <div class="cap-step">
   <div class="cap-step-node">1</div>
   <div class="cap-step-label">{LABEL}</div>

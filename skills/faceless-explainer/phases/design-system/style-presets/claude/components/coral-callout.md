@@ -35,12 +35,15 @@
     text-transform: uppercase;
     color: color-mix(in srgb, var(--cl-on-dark) 82%, var(--brand-accent));
   }
-  .cl-coral-spike { color: var(--cl-on-dark); font-size: 26px; }
+  .cl-coral-spike {
+    color: var(--cl-on-dark);
+    font-size: 26px;
+  }
   .cl-coral-quote {
     font-family: "Fraunces", "Tiempos Headline", Garamond, serif;
     font-weight: 400;
     font-size: clamp(56px, 7vw, 132px);
-    line-height: 1.0;
+    line-height: 1;
     letter-spacing: -0.03em;
     color: var(--cl-on-dark);
     margin: 0;

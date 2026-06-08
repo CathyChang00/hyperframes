@@ -12,8 +12,10 @@
     <span class="cl-code-file">{LABEL}</span>
   </div>
   <div class="cl-code-body">
-    <div class="cl-code-gutter"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></div>
-<pre class="cl-code-src"><span class="c"># read the whole thing before answering</span>
+    <div class="cl-code-gutter">
+      <span>01</span><span>02</span><span>03</span><span>04</span><span>05</span>
+    </div>
+    <pre class="cl-code-src"><span class="c"># read the whole thing before answering</span>
 <span class="k">def</span> answer(question):
     context = retrieve(question)
     <span class="k">return</span> model.reason(context, depth=<span class="n">3</span>)
@@ -46,9 +48,18 @@
     background: var(--cl-on-dark-soft);
     opacity: 0.45;
   }
-  .cl-code-bar i:first-child { background: var(--brand-accent); opacity: 0.85; }
-  .cl-code-bar i:nth-child(2) { background: var(--cl-amber); opacity: 0.85; }
-  .cl-code-bar i:nth-child(3) { background: var(--cl-success); opacity: 0.85; }
+  .cl-code-bar i:first-child {
+    background: var(--brand-accent);
+    opacity: 0.85;
+  }
+  .cl-code-bar i:nth-child(2) {
+    background: var(--cl-amber);
+    opacity: 0.85;
+  }
+  .cl-code-bar i:nth-child(3) {
+    background: var(--cl-success);
+    opacity: 0.85;
+  }
   .cl-code-file {
     margin-left: 16px;
     font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -71,17 +82,28 @@
     border-right: 1px solid var(--cl-hairline-dark);
     color: color-mix(in srgb, var(--cl-on-dark) 36%, var(--cl-navy));
   }
-  .cl-code-gutter span { display: block; }
+  .cl-code-gutter span {
+    display: block;
+  }
   .cl-code-src {
     margin: 0;
     padding-left: 24px;
     white-space: pre;
     color: var(--cl-on-dark);
   }
-  .cl-code-src .k { color: var(--brand-accent); }
-  .cl-code-src .s { color: var(--cl-teal); }
-  .cl-code-src .n { color: var(--cl-amber); }
-  .cl-code-src .c { color: var(--cl-on-dark-soft); font-style: italic; }
+  .cl-code-src .k {
+    color: var(--brand-accent);
+  }
+  .cl-code-src .s {
+    color: var(--cl-teal);
+  }
+  .cl-code-src .n {
+    color: var(--cl-amber);
+  }
+  .cl-code-src .c {
+    color: var(--cl-on-dark-soft);
+    font-style: italic;
+  }
   .cl-code-status {
     background: var(--cl-navy-elev);
     border-top: 1px solid var(--cl-hairline-dark);

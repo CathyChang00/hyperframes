@@ -33,11 +33,11 @@
 }
 ```
 
-> `chromeFonts` makes the doc chrome render in the preset's native fonts — Bodoni Moda + Space Grotesk + Space Mono — instead of brand DNA fonts; brand fonts still apply to §6 components. Capsule has no script face — the `script` slot points at Bodoni Moda because italic emphasis rides the Bodoni axis inside `<em>`, not a third family.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Capsule refuses a third face — italic emphasis lives inside `<em>` on the Bodoni axis, not a separate script family.
 
 ## §A Director's intent
 
-Capsule is a playful editorial system: every text container is a pill (border-radius 9999px for small, 2rem for cards), every shape carries a 2px ink outline, every elevated surface casts a low-opacity hard-offset shadow at 4/6/8/12px. Bodoni-class serifs for every display moment, Space-Grotesk-class for body and small uppercase tracked text. Color is a candy palette used as flat pill fills; serifs stay ink, color lives inside pills and on stat numerals. Motion is opacity-led, never bouncy, never elastic.
+Capsule is a playful editorial system: every text container is a pill (border-radius 9999px for small, 2rem for cards), every shape carries a 2px ink outline, every elevated surface casts a low-opacity hard-offset shadow at 4/6/8/12px. The voice is Memphis-meets-magazine — confident didone serifs (Bodoni-class) for every display moment, geometric grotesque (Space-Grotesk-class) for body and small uppercase tracked text. Color is a candy palette used as flat pill fills; serifs stay ink, color lives inside pills and on stat numerals. Motion is gentle and Material-eased — opacity-led, never bouncy, never elastic.
 
 The class prefix is `cap-` across all components.
 
@@ -91,7 +91,7 @@ The class prefix is `cap-` across all components.
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-The atlas is the **sole authoring source** for non-component text; do NOT invent ad-hoc sizes — Capsule's identity collapses if Bodoni drops below weight 700 at display scale or if small Space Grotesk text loses its uppercase + tracked treatment.
+Sole authoring source for non-component text; do NOT invent ad-hoc sizes — Capsule's identity collapses if Bodoni drops below weight 700 at display scale or if small Space Grotesk text loses its uppercase + tracked treatment.
 
 ```type-roles
 [
@@ -210,8 +210,16 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars — let doc chrome render in Bodoni Moda / Space Grotesk / Space Mono
- * regardless of brand DNA; also read by .preset-native-scope / §T atlas. */
+/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
+ * These let the doc chrome render in Bodoni Moda / Space Grotesk / Space Mono
+ * regardless of which brand DNA the preset is applied to. The §6 component preview
+ * and §T type-role atlas also read these via .preset-native-scope.
+ *
+ * Capsule has no script face — the script slot points at Bodoni Moda because
+ * italic emphasis rides the Bodoni opsz/italic axis inside <em>, not a third
+ * family. Fallback chains end in a serif / sans / mono that still carries the
+ * editorial-pill register. Falling all the way to generic should never happen
+ * in practice. */
 :root {
   --f-disp-native: "Bodoni Moda", "Playfair Display", "Fraunces", "Didot", "Georgia", serif;
   --f-body-native:
@@ -221,7 +229,7 @@ const DUR = {
     "Space Mono", "JetBrains Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families for previews. */
+/* .preset-native-scope: re-bind font tokens to preset-native families for §6 previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -257,7 +265,7 @@ pre.ds-code {
   background: var(--canvas);
 }
 
-/* ── §T Type-role atlas. */
+/* ── §T Type-role atlas. Container = 2rem-radius pill-card; rows by 2px ink hairlines. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;

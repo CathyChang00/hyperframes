@@ -12,7 +12,7 @@
     elevation language). Big Fraunces figure with a JetBrains Mono unit suffix —
     the signature mix of a serif numeral and a mono unit. For a 3-up row, render
     the middle instance with .center (navy ground, cream text, larger figure) so
-    the row has one clear focal. Swap the literal "M" unit for %, ×, K, etc.
+    the row has one clear focal.
   */
   .cl-stat-card {
     background: var(--cl-tile);

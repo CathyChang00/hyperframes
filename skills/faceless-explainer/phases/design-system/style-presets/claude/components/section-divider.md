@@ -30,17 +30,23 @@
     text-transform: uppercase;
     color: var(--cl-on-dark-soft);
   }
-  .cl-divider-spike { color: var(--brand-accent); font-size: 26px; }
+  .cl-divider-spike {
+    color: var(--brand-accent);
+    font-size: 26px;
+  }
   .cl-divider-title {
     font-family: "Fraunces", "Tiempos Headline", Garamond, serif;
     font-weight: 400;
     font-size: clamp(64px, 8vw, 168px);
-    line-height: 1.0;
+    line-height: 1;
     letter-spacing: -0.03em;
     color: var(--cl-on-dark);
     margin: 0;
     max-width: 18ch;
   }
-  .cl-divider-title em { font-style: italic; color: var(--brand-accent); }
+  .cl-divider-title em {
+    font-style: italic;
+    color: var(--brand-accent);
+  }
 </style>
 ```

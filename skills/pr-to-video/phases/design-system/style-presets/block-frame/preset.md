@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the doc chrome render in the preset's native fonts — Inter + Space Grotesk — instead of brand DNA fonts; brand fonts still apply to §6 components. Block Frame has no script face — the `script` slot points at Inter because the preset refuses a third face.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Block Frame refuses a third face — the `script` slot points at Inter.
 
 ## §A Director's intent
 
@@ -102,7 +102,7 @@ is the CTA fill. Class prefix is `bf-` (block-frame initials).
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-The atlas is the **sole authoring source** for non-component text; do NOT invent ad-hoc sizes — Block Frame's identity depends on the heavy-uppercase + negative-tracking + sentence-body + wide-tracked-label ladder.
+Sole authoring source for non-component text; do NOT invent ad-hoc sizes — Block Frame's identity depends on the heavy-uppercase + negative-tracking + sentence-body + wide-tracked-label ladder.
 
 ```type-roles
 [
@@ -215,14 +215,7 @@ const DUR = {
 
 ### §E.5 Motion choreography
 
-- **Allowed primitives:** snap-translate (-8/-8 → 0/0 with shadow grow),
-  punch-scale (0.92 → 1.0 with back.out), stagger-reveal (children appear
-  at 0.06s offset), shadow-grow (0/0 → 8/8 in DUR.med), tilt-rest (tilt
-  applied at rest, not tweened).
-- **Forbidden gestures:** rotation tweens, blur interpolation, ease-in-out on primary motion; cross-fade between cards — use punch-translate or hard cut.
-- **Transition defaults:** hard cut between scenes is the spiritual default
-  (the template has no slide transitions). If a transition is needed,
-  punch-translate the incoming hero element with DUR.med + EASE.emphasis.
+- **Transition defaults:** hard cut between scenes is the spiritual default. If a transition is needed, punch-translate the incoming hero element with DUR.med + EASE.emphasis.
 - **Type-in-motion:** display headlines reveal as a single unit (no per-
   character split). Sub-headline reveals at +0.12s with `power2.out` +
   DUR.snap. Label-pills always emphasis-pop, never linear-fade.
@@ -249,8 +242,16 @@ const DUR = {
 ## §I Page-level CSS
 
 ```css
-/* ── Preset-native typography vars — let doc chrome render in Inter + Space Grotesk
- * regardless of brand DNA; also read by .preset-native-scope / §T atlas. */
+/* ── Preset-native typography vars (loaded via preset-meta.chromeFonts.googleFontsHref).
+ * These let the doc chrome render in Inter + Space Grotesk regardless of
+ * brand DNA. The §6 component preview and §T type-role atlas also read
+ * these via .preset-native-scope.
+ *
+ * Block Frame has no script face — the script slot points at Inter because the
+ * preset refuses a third face. The fallback chain ends in a heavy grotesque
+ * (Archivo Black / system-ui) that still carries the "neobrutalist mass"
+ * register. Mono slot is Space Grotesk (treated as quasi-mono via wide
+ * tracking + uppercase) with JetBrains Mono / IBM Plex Mono as deeper falls. */
 :root {
   --f-disp-native:
     "Inter", "Archivo Black", "Helvetica Neue", -apple-system, BlinkMacSystemFont, system-ui,
@@ -264,7 +265,7 @@ const DUR = {
     "Space Grotesk", "JetBrains Mono", "IBM Plex Mono", "Menlo", ui-monospace, monospace;
 }
 
-/* .preset-native-scope: re-bind brand DNA font tokens to preset-native families for previews. */
+/* .preset-native-scope: re-bind font tokens to preset-native families for §6 previews + §T atlas. */
 .preset-native-scope {
   --font-display: var(--f-disp-native);
   --font-body: var(--f-body-native);
@@ -307,7 +308,7 @@ pre {
   box-shadow: var(--bf-shadow-sm, 4px 4px 0 #000);
 }
 
-/* ── §T Type-role atlas. */
+/* ── §T Type-role atlas. Container = bordered + shadowed canvas card. */
 .ds-trole-box {
   display: flex;
   flex-direction: column;

@@ -1,8 +1,8 @@
 ```html
 <!--
-  Note: step number is hardcoded per variant. Pick the right variant class per
-  position (bf-step-1 / bf-step-2 / bf-step-3) and match the number text inside
-  .bf-step-num to the position (01 / 02 / 03).
+  Step number is hardcoded per variant. Pick the right variant class per position
+  (bf-step-1 / bf-step-2 / bf-step-3) and match the number text inside .bf-step-num
+  to the position (01 / 02 / 03).
 -->
 <div class="bf-timeline-step bf-step-1">
   <div class="bf-step-num">01</div>

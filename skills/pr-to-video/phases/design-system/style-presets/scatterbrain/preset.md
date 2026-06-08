@@ -35,7 +35,7 @@
 }
 ```
 
-> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. The `mono` slot points at Caveat (the system's hand-script doubles for any mono role per §D's three-slot contract). The §6 component preview and §T type-role atlas use `.preset-native-scope` so var(--font-display/body/script/mono) re-resolves to these native families for the live preview.
+> `chromeFonts` makes the doc chrome render in the preset's native fonts; brand fonts still apply to §6 components. Scatterbrain has no machine-mono moment — the `mono` slot points at Caveat per §D's three-slot contract.
 
 ## §A Director's intent
 
@@ -183,7 +183,7 @@ Scatterbrain forces its display / body / script regardless of site DNA — the w
 
 ## §T Type-role atlas (Phase 4b reads this to size text correctly)
 
-The atlas is the **sole authoring source** for non-component text. Do NOT invent ad-hoc sizes — Scatterbrain's identity collapses if Shrikhand drops out of headline roles or if body copy slips into Shrikhand.
+The atlas is the **sole authoring source** for non-component text. If a scene needs a `stat-value` numeral that isn't covered by §6 components, the worker reads role `stat-value` here and writes inline CSS from these values. Do NOT invent ad-hoc sizes — Scatterbrain's identity collapses if Shrikhand drops out of headline roles or if body copy slips into Shrikhand.
 
 ```type-roles
 [
@@ -305,6 +305,9 @@ const DUR = {
 
 **Forbidden**
 
+- Crossfade, dissolve, blur transitions between scenes.
+- Sub-degree rotation tweens on a sticky (a sticky that wiggles reads as broken).
+- Glow, neon, hard-offset zero-blur shadows (the wrong preset).
 - Border-radius on post-its (every sticky is a rectangle, only icons / pins / versus-circles are round).
 - More than 6 post-its visible at once — the playful energy collapses into chaos.
 - Uniform tilt direction across adjacent stickies — alternate ± per neighbor.

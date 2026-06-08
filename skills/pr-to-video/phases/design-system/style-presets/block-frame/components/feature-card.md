@@ -1,8 +1,7 @@
 ```html
 <!--
-  Note: feature-icon letter is hardcoded. When rendering N>1 feature-card instances
-  in one scene, manually cycle the `bf-feature-icon-*` class (a / b / c) and the
-  letter inside the div (A / B / C).
+  Feature-icon letter is hardcoded. When rendering N>1 feature-card instances in one scene,
+  manually cycle the `bf-feature-icon-*` class (a / b / c) and the letter inside the div (A / B / C).
 -->
 <div class="bf-feature-card">
   <div class="bf-feature-deco-notch"></div>
@@ -43,8 +42,7 @@
     text-transform: uppercase;
     color: var(--ink);
   }
-  /* Variants for multi-instance scenes — pick a/b/c per card so a 3-up row
-     reads as 3 distinct icons without rendering the literal letter "A" three times. */
+  /* Variants for multi-instance scenes — pick a/b/c per card so a 3-up row reads as 3 distinct icons. */
   .bf-feature-icon-a {
     background: var(--brand-primary);
   }

@@ -2,8 +2,7 @@
 <div class="pp-stat-counter">
   <div class="pp-stat-counter-num">
     {NUM}<small class="pp-stat-counter-unit">M</small>
-    <!-- Swap "M" for the unit you need: %, ×, K, B. Don't use Space Grotesk for
-         the suffix — the Caveat script face is load-bearing. -->
+    <!-- Don't use Space Grotesk for the suffix — the script face is load-bearing. -->
   </div>
   <h3 class="pp-stat-counter-label">{HEADLINE}</h3>
   <p class="pp-stat-counter-body">{LEDE}</p>

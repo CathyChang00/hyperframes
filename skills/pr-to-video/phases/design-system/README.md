@@ -2,6 +2,8 @@
 
 `block-frame/` is the **reference implementation (reference preset)**. This README defines what a style preset must contain, what each part outputs, and how to **add / refactor / convert another style** into the standard format.
 
+> The fastest way to start a new preset: `cp -r block-frame <new-name>`, then rewrite section by section according to §2, follow the rules in §4, and verify with §6.
+
 ---
 
 ## 1. Directory Shape
@@ -20,7 +22,7 @@ The build script (`phases/design-system/scripts/build-design.mjs`) reads by dire
 
 ### 1.1 Existing Presets (reference set for comparison)
 
-Below are all existing styles currently under `style-presets/`. Before creating a new one, scan them first: **(a) avoid duplicate names / duplicate positioning; (b) choose the preset whose visual language is closest to your target as the `cp -r` starting template** (§5), which is usually faster than starting from block-frame. `name` = directory name = `preset-meta.name`; fingerprints come from each preset's `preset-meta.fingerprint` (used for preset selection / inference matching; see §2.0).
+Before creating a new one, scan them first: **(a) avoid duplicate names / duplicate positioning; (b) choose the preset whose visual language is closest to your target as the `cp -r` starting template** (§5), which is usually faster than starting from block-frame. `name` = directory name = `preset-meta.name`; fingerprints come from each preset's `preset-meta.fingerprint` (used for preset selection / inference matching; see §2.0).
 
 | `name` (directory name) | label             | One-sentence style fingerprint                                                                                       |
 | ----------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -99,7 +101,7 @@ Parsed as `## §<letter> <title>`. Block Frame has 8 sections, in this order:
 
 **`§B` token naming convention** (Block Frame example): brand colors `--brand-primary/secondary/tertiary/accent/costume`, `--ink`, `--canvas`, `--brand-gradient`, decorative colors `--deco-1..4`, fonts `--font-display/body/mono`, and preset-private tokens with a prefix (Block Frame uses `--bf-*`: `--bf-border-bold`, `--bf-shadow`, `--bf-tilt-*`, `--bf-pad-*`, ...).
 
-**`§T` role schema** (each entry): `id` · `family` (display/body/mono/script, resolved at render time to `var(--font-*)`) · `purpose` · `px_min`/`px_max` · `weight` · `leading` · `tracking` · `case` · `sample_html` (uses `.t-trole-<id>` class). Decorative CSS for each role lives in §I as `.t-trole-<id> { ... }`.
+**`§T` role schema** (each entry): `id` · `family` (display/body/mono/script, resolved at render time to `var(--font-*)`) · `purpose` · `px_min`/`px_max` · `weight` · `leading` · `tracking` · `case` · `sample_html` (uses `.t-trole-<id>` class). Decorative CSS for each role lives in §I as `.t-trole-<id> { ... }`. Block Frame currently has 11 roles: `heading-xl / heading-lg / heading-md / close-title / quote-text / stat-number / card-title / step-num / label-pill / mono-tag / counter`.
 
 > **`sample_html` copy convention:** sample text should be the kind of **short real copy a video would use** (headline / number / eyebrow, etc.). **Do not write self-describing placeholder prose** (for example, `<p>Body sits at 24-28px, weight 400 — never uppercase...</p>` describing the role itself). That kind of self-description reads like debug notes in the design.html §T atlas, not a sample. Either provide a proper sample line, or, if the role is just generic body text without a signature worth demonstrating, do not create that role at all (let §6 components carry body copy; see how capsule leaves almost no generic body role).
 
@@ -213,9 +215,9 @@ grep -rhoE "font-size:[^;]+" <ds-dir>/chunks/components/*.html <ds-dir>/chunks/t
          if(p<24)print "  WARN "t" approx "p"px  <- "$0}'
 ```
 
-> **Do not scan only `px`** - small text written in `rem` / `vw` will be missed (capsule's components were all `rem`, and once fooled a px-only check). The normalized px/rem/vw version above is the reliable one.
+> **Do not scan only `px`** — `rem` / `vw` values will be missed; the normalized version above covers all three.
 
-> This grep is a **hard final check**: after creating or editing a preset, you must run it against that preset, and **only empty output passes** (any <24px value must be raised or the role / font-size deleted). All existing presets already satisfy it, so treat it as an unbreakable floor.
+> This grep is a **hard final check**: only empty output passes — any <24px value must be raised or deleted.
 
 **`caption-skin.html` verification** (§4 rule 6, required): every preset should provide one. Run:
 
