@@ -3,6 +3,7 @@ import {
   removeElementFromHtml,
   patchElementInHtml,
   probeElementInSource,
+  splitElementInHtml,
 } from "./sourceMutation.js";
 
 describe("removeElementFromHtml", () => {
@@ -124,6 +125,29 @@ describe("patchElementInHtml", () => {
 
     expect(result).toContain("New Title");
     expect(result).not.toContain("Hello World");
+  });
+
+  it("patches text content when inner wrapper is <p> not <div>", () => {
+    const html = `<div id="el" data-start="0" data-end="5"><p>Original</p></div>`;
+    const { html: result, matched } = patchElementInHtml(html, { id: "el" }, [
+      { type: "text-content", property: "", value: "Replaced" },
+    ]);
+
+    expect(matched).toBe(true);
+    expect(result).toContain("Replaced");
+    expect(result).not.toContain("Original");
+    // Outer div structure preserved — p tag still wraps the text
+    expect(result).toMatch(/<p[^>]*>Replaced<\/p>/);
+  });
+
+  it("patches text content when inner wrapper is <span>", () => {
+    const html = `<div id="el" data-start="0" data-end="5"><span>Original</span></div>`;
+    const { html: result } = patchElementInHtml(html, { id: "el" }, [
+      { type: "text-content", property: "", value: "Replaced" },
+    ]);
+
+    expect(result).toContain("Replaced");
+    expect(result).toMatch(/<span[^>]*>Replaced<\/span>/);
   });
 
   it("applies multiple operations in one call", () => {
@@ -359,6 +383,61 @@ describe("probeElementInSource", () => {
 
     expect(probeElementInSource(sourceHtml, { id: "arrows-svg" })).toBe(false);
     expect(probeElementInSource(sourceHtml, { id: "canvas" })).toBe(true);
+  });
+});
+
+describe("splitElementInHtml", () => {
+  it("splits a data-end element and removes stale data-duration from both halves", () => {
+    const html = `<!doctype html><html><body><div id="el" data-start="0" data-end="10"><div>Text</div></div></body></html>`;
+    const { html: result, matched, newId } = splitElementInHtml(html, { id: "el" }, 5, "el-b");
+
+    expect(matched).toBe(true);
+    expect(newId).toBe("el-b");
+    // First half: data-end="5", no data-duration
+    expect(result).toMatch(/id="el"[^>]*data-end="5"/);
+    expect(result).not.toMatch(/id="el"[^>]*data-duration/);
+    // Second half: data-start="5", data-end="10", no data-duration
+    expect(result).toMatch(/id="el-b"[^>]*data-start="5"/);
+    expect(result).toMatch(/id="el-b"[^>]*data-end="10"/);
+    expect(result).not.toMatch(/id="el-b"[^>]*data-duration/);
+  });
+
+  it("splits a data-duration element and removes stale data-end from both halves", () => {
+    const html = `<!doctype html><html><body><div id="el" data-start="0" data-duration="10"><div>Text</div></div></body></html>`;
+    const { html: result, matched } = splitElementInHtml(html, { id: "el" }, 5, "el-b");
+
+    expect(matched).toBe(true);
+    // First half: data-duration="5", no data-end
+    expect(result).toMatch(/id="el"[^>]*data-duration="5"/);
+    expect(result).not.toMatch(/id="el"[^>]*data-end/);
+    // Second half: data-duration="5", no data-end
+    expect(result).toMatch(/id="el-b"[^>]*data-duration="5"/);
+    expect(result).not.toMatch(/id="el-b"[^>]*data-end/);
+  });
+
+  it("produces correct media trim offset when data-playback-rate is absent", () => {
+    const html = `<!doctype html><html><body><div id="el" data-start="0" data-end="10" data-playback-start="2"><div>Text</div></div></body></html>`;
+    const { html: result, matched } = splitElementInHtml(html, { id: "el" }, 4, "el-b");
+
+    expect(matched).toBe(true);
+    // Split at t=4, firstDuration=4, rate defaults to 1 → new trim = 2 + 4*1 = 6
+    expect(result).toContain('data-playback-start="6"');
+    // Must not produce NaN
+    expect(result).not.toContain("NaN");
+  });
+
+  it("returns matched:false when split time is outside element bounds", () => {
+    const html = `<!doctype html><html><body><div id="el" data-start="0" data-end="10"><div>Text</div></div></body></html>`;
+
+    expect(splitElementInHtml(html, { id: "el" }, 0, "el-b").matched).toBe(false);
+    expect(splitElementInHtml(html, { id: "el" }, 10, "el-b").matched).toBe(false);
+    expect(splitElementInHtml(html, { id: "el" }, 11, "el-b").matched).toBe(false);
+  });
+
+  it("returns matched:false when target not found", () => {
+    const html = `<!doctype html><html><body><div id="el" data-start="0" data-end="10"><div>Text</div></div></body></html>`;
+    const { matched } = splitElementInHtml(html, { id: "nonexistent" }, 5, "el-b");
+    expect(matched).toBe(false);
   });
 });
 
