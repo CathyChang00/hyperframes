@@ -195,7 +195,15 @@ export function patchElementInHtml(
         }
         break;
       case "text-content":
-        if (op.value != null) htmlEl.textContent = op.value;
+        if (op.value != null) {
+          // The generator wraps text in an inner <div>; set content there to preserve structure.
+          const inner = htmlEl.firstElementChild;
+          const textTarget =
+            inner && inner.tagName.toLowerCase() === "div"
+              ? (inner as unknown as HTMLElement)
+              : htmlEl;
+          textTarget.textContent = op.value;
+        }
         break;
     }
   }
@@ -219,6 +227,34 @@ export interface SplitElementResult {
   newId: string | null;
 }
 
+function resolveElementTiming(el: Element): {
+  start: number;
+  duration: number;
+  usesDataEnd: boolean;
+} {
+  const start = parseFloat(el.getAttribute("data-start") ?? "0") || 0;
+  // Generator writes data-end; legacy elements use data-duration. Support both.
+  const usesDataEnd = el.hasAttribute("data-end");
+  const duration = usesDataEnd
+    ? parseFloat(el.getAttribute("data-end") ?? "") - start || 0
+    : parseFloat(el.getAttribute("data-duration") ?? "0") || 0;
+  return { start, duration, usesDataEnd };
+}
+
+function setElementDuration(
+  el: Element,
+  start: number,
+  duration: number,
+  usesDataEnd: boolean,
+): void {
+  const rounded = String(Math.round((start + duration) * 1000) / 1000);
+  if (usesDataEnd) {
+    el.setAttribute("data-end", rounded);
+  } else {
+    el.setAttribute("data-duration", String(Math.round(duration * 1000) / 1000));
+  }
+}
+
 export function splitElementInHtml(
   source: string,
   target: SourceMutationTarget,
@@ -229,8 +265,7 @@ export function splitElementInHtml(
   const el = findTargetElement(document, target);
   if (!el || !isHTMLElement(el)) return { html: source, matched: false, newId: null };
 
-  const start = parseFloat(el.getAttribute("data-start") ?? "0") || 0;
-  const duration = parseFloat(el.getAttribute("data-duration") ?? "0") || 0;
+  const { start, duration, usesDataEnd } = resolveElementTiming(el);
   if (duration <= 0 || splitTime <= start || splitTime >= start + duration) {
     return { html: source, matched: false, newId: null };
   }
@@ -241,7 +276,7 @@ export function splitElementInHtml(
   const clone = el.cloneNode(true) as HTMLElement;
   clone.setAttribute("id", newId);
   clone.setAttribute("data-start", String(Math.round(splitTime * 1000) / 1000));
-  clone.setAttribute("data-duration", String(Math.round(secondDuration * 1000) / 1000));
+  setElementDuration(clone, splitTime, secondDuration, usesDataEnd);
 
   // Adjust media trim offset for the second half
   const playbackStartAttr = el.hasAttribute("data-playback-start")
@@ -259,7 +294,7 @@ export function splitElementInHtml(
   }
 
   // Trim the original element's duration
-  el.setAttribute("data-duration", String(Math.round(firstDuration * 1000) / 1000));
+  setElementDuration(el, start, firstDuration, usesDataEnd);
 
   // Insert clone after original
   if (el.nextSibling) {
