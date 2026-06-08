@@ -196,12 +196,10 @@ export function patchElementInHtml(
         break;
       case "text-content":
         if (op.value != null) {
-          // The generator wraps text in an inner <div>; set content there to preserve structure.
-          const inner = htmlEl.firstElementChild;
-          const textTarget =
-            inner && inner.tagName.toLowerCase() === "div"
-              ? (inner as unknown as HTMLElement)
-              : htmlEl;
+          // The generator wraps text in a single inner element; target it to preserve outer structure.
+          // Only unwrap one level when there is exactly one element child (the text container).
+          const inner = htmlEl.children.length === 1 ? htmlEl.firstElementChild : null;
+          const textTarget = inner ? (inner as unknown as HTMLElement) : htmlEl;
           textTarget.textContent = op.value;
         }
         break;
@@ -247,11 +245,13 @@ function setElementDuration(
   duration: number,
   usesDataEnd: boolean,
 ): void {
-  const rounded = String(Math.round((start + duration) * 1000) / 1000);
   if (usesDataEnd) {
-    el.setAttribute("data-end", rounded);
+    const endTime = String(Math.round((start + duration) * 1000) / 1000);
+    el.setAttribute("data-end", endTime);
+    el.removeAttribute("data-duration"); // clean up legacy sibling attr
   } else {
     el.setAttribute("data-duration", String(Math.round(duration * 1000) / 1000));
+    el.removeAttribute("data-end"); // clean up if previously migrated
   }
 }
 
@@ -286,7 +286,8 @@ export function splitElementInHtml(
       : null;
   if (playbackStartAttr) {
     const currentTrim = parseFloat(el.getAttribute(playbackStartAttr) ?? "0") || 0;
-    const rate = parseFloat(el.getAttribute("data-playback-rate") ?? "1") || 1;
+    const rateRaw = parseFloat(el.getAttribute("data-playback-rate") ?? "");
+    const rate = Number.isFinite(rateRaw) ? rateRaw : 1;
     clone.setAttribute(
       playbackStartAttr,
       String(Math.round((currentTrim + firstDuration * rate) * 1000) / 1000),
