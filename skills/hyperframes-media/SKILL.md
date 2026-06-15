@@ -1,6 +1,6 @@
 ---
 name: hyperframes-media
-description: Asset preprocessing for HyperFrames compositions — text-to-speech narration (Kokoro), audio/video transcription (Whisper), 访谈/口播素材转写后的重组剪辑规划, and background removal for transparent overlays (u2net). Use when generating voiceover from text, transcribing speech for captions, cutting or reorganizing raw interview/口播 footage from transcripts, removing the background from a video or image to use as a transparent overlay, choosing a TTS voice or whisper model, or chaining these (TTS → transcribe → captions). Each command downloads its own model on first run.
+description: HyperFrames 素材预处理技能，覆盖本地文字转语音、音视频转写、访谈/口播素材的论题/论点/论据梳理、纸面剪辑方案、嘉宾回答重组、去主持人音频、剪映文稿匹配稿、保留 iPhone 竖屏/HDR 原始观感的裁切导出，以及透明背景抠像。用户要生成旁白、转写字幕、剪访谈、重组街采/口播、只保留嘉宾、去掉主持人、按 transcript 规划剪辑、保持原片色彩和比例、或做 TTS → 转写 → 字幕链路时使用。
 ---
 
 # HyperFrames Media Preprocessing
@@ -100,28 +100,35 @@ Compositions consume a flat array of word objects. The `id` field (`w0`, `w1`, .
 ]
 ```
 
-### 访谈 / 口播重剪 Workflow
+### 访谈 / 口播重剪流程
 
 当用户给原始访谈、街采、podcast、真人口播素材，并且想按观点逻辑重剪，而不是简单按时间裁切时，用这套流程。
 
-1. **先转写，再规划。** 不要直接导出剪辑版。先做带时间戳的可读 transcript，标出说话人，并说明 transcript 是机器转写还是已经人工校正过。
+1. **先转写，再规划。** 不要直接导出剪辑版。先做带时间戳的可读转写稿，标出说话人，并说明转写稿是机器转写还是已经人工校正过。
 2. **即使最后删掉主持人，也要先找主持人的主线。** 访谈里经常是主持人在维持问题结构。最终成片可以完全裁掉主持人，但剪辑前必须先用主持人的问题判断真正要回答的问题是什么。
-3. **把嘉宾按句子级别拆开。** 不要把 Whisper block 或 transcript 大段当成剪辑单位。把嘉宾回答拆成 sentence-level / claim-level segments：结论、论据、例外、案例、补充、口水词、跑题转向。
-4. **围绕一个主论点重组。** 开头先放最直接的回答，再接最强的直接理由。常见结构是：结论 → 个人证据 → 为什么 title/credential 不稀缺 → 真正重要的是什么 → 例子/例外 → 可执行 takeaway。
-5. **删口水词要看功能，不是只看词本身。** 例如 "again I don't think" 如果没有新增信息就删；但如果一句话虽然不完美，却承载了必要含义或转场，就保留。
-6. **案例只有服务主线才留。** named example 有用的前提是它能解释观点；如果一个例子听起来有意思但把视频带到另一个 topic，就删掉或另做一条视频。
-7. **涉及逻辑重排时，必须先让用户审批。** 先给 paper edit：精确 source time range、建议顺序、保留/删除理由、可选结尾。等用户确认关键句和顺序后，再导出视频。
-8. **导出后必须做技术检查。** 检查时长、分辨率、codec/audio，跑一遍 decode pass；如果原片有横竖屏旋转信息，必须抽帧确认人物没有被拉伸。
+3. **把嘉宾按句子级别拆开。** 不要把 Whisper 分段或转写稿大段当成剪辑单位。把嘉宾回答拆成句子级/观点级片段：结论、论据、例外、案例、补充、口水词、跑题转向。
+4. **先还原原片论证，再决定是否重排。** 不要为了“剪得更短”把原片本来完整的论题、论点、论据拆散。先写出：主持人实际追问的问题、嘉宾的核心回答、每个支撑细节的功能；如果原片已经有清楚结构，优先保留原结构，只做删主持人、删口水词、删跑题段。
+5. **围绕一个主论点重组。** 开头先放最直接的回答，再接最强的直接理由。常见结构是：结论 → 个人证据 → 为什么头衔/履历不稀缺 → 真正重要的是什么 → 例子/例外 → 可执行结论。增长类访谈常见结构是：为什么选这个话题 → 为什么此时/此平台做 → 平台机制解释 → 支撑细节 → 人物态度/结尾金句。
+6. **先讲具体对象，再讲抽象方法论。** 如果视频题目是某个公司动作、岗位或活动，例如 Café Cursor、DevRel、ABG CMO，开头必须先解释这个对象为什么值得讲，再接方法论。不要用 Twitter 方法论、平台机制、内容辅导这类泛化段落开场；用户说“可以删掉，或者放后面”时，默认先删掉，除非它能明确支撑主论点。
+7. **删口水词要看功能，不是只看词本身。** 例如 "again I don't think" 如果没有新增信息就删；但如果一句话虽然不完美，却承载了必要含义或转场，就保留。删气口、重复词和未完成半句时，不要剪掉句子的语义收尾。
+8. **案例和支撑细节只有服务主线才留。** 具名案例、平台对比、情绪铺垫都有用，但必须说明它支撑哪一个论点。如果一个细节会把视频带到另一个话题，就删掉或另做一条视频。
+9. **涉及逻辑重排时，必须先让用户审批。** 先给纸面剪辑方案：精确原片时间段、建议顺序、保留/删除理由、可选结尾。等用户确认关键句和顺序后，再导出视频。
+10. **主持人音频默认不进成片。** Cathy 常会自己录旁白垫音轨；除非用户明确要求保留主持人一句短问题，否则剪辑版默认只保留嘉宾声音。导出后必须用转写稿或听感确认没有主持人问题、笑声尾巴、“thank you” 这类结尾杂音。
+11. **导出后必须做技术检查。** 检查时长、分辨率、codec/audio，跑一遍 decode pass；如果原片有横竖屏旋转信息，必须抽帧确认人物没有被拉伸。
+12. **剪辑不等于调色。** 默认保持原片色彩路径，不要擅自加 `eq`、亮度、对比度、饱和度、gamma、色调映射或 SDR 转换。iPhone HDR/HLG/Dolby Vision 源片优先保持 10-bit HEVC 与原始色彩元数据（常见为 `bt2020nc / arib-std-b67 / bt2020`）；只有用户明确要求 SDR 交付、压暗、校色或平台兼容版时，才另出 SDR 版本，并把参数写进说明文件。
+13. **给剪映文稿匹配要另出干净文稿。** 用户要“文稿匹配”或“完整 transcript”时，输出不带时间轴、不带说话人、不带段落标题的文稿。若用户提供片头旁白，把旁白放在最前面，再接最终剪辑里的嘉宾台词；只做必要语法修正，例如把 "over a thousand Café Cursor" 改成 "over a thousand Café Cursor events"，不要重写用户已确认的表达。
 
 Cathy 的访谈口播剪辑默认交互流程：
 
-1. Transcript。
-2. 主持人的 hidden outline。
-3. 嘉宾逐句 claim 拆分。
-4. 建议保留/删除/重排方案。
-5. 用户审批。
-6. 导出剪辑版。
-7. 技术检查 + 简短 notes 文件。
+1. 转写稿。
+2. 主持人的隐藏问题线。
+3. 原片论题、论点、论据梳理。
+4. 嘉宾逐句观点拆分。
+5. 建议保留/删除/重排方案。
+6. 用户审批。
+7. 导出剪辑版。
+8. 技术检查 + 简短说明文件。
+9. 剪映文稿匹配版转写稿（如用户需要）。
 
 例子：VC 经历这段的开头顺序应该是：
 
@@ -136,6 +143,14 @@ I still feel like it's more important what you did at those roles, at those expe
 ```
 
 这组顺序成立，是因为 "So many people have worked at a VC firm" 是在解释为什么 "the title doesn't really do much"。它应该贴在 title 那句后面，而不是放到后面当成一个新 topic。
+
+例子：ABG CMO / Twitter viral 访谈应该先解释为什么选这个 topic，再解释为什么从 LinkedIn 切到 Twitter，然后说明 Twitter 与 Instagram 的算法差异，最后用 hate comments 做人物态度和 algorithm 回扣。不要一上来先讲算法，否则视频会变成抽象分析，丢掉原片“选题为什么成立”的上下文。
+
+例子：DevRel 访谈的顺序应是：DevRel 到底是什么 → 为什么 B2B 公司需要 DevRel → 为什么 AI 时代 DevRel 变重要 → 怎么衡量 DevRel 是否有效 → X / LinkedIn / YouTube 等平台分工。不要把 "how to measure success" 放在定义之前；如果主持人问题被剪掉，仍然要按这个隐藏问题线组织嘉宾回答。
+
+例子：Cursor / Café Cursor 访谈如果主线是 community-led growth，应直接从 Café Cursor 的具体起源开始，再接 community-led growth 与 PLG / SLG 如何一起工作，最后落到 NPS、见客户/潜在客户、收集反馈、工程团队直接见用户。Twitter 内容方法论这类段落会把视频带到个人内容增长，用户说“删掉或放后面”时，优先删掉。
+
+例子：如果原片是 iPhone HLG/HDR 口播，最终剪辑版应默认保持 `hevc / yuv420p10le / bt2020nc / arib-std-b67 / bt2020` 这类原始色彩路径。生成 SDR 预览版可以作为备选，但不能覆盖用户要的主剪辑版；说明文件里必须写明是否做了 SDR 转换或任何亮暗/饱和度调整。
 
 ## Background Removal (`remove-background`)
 
