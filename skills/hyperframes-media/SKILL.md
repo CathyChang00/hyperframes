@@ -1,11 +1,13 @@
 ---
 name: hyperframes-media
-description: HyperFrames 素材预处理技能，覆盖本地文字转语音、音视频转写、访谈/口播素材的论题/论点/论据梳理、纸面剪辑方案、嘉宾回答重组、去主持人音频、剪映文稿匹配稿、保留 iPhone 竖屏/HDR 原始观感的裁切导出，以及透明背景抠像。用户要生成旁白、转写字幕、剪访谈、重组街采/口播、只保留嘉宾、去掉主持人、按 transcript 规划剪辑、保持原片色彩和比例、或做 TTS → 转写 → 字幕链路时使用。
+description: HyperFrames 素材预处理技能，覆盖本地文字转语音、音视频转写、访谈/口播素材的论题/论点/论据梳理、纸面剪辑方案、嘉宾回答重组、去主持人音频、剪映文稿匹配稿、保留 iPhone 竖屏/HDR 原始观感的裁切导出、短视频封面/thumbnail 文案修改，以及透明背景抠像。用户要生成旁白、转写字幕、剪访谈、重组街采/口播、只保留嘉宾、去掉主持人、按 transcript 规划剪辑、保持原片色彩和比例、修改封面标题/字幕/上下虚化区文案、或做 TTS → 转写 → 字幕链路时使用。
 ---
 
 # HyperFrames Media Preprocessing
 
 Three CLI commands that produce assets for compositions: `tts` (speech), `transcribe` (timestamps), and `remove-background` (transparent video). Each downloads a model on first run and caches it under `~/.cache/hyperframes/`. Drop the output into the project, then reference it from the composition HTML — see the `hyperframes` skill for the audio/video element conventions.
+
+When Cathy asks to revise a cover, thumbnail, title image, top/bottom blurred text area, or a cover screenshot, read `references/cover-thumbnail.md` before editing. The default is to preserve the latest approved cover composition and only change the named text elements.
 
 ## Text-to-Speech (`tts`)
 
