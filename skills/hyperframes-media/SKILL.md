@@ -1,6 +1,6 @@
 ---
 name: hyperframes-media
-description: HyperFrames 素材预处理技能，覆盖本地文字转语音、音视频转写、访谈/口播素材的论题/论点/论据梳理、纸面剪辑方案、嘉宾回答重组、去主持人音频、剪映文稿匹配稿、保留 iPhone 竖屏/HDR 原始观感的裁切导出、短视频封面/thumbnail 文案修改，以及透明背景抠像。用户要生成旁白、转写字幕、剪访谈、重组街采/口播、只保留嘉宾、去掉主持人、按 transcript 规划剪辑、保持原片色彩和比例、修改封面标题/字幕/上下虚化区文案、或做 TTS → 转写 → 字幕链路时使用。
+description: HyperFrames 素材预处理技能，覆盖本地文字转语音、音视频转写、访谈/口播素材的论题/论点/论据梳理、纸面剪辑方案、嘉宾回答重组、去主持人音频、剪映文稿匹配稿、保留 iPhone 竖屏/HDR 原始观感的裁切导出、已有成片加字幕默认 3:4 竖屏画布、短视频封面/thumbnail 文案修改，以及透明背景抠像。用户要生成旁白、转写字幕、剪访谈、重组街采/口播、只保留嘉宾、去掉主持人、按 transcript 规划剪辑、保持原片色彩和比例、给成片加中文字幕并嵌入 3:4 竖屏画布、修改封面标题/字幕/上下虚化区文案、或做 TTS → 转写 → 字幕链路时使用。
 ---
 
 # HyperFrames Media Preprocessing
@@ -8,6 +8,8 @@ description: HyperFrames 素材预处理技能，覆盖本地文字转语音、�
 Three CLI commands that produce assets for compositions: `tts` (speech), `transcribe` (timestamps), and `remove-background` (transparent video). Each downloads a model on first run and caches it under `~/.cache/hyperframes/`. Drop the output into the project, then reference it from the composition HTML — see the `hyperframes` skill for the audio/video element conventions.
 
 When Cathy asks to revise a cover, thumbnail, title image, top/bottom blurred text area, or a cover screenshot, read `references/cover-thumbnail.md` before editing. The default is to preserve the latest approved cover composition and only change the named text elements.
+
+When Cathy asks to add subtitles/captions to an existing video, default to a 3:4 vertical canvas export, not a direct same-as-source horizontal burn-in. Use a 1080x1440 Bryan/Corgi-style layout: the 16:9 source footage centered, blurred/extended background filling the canvas, and Chinese captions in the established lower safe area. Only keep the original aspect ratio when she explicitly asks to preserve the horizontal source dimensions.
 
 ## Text-to-Speech (`tts`)
 
@@ -119,6 +121,19 @@ Compositions consume a flat array of word objects. The `id` field (`w0`, `w1`, .
 11. **导出后必须做技术检查。** 检查时长、分辨率、codec/audio，跑一遍 decode pass；如果原片有横竖屏旋转信息，必须抽帧确认人物没有被拉伸。
 12. **剪辑不等于调色。** 默认保持原片色彩路径，不要擅自加 `eq`、亮度、对比度、饱和度、gamma、色调映射或 SDR 转换。iPhone HDR/HLG/Dolby Vision 源片优先保持 10-bit HEVC 与原始色彩元数据（常见为 `bt2020nc / arib-std-b67 / bt2020`）；只有用户明确要求 SDR 交付、压暗、校色或平台兼容版时，才另出 SDR 版本，并把参数写进说明文件。
 13. **给剪映文稿匹配要另出干净文稿。** 用户要“文稿匹配”或“完整 transcript”时，输出不带时间轴、不带说话人、不带段落标题的文稿。若用户提供片头旁白，把旁白放在最前面，再接最终剪辑里的嘉宾台词；只做必要语法修正，例如把 "over a thousand Café Cursor" 改成 "over a thousand Café Cursor events"，不要重写用户已确认的表达。
+
+### Cathy 成片加字幕默认规则
+
+当用户给的是“我剪完的版本”“直接用这个视频”“基于这个 vX 版本继续改”，把该文件当作 source of truth。不要回到更早的原素材、旧导出或之前下载的 B-roll，除非用户明确要求替换素材。
+
+1. **“加字幕”默认交付 3:4 竖屏画布。** Cathy 说“加字幕”“加中文字幕”“把字幕加到视频上”时，默认导出 `1080x1440`，不是在原横屏文件上直接烧字幕。原 16:9 主画面要居中嵌入，上下用虚化或延展背景填充，中文字幕放在既定底部安全区；只有她明确说“保持横屏原尺寸”时才输出原比例。
+2. **指定源视频优先。** 如果指定视频里已经有英文字幕、name card、章节 title、品牌特效字，默认全部保留；只在用户明确要求删除或重做时才覆盖。不要因为可以重新生成就做重复 name card、重复标题或重复字幕。
+3. **中文 script 是字幕真值。** 机器转写或英文台词只用于对齐时间，不用于改写中文内容；中文和英文略有不一致时，字幕仍严格按用户给的中文 script 走。
+4. **中英文字幕要共存。** 当源视频已经有英文字幕时，只加中文字幕。中文放在与英文有清楚间距的位置，不遮住英文；半透明黑底可以保留，厚黑描边不要加。
+5. **长句分页，不要强行两行。** 用户说“一句话一次只出现一行”时，长句拆成多个 caption card；同一个 card 内不要折成两行。最后只剩一两个英文词时，优先略微拉宽或缩小字号，而不是把单词单独掉到下一行。
+6. **统一字号和基线。** 同一条视频内字幕字号固定；Corgi、Higgsfield、PayPal 等品牌词可用品牌色或字形，但必须和当前字幕文字以底端 baseline 对齐，不要漂浮或下沉。
+7. **3:4 居中要数学确认。** 用户说“正居中”时，不是凭肉眼上移或下移，而是计算主画面前景框：`foreground_y + foreground_h / 2 == canvas_h / 2`。导出后抽帧确认人物和字幕间距，不要让主画面偏上。
+8. **每次导出都要技术和视觉检查。** 至少跑 `ffprobe`、完整 decode pass，并抽开头、普通字幕、长字幕、章节边界和结尾附近截图。最终回复只说源文件、输出文件、尺寸/时长和关键检查结果。
 
 Cathy 的访谈口播剪辑默认交互流程：
 
