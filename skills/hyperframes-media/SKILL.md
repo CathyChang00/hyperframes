@@ -1,6 +1,6 @@
 ---
 name: hyperframes-media
-description: HyperFrames 素材预处理技能，覆盖本地文字转语音、音视频转写、访谈/口播素材的论题/论点/论据梳理、纸面剪辑方案、嘉宾回答重组、去主持人音频、剪映文稿匹配稿、保留 iPhone 竖屏/HDR 原始观感的裁切导出、已有成片加字幕默认 3:4 竖屏画布、短视频封面/thumbnail 文案修改，以及透明背景抠像。用户要生成旁白、转写字幕、剪访谈、重组街采/口播、只保留嘉宾、去掉主持人、按 transcript 规划剪辑、保持原片色彩和比例、给成片加中文字幕并嵌入 3:4 竖屏画布、修改封面标题/字幕/上下虚化区文案、或做 TTS → 转写 → 字幕链路时使用。
+description: HyperFrames 素材预处理技能，覆盖本地文字转语音、音视频转写、从长访谈收敛 3–4 条核心视频母题、访谈/口播素材的论题/论点/论据梳理、纸面剪辑方案、嘉宾回答重组、去主持人音频、剪映文稿匹配稿、保留 iPhone 竖屏/HDR 原始观感的裁切导出、已有成片加字幕默认 3:4 竖屏画布、短视频封面/thumbnail 文案修改，以及透明背景抠像。用户要生成旁白、转写字幕、剪访谈、把多个采访问题合并成少数核心视频、重组街采/口播、只保留嘉宾、去掉主持人、按 transcript 规划剪辑、保持原片色彩和比例、给成片加中文字幕并嵌入 3:4 竖屏画布、修改封面标题/字幕/上下虚化区文案、或做 TTS → 转写 → 字幕链路时使用。
 ---
 
 # HyperFrames Media Preprocessing
@@ -121,6 +121,39 @@ Compositions consume a flat array of word objects. The `id` field (`w0`, `w1`, .
 11. **导出后必须做技术检查。** 检查时长、分辨率、codec/audio，跑一遍 decode pass；如果原片有横竖屏旋转信息，必须抽帧确认人物没有被拉伸。
 12. **剪辑不等于调色。** 默认保持原片色彩路径，不要擅自加 `eq`、亮度、对比度、饱和度、gamma、色调映射或 SDR 转换。iPhone HDR/HLG/Dolby Vision 源片优先保持 10-bit HEVC 与原始色彩元数据（常见为 `bt2020nc / arib-std-b67 / bt2020`）；只有用户明确要求 SDR 交付、压暗、校色或平台兼容版时，才另出 SDR 版本，并把参数写进说明文件。
 13. **给剪映文稿匹配要另出干净文稿。** 用户要“文稿匹配”或“完整 transcript”时，输出不带时间轴、不带说话人、不带段落标题的文稿。若用户提供片头旁白，把旁白放在最前面，再接最终剪辑里的嘉宾台词；只做必要语法修正，例如把 "over a thousand Café Cursor" 改成 "over a thousand Café Cursor events"，不要重写用户已确认的表达。
+
+#### 多视频选题 gate 与 storytelling paraphrase
+
+当用户要从一场长访谈剪出 3–4 条内容时，先收敛母题并写编辑层 storytelling，再回原文找 supporting quotes。
+
+1. **先找可发布的命题，不要把素材对象当 topic。** `Reddit`、`Twitter`、产品定位、账号被 ban 都只是渠道、机制或事件；母题必须能写成一个有立场的结论、一个结果背后的方法，或一次增长阶段变化。标题去掉平台名后仍然成立，通常才有继续做的价值。
+2. **优先筛三类强母题。** 第一类是“反常识结论 + 验证边界”，例如 `YOUR FIRST 100 USERS SHOULD PAY YOU`，再用 Reddit 解释如何验证而不是如何放量；第二类是“量化结果 + 具名机制”，例如 `2M VIEWS. 6,000 USERS.`，再解释 product messaging 和持续发布的反馈循环；第三类是“已有打法 + 突发转折 + 下一阶段”，例如 founder-led growth 遇到封号后转向多平台和第二增长曲线。
+3. **把事件放回因果链。** 封号通常是转折，不自动成为母题；平台通常是证据场景，不自动成为母题；一句 viral hook 通常是获客入口，不等于完整 GTM。先问它改变了什么，再决定视频在讲事件、机制还是阶段变化。
+4. **机制依附型候选优先合并。** 如果候选 B 主要用来解释候选 A 为什么成功，而且独立成片会复用同一组起点、数据和结尾，就合并成一条。只有当两条各自拥有独立结论、独立 evidence pool，并且不靠填充就都能达到目标时长时才拆开。
+5. **不要为了数量硬凑 topic。** 剩余证据只够一条 2–3 分钟短片时，标成 optional short；证据不足时宁可稳定收敛为 3 条，也不要用重复回答凑第 4 条。
+6. **先写 storytelling paraphrase，再回原文找 quote。** 用大白话给每个阶段各写一句，默认顺序是 `结果或结论 → 起点或误解 → 动作与机制 → 转折 → payoff / what's next`。如果无法把这些阶段写成因果关系，说明母题还没成熟；如果原文缺少某一步，不要补写事实，只能标为编辑推断或删掉这一步。
+7. **paraphrase 只负责组织，不负责改造原话。** 固定分成四层：`topic thesis` 是编辑判断，`storytelling paraphrase` 是编辑叙事，`exact transcript evidence` 是可搜索原文，`subtitle correction` 是执行建议。paraphrase 可以综合多段原文、调整顺序和解释每段功能，但不能加引号、不能塞进 quote block，也不能冒充嘉宾说过的完整句子。
+8. **标题数据必须单独核验。** 把量化结果当 hook 前，回原文确认指标、单位、speaker 和时间范围；例如 `6,000 users` 不能改成 `6,000 emails`。若数字是嘉宾自述，交付时标注 self-reported，不要因为标题更顺就修补互相冲突的数据。
+
+推荐 paper script 结构：
+
+```text
+Heading 1：VIDEO N｜TOPIC TITLE
+成片 title
+POV（注明纯画面文字或 VO）
+核心命题
+Storytelling paraphrase（编辑层，不是 quote）
+预计长度
+叙事顺序
+标题数据 / 事实核验
+
+每段素材：
+素材定位｜speaker
+剪辑功能
+exact transcript excerpt
+剪辑边界
+字幕 / 声纹风险
+```
 
 ### Cathy 成片加字幕默认规则
 
