@@ -1,6 +1,6 @@
 ---
 name: hyperframes-interview
-description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核、从长访谈收敛 3–4 条核心视频、论题/论点/论据重组、topic/title/chapter 命名、两句话 VO question / POV、transcript-backed paper script、双机位与 Drive 文件命名、Google Doc 剪辑交付、剪映文稿匹配，以及访谈成片字幕与封面。用户要 review 访谈、重组嘉宾回答、把多个采访问题合并成 4–6 分钟切片、设计主持人补录问题，或把素材整理成剪辑师可执行文档时使用。
+description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核、从长访谈收敛 3–6 条核心视频、论题/论点/论据重组、全原声优先的开场 Hook、topic/title/chapter 命名、VO question / POV、transcript-backed paper script、双机位与 Drive 文件命名、Google Doc 剪辑交付、剪映文稿匹配，以及 3:4 访谈成片的字幕、封面、字号、位置与硬同步。用户要 review 访谈、重组嘉宾回答、把多个采访问题合并成 4–6 分钟切片、只用现场问答搭建成片、设计主持人补录问题，或把素材整理成剪辑师可执行文档时使用。
 ---
 
 # HyperFrames Interview
@@ -26,8 +26,10 @@ description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核�
 4. **给每个 supporting detail 一个功能。** 标明它证明起点、机制、阶段变化、案例、结果、例外还是组织影响；无法说明作用就删除或放入备选库。
 5. **不要把关键词当论据。** 一段只提到 performance ads、community 或 agent，却不能证明当前主论点，就不能作为 supporting evidence。
 6. **机制依附型候选优先合并。** 候选 B 主要解释 A 为什么成立，而且会复用同一组起点、数据和结尾时合并；只有两条都有独立结论和独立 evidence pool 时才拆开。
-7. **太短时扩大母题，不要填充。** 沿同一因果链向外扩一层，再反推 title、VO 和叙事顺序；证据只够 2–3 分钟时标为 optional short。
+7. **太短时扩大母题，不要填充。** 沿同一因果链向外扩一层，再反推 title、开场和叙事顺序；证据只够 2–3 分钟时标为 optional short。
 8. **写清素材所有权。** 同一句原声默认只归一条视频，避免四条视频换标题后重复使用。
+9. **先核算时长，再承诺条数。** 用户要求每条至少 5 分钟时，按独占原声和 130–150 words/minute 核算；证据不足就建议减少条数或标成短版，禁止复用素材和保留弱段硬凑时长。
+10. **删除 topic 后只做有功能的回收。** 把被删 topic 的剩余素材逐段标成机制、案例、边界或结果，只在能加强现有主线且不造成重复时并入；无法说明功能就留在 unused pool，不要硬补到其他视频。
 
 ### 标题与 chapter
 
@@ -36,6 +38,23 @@ description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核�
 3. Chapter 写观众能理解的论证步骤，不用 `Hook`、`结尾`、`素材案例` 等内部剪辑标签。
 4. 已验证的命名范式包括 `OPEN SOURCE IS A BETTER RESUME`、`COMFYUI IS NOT JUST A WORKFLOW LAYER`、`FROM ONE-OFF GENERATIONS TO AN AD CREATIVE FACTORY`、`ComfyUI’s Growth Playbook: From Community to PLG`；把它们当作“结论 / 转变 / 方法”的示例，不机械复用字面文案。
 5. 把数字当标题前核验指标、单位、speaker 和时间范围；嘉宾自述数据标为 self-reported。
+
+### 3:4 访谈的三层标题
+
+把三个标题当成三个不同的发布表面，不要把同一句话改写三遍：
+
+1. **视频顶部身份标题**：只回答“采访谁”。优先放用户提供或已核验的公司 Logo，再写 `采访 <Company> CEO <Name>`；不要在这里塞核心命题。1080×1440 画布上优先使用顶部虚化区，Logo 宽约 420–560px，身份文字约 42–48px，左右安全边距至少 72px。
+2. **视频底部固定金句 / 判断**：从最终 script 提炼一条能独立成立的结论、反差或强问题；它必须同时概括视频和表达编辑判断。不要把 paraphrase 加引号冒充嘉宾原话。控制在 1–2 行、约 42–46px、最大安全宽度约 900px。
+3. **平台发布标题**：为小红书、LinkedIn、YouTube 等重新包装点击理由；可以使用人物、结果和经核验的数据，但不要重复视频内两层标题。每个平台只保留一个主钩子。
+
+先从最终 script 分别抽取 `speaker identity`、`strongest judgment` 和 `public result / metric`，再写三层标题并让用户确认。核对同一个数字是否指用户、声音、ARR、下载量或其他对象；不同口径不能互换。
+
+Fish Audio 2 分钟样例：
+
+- 顶部身份标题：`[Fish Audio Logo] 采访 Fish Audio CEO Rissa Cao`
+- 底部固定金句 / 判断：`一个兴趣项目，如何靠开源社区长出 200 万个声音？`
+- 小红书标题：`Fish Audio CEO：800 万用户社区的增长复盘`
+- 数据边界：本 cut 里的 `200 万` 指公开 UGC 社区声音；`800 万` 指更大范围的用户口径，发布前必须从完整采访或官方数据核验，不能写成 `800 万个声音`。
 
 ### Storytelling paraphrase 与原话
 
@@ -47,17 +66,43 @@ description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核�
 
 ## Cathy 的 4–6 分钟访谈切片
 
+### 全原声优先与开场 Hook
+
+1. 默认交付全原声 Paper Script，不要求主持人补录。开场和转场按需从 `嘉宾强结果 / 具体经历原声`、`主持人原片问题`、`嘉宾完整回答` 和 `嘉宾过桥句` 中选择；只有用户明确要求设计补录时才写新 VO。
+2. 开场先让观众知道“发生了什么”，再进入定义、履历或方法论。前 2–3 个完整信息点必须交代具体事件、结果、时间差、人物或反差，禁止从宽泛判断和抽象框架起手。
+3. 标题含数字或明确事件时，把开场当硬检查：前 3 个口播句或可独立理解的信息点都必须直接指向该数字 / 事件。优先使用 `嘉宾结果原声 → 主持人原问题 → 嘉宾机制回答`，也可以使用 `主持人背景问题 → 嘉宾结果回答`；不得用后写旁白代替原片里已有的背景。
+4. 嘉宾强结果原声若缺少指代，先恢复原问题或更早的现场铺垫；若该段本身已包含结果、对象和对比，可以直接冷开场，再回插产品定义或人物背景。
+5. 每个 Hook 句必须标出 speaker、source timestamp 和连续原文。可以删口头语和做透明 jump cut，但不能把 paraphrase、字幕润色或跨段拼句写成 `exact transcript`。
+6. 原片问题必须由紧随其后的回答直接回收；若问题过长，只能从同一段连续原声压短。不要为了让主持人出镜保留弱问题，也不要先写一个更顺的问题再假装是现场原声。
+7. ASR 或声纹不清时先回原视频核对。仍无法确认就删除该事实或做透明 jump cut，并在 Paper Script 写清省略范围；不要靠新增 VO 补成一个未经证实的故事。
+
 ### VO question / POV
 
 1. 先区分 `纯 POV` 与 `VO question`：POV 是 on-screen text，不录音；VO question 才是 Cathy 补录口播。
-2. VO 默认两句话、约 11–14 秒：第一句必须以疑问句提出核心问题，第二句加入一个具体观察、对比或追问，把回答引向第一组嘉宾原声。
-3. VO 不负责概括完整 5–6 分钟，只负责在开头第 1–2 组回答、约前 50–100 个英文词内完成回收；后面可以继续展开机制、案例、边界和结果。
-4. 不要把所有 chapter 塞进问题；删除原访谈中分散的主持人问题，让新 VO 后直接接最短、最明确的嘉宾回答。
-5. 用户说 `纯 POV` 时不生成或插入音频；主持人声音默认不进成片。
+2. 未明确要求补录时，不生成补录文案，也不在 Paper Script 预留补录位置；先穷尽原片问题、嘉宾原声和无声 chapter card。
+3. 用户明确要求 VO 时，默认写两句话、约 11–14 秒：第一句以疑问句提出核心问题，第二句加入一个具体观察、对比或追问，把回答引向第一组嘉宾原声。
+4. VO 不负责概括完整 5–6 分钟，只负责在开头第 1–2 组回答、约前 50–100 个英文词内完成回收；后面继续展开机制、案例、边界和结果。
+5. 不要把所有 chapter 塞进问题；新 VO 后直接接最短、最明确的嘉宾回答。
+6. 用户说 `纯 POV` 时不生成或插入新音频。粗剪转折审查中，原片已有主持人提问可以作为 buffer，不属于补录 VO，按下一节执行。
+
+### 粗剪中的提问 Buffer
+
+用户提供 `cut`、`vX` 或线性粗剪并指出转折过硬时，把提问者的原声和镜头视为逻辑桥与视觉换气点：
+
+1. 先转写当前粗剪，把它当时间轴真值；逐个标出相邻段落的最后一句、第一句和画面 jump cut。硬转折常来自不同原问题下的回答被直接拼接，先还原 hidden question，不要先写新问题。
+2. 默认先回原始 transcript 和双机位素材找主持人已经问过的问题。转场优先级固定为：`原片问题镜头` → `原片铺垫 / 问题的透明 jump cut` → `嘉宾自己的反问或过桥句` → `无声 chapter card` → `用户明确要求后才补录新 VO`。
+3. 默认不重录；用户再明确说“不重录”“不要 VO”或“只用原片”时，将其视为硬约束。禁止继续提供改写后的录音文案，也不要把新写的问题标成原片台词。
+4. 只在论证机制发生变化时插主持人：例如 `社区动机 → 公司责任`、`线上渠道 → IRL`、`产品优势 → 正在构建什么`。同一因果链已有 `and then`、`the other part`、`this is one, and also` 等明确过桥时保持连续，不为露脸机械插问。
+5. 原片问题必须由后续前 50–100 个英文词直接回收。若问题含有错误前提，必须恢复嘉宾的纠正；若问题范围大于当前保留答案，恢复必要回答或放弃该问题，禁止“问大答小”。
+6. 可以压短原问题，但每个 excerpt 必须来自连续原声；跨段 jump cut 要在剪辑说明中明示。不要把 paraphrase、字幕修正或重新拼写的句子冒充 exact transcript。
+7. 开头出现 `those stages`、`the other perspective` 等缺少指代的句子时，优先恢复原问题；完整问题过长时，用无声 chapter card 交代指代，再插原片里的短问句。
+8. 每个 buffer 必须交付：当前粗剪插入时间、前后 exact line、原素材文件与时间码、使用原片/无声卡/恢复回答的类型、问题后的第一句回收、增加时长和新成片时长。
+9. 主持人原声不仅补逻辑，也应提供画面换气；优先切主持人机位或双人镜头，没有合适画面时可让原声覆盖 B-roll，但不要因此生成新声音。
+10. 不在每个 jump cut 都加问题。最后一分钟仍在同一结论链时保持连续，避免把 4–6 分钟视频切成问答碎片。
 
 ### 时长估算
 
-英文访谈按 130–150 words/minute 估算，再加 VO、停顿和 jump cut 缓冲。非母语或停顿多靠近 130，紧凑粗剪靠近 150；叙事完整后立即停，不为凑 5 分钟保留弱素材。
+英文访谈按 130–150 words/minute 估算，再加保留的原片问题、停顿和 jump cut 缓冲；只有用户明确要求补录时才另加 VO 时长。非母语或停顿多靠近 130，紧凑粗剪靠近 150；叙事完整后立即停，不为凑 5 分钟保留弱素材。
 
 ## Google Doc 剪辑交付
 
@@ -74,14 +119,15 @@ Heading 1：Paper Script 标题
 
 Heading 1：VIDEO N｜TOPIC TITLE
 副标题
-主持人补录问题（两句话）
-VO 录音链接
+主持人问题（标注：原片问题 / 无声 chapter card；补录 VO 仅在用户明确要求时使用）
+原片文件与时间码；若明确补录，再放 VO 录音链接
 问题回收范围
 核心命题
 Storytelling paraphrase
 
 Heading 2：观众向 Chapter 标题
 source timestamp + speaker
+原片问题 buffer（如有）：粗剪插入点 + 原素材时间码
 剪辑功能
 exact transcript excerpt
 剪辑边界
@@ -90,10 +136,10 @@ exact transcript excerpt
 
 执行规则：
 
-1. 文档最顶部固定放外部参考链接、双机位映射、内容顺序、转录源机位和 VO 文件。
+1. 文档最顶部固定放外部参考链接、双机位映射、内容顺序和转录源机位；用户明确要求补录时再放 VO 文件。
 2. 双机位文件优先命名为 `YYYYMMDD-company-partN-正镜头.ext` / `YYYYMMDD-company-partN-侧镜头.ext`。
 3. Paper Script 标明 V1/V2/V3 的时间码基准，并提醒按波形、口型或同一句台词同步，不按文件头硬对齐。
-4. 每条 VO 音频链接紧跟对应问题；每个 topic 用 Heading 1，每个观众向 chapter 用 Heading 2。
+4. 每条问题必须紧跟类型和素材位置：原片问题放文件与时间码，无声 chapter card 放 exact on-screen copy；只有用户明确要求补录时才写 VO 并放音频链接。每个 topic 用 Heading 1，每个观众向 chapter 用 Heading 2。
 5. Title、VO、文件名或素材链接变化后同步本地稿与 Google Doc；用查找验证独特原句，并等待 `Saved to Drive`。
 
 ## 访谈成片继续加工
@@ -102,12 +148,16 @@ exact transcript excerpt
 
 1. 保留已有英文字幕、name card、chapter title 和品牌特效字；不要重复制作。
 2. 用户给的中文 script 是字幕真值，机器转写只用于时间对齐。
-3. 已有英文字幕时只加中文；长句拆成多个单行 caption card，统一字号和 baseline。
-4. 3:4 / 竖屏居中用公式确认：`foreground_y + foreground_h / 2 == canvas_h / 2`。
-5. 章节截断检查边界前后帧；外部 B-roll 一旦承诺就必须实际切入。
-6. 字幕中段错位时只返工用户指出位置前后 10–15 秒，逐句 retime，不整体平移时间线。
-7. 封面先抽 contact sheet，选人物状态强且符合标题的帧；修改封面时读取 `../hyperframes-media/references/cover-thumbnail.md`。
-8. 每次导出跑 `ffprobe`、完整 decode pass，并检查开头、品牌词、普通字幕、章节边界和结尾截图。
+3. 已有英文字幕时只加中文。先把每条字幕整句排成一行并实测文字宽度；在单行安全宽度内就保持一行，只有超宽时才按语义拆成两行。两行是上限，不是默认；禁止为了视觉均衡把能放一行的内容主动拆行。所有卡片使用相同的顶部锚点，禁止因行数变化而上下漂移。
+4. 3:4 / 竖屏居中用公式确认：`foreground_y + foreground_h / 2 == canvas_h / 2`。1080×1440 画布放入完整 16:9 主视频时，参考几何为 `foreground=1080×608`、`foreground_y=416`、`foreground_bottom=1024`。
+5. 把动态中文字幕放在主视频下沿之后的虚化区，不要贴 3:4 画布底边。Fish Audio 已确认参数为：透明字幕卡 `1080×220`，`card_y=foreground_bottom+10=1034`，文字顶部 `foreground_bottom+34≈1058`；底部固定金句如需常驻，放在动态字幕安全区之后，不得把动态字幕重新挤到画布底边。
+6. 中文字幕从 40px 开始，参考样式为 `Heiti SC`、白字、2px 黑描边、8px 行距、最多 2 行、单行安全宽度不超过 940px、水平 padding 24px、垂直 padding 14px、黑底透明度约 `148/255`、圆角约 15px。渲染前统计一行与两行 cue 数量，并逐条检查是否存在“本可单行却被拆行”的情况；字号和安全宽度检查通过后再渲染，不用 52px 默认覆盖长句。
+7. 用最终视频做时间轴真值。先做逐词 forced alignment，再按语义切成 phrase-level cue；不要直接沿用 Whisper 的整句 segment。保留真实停顿，不对整条时间线做统一平移。
+8. 用 `fps=4` 的 0.25 秒 contact sheet 检查每条 cue 的入点、出点、原英文字幕和发音；用户指出局部错位时返工前后 10–15 秒并逐句 retime。
+9. 章节截断检查边界前后帧；外部 B-roll 一旦承诺就必须实际切入。
+10. 封面先抽 contact sheet，选人物状态强且符合标题的帧；修改封面时读取 `../hyperframes-media/references/cover-thumbnail.md`。
+11. 片尾出现品牌卡时追加独立 CTA cue，语义固定为“欢迎关注”，不与最后一句口播字幕重叠。Hellyeah 默认文案为 `更多内容，请关注 Twitter @hellyeah_ai`；用户提供新文案时以用户原话为准。CTA 只在品牌卡完全出现后进入并持续到视频结束，保持单行、安全宽度和既有字幕样式；片尾卡过短时先说明，禁止把 CTA 提前压在采访画面上。
+12. 每次导出跑 `ffprobe`、完整 decode pass，并检查开头、1 行字幕、最长 2 行字幕、品牌词、章节边界、片尾 CTA 入点和结尾截图。
 
 ## 默认交互顺序
 
@@ -117,7 +167,7 @@ exact transcript excerpt
 4. 嘉宾逐句证据拆分。
 5. Topic proposal 与合并建议。
 6. 用户确认。
-7. Transcript-backed paper script 与 Google Doc。
+7. 默认先交付全原声 Transcript-backed Paper Script 与 Google Doc；只有用户明确要求时再设计补录 VO。
 8. 用户审批重排。
 9. 导出、技术检查与剪映文稿匹配稿。
 
@@ -127,3 +177,4 @@ exact transcript excerpt
 - Café Cursor：活动起源 → community-led growth 与 PLG/SLG → NPS 和直接见用户；个人 Twitter 方法论默认删除。
 - VC 经历：先回答 title 是否有用，再用“很多人都做过 VC”解释原因，最后落到真正做过什么。
 - 增长访谈：为什么选这个 topic → 为什么此时/此平台 → 平台机制 → 证据 → 人物态度或结尾金句。
+- Photon 数字型 launch：嘉宾原声 `1.6M 结果 → 一周客户体感 → 线下每天 50–200 人对比` 冷开场，再补产品背景、主持人原片问题和 `product → content → influencer` 机制；原片已能完成 Hook 时禁止新增主持人 VO。
