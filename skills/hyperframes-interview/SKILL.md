@@ -1,11 +1,15 @@
 ---
 name: hyperframes-interview
-description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核、从长访谈收敛 3–6 条核心视频、论题/论点/论据重组、全原声优先的开场 Hook、topic/title/chapter 命名、VO question / POV、transcript-backed paper script、双机位与 Drive 文件命名、Google Doc 剪辑交付、剪映文稿匹配，以及 3:4 访谈成片的中文字幕语义分组、逐词音画匹配、提问背景信息卡、封面和技术 QA。用户要 review 或重组访谈、制作 4–6 分钟切片、给成片加中文字幕、修正字幕与口播不同步、设计顶部背景插图或整理剪辑师交付时使用。
+description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核、从长访谈收敛 3–6 条核心视频、30–60 秒 teaser 留存结构、论题/论点/论据重组、全原声优先的开场 Hook、topic/title/chapter 命名、VO question / POV、transcript-backed paper script、双机位与 Drive 文件命名、Google Doc 剪辑交付、剪映文稿匹配，以及 3:4 访谈成片的中文字幕语义分组、逐词音画匹配、提问背景信息卡、封面和技术 QA。用户要 review 或重组访谈、制作播客 teaser、制作 4–6 分钟切片、给成片加中文字幕、修正字幕与口播不同步、设计顶部背景插图或整理剪辑师交付时使用。
 ---
 
 # HyperFrames Interview
 
 把访谈从原始素材整理成可发布选题和可执行剪辑稿。转写、TTS 与抠像命令使用 `hyperframes-media`；本技能只负责访谈内容判断和交付。
+
+## Teaser 子技能
+
+用户要求 30–60 秒 teaser、播客预告、从多个 topic 中挑若干条短视频，或指出前三秒不够直接时，必须读取并使用 [hyperframes-interview-teaser](../hyperframes-interview-teaser/SKILL.md)。多个 topic 默认一条 topic 对应一条独立 teaser，不做混剪；Teaser 交付到 Notion 或 Google Doc 时放在页面标题后的第一部分。
 
 ## 默认工作流
 
@@ -109,7 +113,10 @@ Fish Audio 2 分钟样例：
 Live Google Doc 是 source of truth，本地 Markdown 只是中间层。按下面顺序写：
 
 ```text
-Heading 1：剪辑素材（置顶）
+Heading 1：Teaser（用户要求时置于页面标题后第一部分）
+30–60 秒时间轴 + speaker + source timestamp + exact transcript
+
+Heading 1：剪辑素材
 外部参考链接
 Heading 2：双机位素材说明（给剪辑师）
 三组顺序 + 正/侧镜头链接 + 时间码基准 + 同步方法
@@ -136,7 +143,7 @@ exact transcript excerpt
 
 执行规则：
 
-1. 文档最顶部固定放外部参考链接、双机位映射、内容顺序和转录源机位；用户明确要求补录时再放 VO 文件。
+1. 用户要求 teaser 时，文档最顶部先放完整 teaser，再放外部参考链接、双机位映射、内容顺序和转录源机位；没有 teaser 时仍以剪辑素材开头。用户明确要求补录时再放 VO 文件。
 2. 双机位文件优先命名为 `YYYYMMDD-company-partN-正镜头.ext` / `YYYYMMDD-company-partN-侧镜头.ext`。
 3. Paper Script 标明 V1/V2/V3 的时间码基准，并提醒按波形、口型或同一句台词同步，不按文件头硬对齐。
 4. 每条问题必须紧跟类型和素材位置：原片问题放文件与时间码，无声 chapter card 放 exact on-screen copy；只有用户明确要求补录时才写 VO 并放音频链接。每个 topic 用 Heading 1，每个观众向 chapter 用 Heading 2。

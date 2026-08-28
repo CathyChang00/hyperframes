@@ -1,0 +1,4 @@
+interface:
+  display_name: "Interview Teaser"
+  short_description: "Create retention-first 30–60 second interview teasers"
+  default_prompt: "Use $hyperframes-interview-teaser to turn one interview topic into a transcript-backed 30–60 second teaser."
