@@ -1,6 +1,6 @@
 ---
 name: hyperframes-interview
-description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核、从长访谈收敛 3–6 条核心视频、30–60 秒 teaser 留存结构、论题/论点/论据重组、全原声优先的开场 Hook、topic/title/chapter 命名、VO question / POV、transcript-backed paper script、双机位与 Drive 文件命名、Google Doc 剪辑交付、剪映文稿匹配，以及 3:4 访谈成片的中文字幕语义分组、逐词音画匹配、提问背景信息卡、封面和技术 QA。用户要 review 或重组访谈、制作播客 teaser、制作 4–6 分钟切片、给成片加中文字幕、修正字幕与口播不同步、设计顶部背景插图或整理剪辑师交付时使用。
+description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核、把约 50 分钟原片精剪为 20–30 分钟长播客、从长访谈收敛 3–6 条核心视频、30–60 秒 teaser 留存结构、论题/论点/论据重组、全原声优先的开场 Hook、topic/title/chapter 命名、VO question / POV、transcript-backed paper script、双机位与 Drive 文件命名、Google Doc 剪辑交付、剪映文稿匹配，以及 3:4 访谈成片的中文字幕语义分组、逐词音画匹配、提问背景信息卡、封面和技术 QA。用户要 review 或重组访谈、制作 20–30 分钟长播客、制作播客 teaser、制作 4–6 分钟切片、给成片加中文字幕、修正字幕与口播不同步、设计顶部背景插图或整理剪辑师交付时使用。
 ---
 
 # HyperFrames Interview
@@ -10,6 +10,10 @@ description: HyperFrames 长访谈内容生产线，覆盖多视频转写复核�
 ## Teaser 子技能
 
 用户要求 30–60 秒 teaser、播客预告、从多个 topic 中挑若干条短视频，或指出前三秒不够直接时，必须读取并使用 [hyperframes-interview-teaser](../hyperframes-interview-teaser/SKILL.md)。多个 topic 默认一条 topic 对应一条独立 teaser，不做混剪；Teaser 交付到 Notion 或 Google Doc 时放在页面标题后的第一部分。
+
+## 长播客子技能
+
+用户要求把约 40–60 分钟的完整访谈精剪为 20–30 分钟长播客、根据原始 transcript 识别并删除口癖，或要求明确说明删掉了什么时，必须读取并使用 [hyperframes-interview-longform](../hyperframes-interview-longform/SKILL.md)。长播客默认保留现场原声，逐段交付 exact transcript、去口癖参考台词、source timestamp、必留主题覆盖和完整删除清单。
 
 ## 默认工作流
 

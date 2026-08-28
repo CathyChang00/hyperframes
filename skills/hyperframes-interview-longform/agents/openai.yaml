@@ -1,0 +1,4 @@
+interface:
+  display_name: "HyperFrames Interview Longform"
+  short_description: "将 50 分钟访谈逐字稿精剪为 20–30 分钟长播客成片稿"
+  default_prompt: "Use $hyperframes-interview-longform to turn this raw interview transcript into a transcript-backed 20–30 minute long-form podcast edit script."
