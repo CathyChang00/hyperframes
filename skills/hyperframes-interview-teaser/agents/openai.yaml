@@ -1,4 +1,4 @@
 interface:
-  display_name: "Interview Teaser"
-  short_description: "Create retention-first 30–60 second interview teasers"
-  default_prompt: "Use $hyperframes-interview-teaser to turn one interview topic into a transcript-backed 30–60 second teaser."
+  display_name: "播客片头与 Teaser"
+  short_description: "从访谈原声选择强开场，区分长片 cold open 与独立 teaser"
+  default_prompt: "Use $hyperframes-interview-teaser to select and prepare a source-backed cold open or standalone teaser, following the requested preview and approval stage."
