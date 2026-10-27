@@ -18,6 +18,8 @@ description: 从访谈原声选择和剪辑强开场：区分服务长片的 col
 
 语境卡只补观众确实缺少的信息；原声已能交代主题时，不默认再加一条同义总结标题，也不为“有冲击力”自动加刺耳转场音。用户删掉的开场标签不在后续换封面或导出时复活。默认封面属于播放前展示，不自动占用 cold open 时长，见[封面交付](../hyperframes-interview/references/cover-workflow.md#默认封面不等于片头视频)。
 
+选定原声时就按 [资料计划](../hyperframes-interview/references/visual-evidence.md#在内容阶段建立资料计划)找对应事件、产品或结果的可用证据，不先锁定长 demo 再把它塞进开场。替换前对候选及其进入正文的接点做 [关键剪口语义检查](../hyperframes-interview/references/podcast-production.md#关键剪口语义检查)：保留剪前上下文与剪后实播文本，核对主语、限定、否定、因果和指代，并绑定 reviewer 与实际版本证据；文字检查不自动证明最终声音完整。
+
 以下留存骨架与交付模板用于独立 teaser；cold open 只保留其实际长度内适用的检查。
 
 ## 硬边界
