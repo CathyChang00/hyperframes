@@ -1,11 +1,13 @@
 ---
 name: hyperframes-interview
-description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿，处理多机位、收音、字幕和社媒资料；也用于从访谈原片选封面人物帧、合成双人封面、设计英文标题与姓名标签、设置默认封面并交付本地视频。
+description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿，处理多机位、收音、字幕和社媒资料；也用于从访谈原片选封面人物帧、合成双人封面、设计英文标题与姓名标签、设置默认封面并交付本地视频，以及访谈在 X/Twitter、LinkedIn 发布时的 caption、主帖、观点预告、人物/合作方 @ 引用与时间戳回复。
 ---
 
 # HyperFrames Interview
 
 把访谈从原始素材整理成有完整问答和可核查原声的节目。用户要求成片时，完成剪辑、预览、检查与本地导出，不以摘要或 Paper Edit 代替视频。转写按需使用 `hyperframes-media`；实际使用 HyperFrames 时读取当前可用的 `hyperframes` 与相应音频、CLI 技能，复用项目已有运行时，不为修订盲目升级。
+
+只要访谈发布文案时，复用当前成片、已核对逐字稿和资料索引，直接读取[社媒发布文案与引用](references/social-publishing.md)，不启动下面的剪辑执行流程。仅在缺少可靠内容依据时按需补转写；写稿不代表发布授权。
 
 ## 本轮约束与批准状态
 
@@ -19,18 +21,19 @@ Cathy 个人项目默认在右上角安全区全片常驻 `Twitter @CathyChang00
 
 ## 按当前任务读取
 
-| 当前任务                                                        | 读取与工具                                                                                  |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| 继续修订、反馈定位、当前配置、自动检查、验收记录                | [修订工作流](references/revision-workflow.md)；`scripts/interview_project.py`               |
-| 完整节目、逐人精修、必留主题和完整删剪稿                        | [长播客子技能](../hyperframes-interview-longform/SKILL.md)                                  |
-| cold open、缩短片头、独立 teaser、先候选后替换                  | [Teaser 子技能](../hyperframes-interview-teaser/SKILL.md)；区分短开场与 30–60 秒独立 teaser |
-| 少数主题、4–6 分钟切片、提问 buffer、VO/POV、3:4 标题和中文校时 | [短切片编辑与版式](references/shortform-editorial.md)                                       |
-| 多机位、选收音、截词/异响、语义接点、分段变速、输出验证         | [播客制作与原声完整性](references/podcast-production.md)                                    |
-| 对某一词或异响有争议，需要原速/处理/最终倍率三段对照            | [音频对照](references/audio-comparison.md)；`scripts/make_audio_comparison.py`              |
-| 内容阶段查资料、原帖/指标、特写构图、姓名卡、字幕与水印         | [画面与社媒证据](references/visual-evidence.md)                                             |
-| 选微笑帧、双人拼接、英文标题/Logo/排版、默认封面                | [封面工作流](references/cover-workflow.md)                                                  |
-| 指定飞书、Notion、Google Doc 交付或同步修改                     | [在线文档交付](references/document-delivery.md)；只读请求不授权写入                         |
-| 需要区分 Cathy 已确认偏好与 Photon 单期参数                     | [Photon 复盘案例](references/photon-case.md)；案例不替代本轮要求                            |
+| 当前任务                                                              | 读取与工具                                                                                  |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 继续修订、反馈定位、当前配置、自动检查、验收记录                      | [修订工作流](references/revision-workflow.md)；`scripts/interview_project.py`               |
+| 完整节目、逐人精修、必留主题和完整删剪稿                              | [长播客子技能](../hyperframes-interview-longform/SKILL.md)                                  |
+| cold open、缩短片头、独立 teaser、先候选后替换                        | [Teaser 子技能](../hyperframes-interview-teaser/SKILL.md)；区分短开场与 30–60 秒独立 teaser |
+| 少数主题、4–6 分钟切片、提问 buffer、VO/POV、3:4 标题和中文校时       | [短切片编辑与版式](references/shortform-editorial.md)                                       |
+| 多机位、选收音、截词/异响、语义接点、分段变速、输出验证               | [播客制作与原声完整性](references/podcast-production.md)                                    |
+| 对某一词或异响有争议，需要原速/处理/最终倍率三段对照                  | [音频对照](references/audio-comparison.md)；`scripts/make_audio_comparison.py`              |
+| 内容阶段查资料、原帖/指标、特写构图、姓名卡、字幕与水印               | [画面与社媒证据](references/visual-evidence.md)                                             |
+| 访谈发 X/Twitter 或 LinkedIn、仿参考帖、We got into、@ 引用、章节回复 | [社媒发布文案与引用](references/social-publishing.md)；主帖与最终成片时间戳分开             |
+| 选微笑帧、双人拼接、英文标题/Logo/排版、默认封面                      | [封面工作流](references/cover-workflow.md)                                                  |
+| 指定飞书、Notion、Google Doc 交付或同步修改                           | [在线文档交付](references/document-delivery.md)；只读请求不授权写入                         |
+| 需要区分 Cathy 已确认偏好与 Photon 单期参数                           | [Photon 复盘案例](references/photon-case.md)；案例不替代本轮要求                            |
 
 不要一次加载全部参考。脚本用法、输入和证据边界由对应参考定义；它们协助检查，不代替剪辑判断、听审或真实导出。
 
