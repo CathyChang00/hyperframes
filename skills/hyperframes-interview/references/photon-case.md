@@ -1,6 +1,6 @@
 # Photon 访谈复盘：如何使用这个案例
 
-以下来自 Cathy 在 Photon 访谈制作中的连续反馈，截至人物名牌 V19 与封面 V7 确认，用来解释剪辑判断。人物、话题、时长、倍率、候选 ID 与素材数量属于该项目，不能变成其他节目的硬要求；可复用的个人封面偏好见[封面工作流](cover-workflow.md)。
+以下来自 Cathy 在 Photon 访谈制作中的连续反馈，覆盖人物名牌 V19、封面 V7 与 2026-11-02 的社媒发布定稿，用来解释剪辑和文案判断。人物、话题、时长、倍率、候选 ID 与素材数量属于该项目，不能变成其他节目的硬要求；个人封面偏好见[封面工作流](cover-workflow.md)，发布写法见[社媒发布文案与引用](social-publishing.md)。
 
 ## 可复用的纠错
 
@@ -49,3 +49,46 @@ V19 名牌各两行：`Cathy Chang` / `Twitter @cathychang00`；`Photon CMO ｜J
 源双人机位 `photon-镜头2-1.MP4` 中 C12 为约 1592.2573s／帧 47720，J1 为约 1985.2833s／帧 59499；这些只用于复现该片，不能当成输出时间。合成保留 Cathy 左、Julie 右，在静态中央背景对齐与羽化，未生成/美颜/变形人物。标题改为 `What AI Startups Should Learn from Crypto GTM`，两行 Optima Bold 左对齐，下移占用删除底部资料后释放的空间。
 
 封面 V7 顶部为官方 Photon lockup + `Interview ｜ Julie Chen`，标题只把 `Crypto` 变为 `#FF4900`。无底部姓名/职务/handle/横线。交付 2560×1440 PNG、1280×720 JPG，默认播放页展示批准封面，MP4 附带相同图；点击播放直接进入访谈，没有追加停留片头。这次“封面仍在吗”的追问应促使交付说明更明确，而不是擅自添加几秒封面或改动已批准 cold open。
+
+## 社媒发布定稿与参考
+
+2026-11-02，Cathy 为本片明确给出的最终稿如下；只把挤在同一行的 bullets 分行，并去掉时间戳粘贴残留的反斜杠，保留原文与强调标记。这是已批准文案，不代表已发布，也不代表其中的账号和数字能直接用于其他节目。
+
+```text
+【main post】
+What does a crypto background teach you about marketing an AI startup?
+
+I asked **Julie Chen** (@0xJuliechen), CMO at @PhotonHQ, what she brought from crypto into AI marketing.
+
+Her take: **get attention that helps the product and brand you’re building.**
+
+We got into:
+• Why she thinks AI teams should take crypto marketers seriously
+• The outreach behind Photon’s Hermes integration with @NousResearch
+• As a DevRel, how she works with her team (@danieltian, @ryanzhuuuu) to turn user feedback into product improvements
+• Why 7M+ views didn’t convince her to keep doing big events
+• Why she’d rather hear “this is not working” than “congratulations”
+
+Full conversation below. ⬇️
+
+【thread】
+⏰ TIMESTAMPS
+(00:00) Meet Julie Chen and Photon
+(01:01) Running GTM with a small team
+(01:52) Launch videos and choosing creators
+(04:33) Getting partners to reply on X
+(06:22) Lessons from crypto marketing
+(07:43) The “ABG CMO” meetup and the backlash
+(11:48) The $1K yacht sponsorship: views vs. leads
+(13:19) X, LinkedIn, and getting useful product feedback
+```
+
+参考结构来自 [Julia Fedorin 的 Jacqueline Cheong 访谈帖](https://x.com/juliafedorin/status/2112224607042523518)：具体问题/故事、嘉宾介绍、观点预告与章节导航。这里只借结构，不移植其客户数据、节目品牌或嘉宾关系。
+
+本轮反馈改变了几个判断：主线从 party 数字转为 crypto → AI 的职业经验；将详细的 launch/KOL 操作缩成观点 bullets；覆盖不同章节，而不只写 attention；把模糊的 partnership 改为有对象的 Hermes/Nous Research 外联；把“和 CTO 讲好产品故事”提升到“和团队用用户反馈改进产品”。这些仍需各期原声支持。
+
+嘉宾正式介绍保留 CMO，`As a DevRel` 是用户在协作条目中采用的职责视角。用户最终选择了个人、公司、合作方和团队成员 @；更早讨论过的 Vercel 和其他候选 bullets 没有进入最终稿，不擅自加回。
+
+主帖不提 ABG CMO，但最终 thread 保留该章。这不构成永久禁用，也不授权从成片删掉该内容。此前“缩到 60%–70%”是单次修订比例，不是以后写稿的固定长度。
+
+Hermes 合作结果可核对 [Nous Research 的正式集成公告](https://x.com/NousResearch/status/2064102412076364207)；公告证明集成存在，不能独立证明一次评论促成全部合作。Vercel 集成的背景可查 [Vercel 官方公告](https://vercel.com/changelog/chat-sdk-adds-photon-support)，但本期没有展开拿到该合作的过程。7M+ 为 Julie 在访谈中的自述，未给出独立人数、转化数或完整统计口径。
