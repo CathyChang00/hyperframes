@@ -17,7 +17,7 @@ description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿
 
 用户说“先给候选／先 preview、不要剪”时，只提供原话、原片定位及其要求的隔离预览，不替换主片。授权“直接剪好”后继续常规剪辑、渲染和修错；只有缺少会改变结果的关键信息或新增范围时才追问。不得把默认流程、内部样片或脚本检查变成额外审批。
 
-Cathy 个人项目默认在右上角安全区全片常驻 `Twitter @CathyChang00`；工程与实际导出均显示，见[个人水印](references/visual-evidence.md#cathy-个人水印)。此偏好不自动套给其他用户或公司项目；本轮明确要求优先。
+Cathy 个人 16:9 访谈从[Cathy 固定样式](references/cathy-style.md)及其数值预设初始化：固定标题、水印、单行字幕，新建节目的 teaser 和正文默认均为原速的 1.2×；全屏资料最终显示不超过 4 秒。已有项目保留批准的局部例外。此偏好不自动套给其他用户或公司项目；本轮明确要求优先。
 
 ## 按当前任务读取
 
@@ -33,6 +33,7 @@ Cathy 个人项目默认在右上角安全区全片常驻 `Twitter @CathyChang00
 | 访谈发 X/Twitter 或 LinkedIn、仿参考帖、We got into、@ 引用、章节回复 | [社媒发布文案与引用](references/social-publishing.md)；主帖与最终成片时间戳分开             |
 | 选微笑帧、双人拼接、英文标题/Logo/排版、默认封面                      | [封面工作流](references/cover-workflow.md)                                                  |
 | 指定飞书、Notion、Google Doc 交付或同步修改                           | [在线文档交付](references/document-delivery.md)；只读请求不授权写入                         |
+| Cathy 个人访谈字体、字号、水印底色、单行字幕、1.2倍速与资料限时       | [Cathy 固定样式](references/cathy-style.md)；数值 JSON 与透明水印资产为复用基线             |
 | 需要区分 Cathy 已确认偏好与 Photon 单期参数                           | [Photon 复盘案例](references/photon-case.md)；案例不替代本轮要求                            |
 
 不要一次加载全部参考。脚本用法、输入和证据边界由对应参考定义；它们协助检查，不代替剪辑判断、听审或真实导出。
