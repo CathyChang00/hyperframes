@@ -19,6 +19,8 @@ description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿
 
 Cathy 个人 16:9 访谈从[Cathy 固定样式](references/cathy-style.md)及其数值预设初始化：固定标题、水印、单行字幕，新建节目的 teaser 和正文默认均为原速的 1.2×；全屏资料最终显示不超过 4 秒。已有项目保留批准的局部例外。此偏好不自动套给其他用户或公司项目；本轮明确要求优先。
 
+Cathy 新节目默认配低音量、无歌词的背景音乐，teaser 可用同曲较有起伏的节选；全屏静态资料带轻微滚动，长截图优先保可读宽度再用视窗浏览。具体方法按下表读取；更新默认规则不自动重导已有成片。
+
 ## 按当前任务读取
 
 | 当前任务                                                              | 读取与工具                                                                                  |
@@ -30,6 +32,8 @@ Cathy 个人 16:9 访谈从[Cathy 固定样式](references/cathy-style.md)及其
 | 多机位、选收音、截词/异响、语义接点、分段变速、输出验证               | [播客制作与原声完整性](references/podcast-production.md)                                    |
 | 对某一词或异响有争议，需要原速/处理/最终倍率三段对照                  | [音频对照](references/audio-comparison.md)；`scripts/make_audio_comparison.py`              |
 | 内容阶段查资料、原帖/指标、特写构图、姓名卡、字幕与水印               | [画面与社媒证据](references/visual-evidence.md)                                             |
+| 背景配乐、teaser 节选、音乐避让人声与混音验证                         | [配乐与对话混音](references/podcast-production.md#配乐与对话混音)                           |
+| 全屏资料滚动、长推文宽度、原生截图视窗                                | [资料滚动与长截图视窗](references/visual-evidence.md#资料滚动与长截图视窗)                  |
 | 访谈发 X/Twitter 或 LinkedIn、仿参考帖、We got into、@ 引用、章节回复 | [社媒发布文案与引用](references/social-publishing.md)；主帖与最终成片时间戳分开             |
 | 选微笑帧、双人拼接、英文标题/Logo/排版、默认封面                      | [封面工作流](references/cover-workflow.md)                                                  |
 | 指定飞书、Notion、Google Doc 交付或同步修改                           | [在线文档交付](references/document-delivery.md)；只读请求不授权写入                         |
