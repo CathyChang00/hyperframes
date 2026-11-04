@@ -2,6 +2,27 @@
 
 用于多轮修订：用户报成片时码、同句在片头与正文复用、已经确认样式需要保护，或需要检查这轮是否真正改到成片。简单修改只登记相关字段，不为一处改字重建全项目；新建完整剪辑时随 EDL 一起维护。项目记录放工作目录，不写回通用 skill，也不把私人素材、听审记录或工程配置默认上传 GitHub。
 
+## 反馈动作与批准继承
+
+先把每条反馈绑定到当前可回查的内容单元或图层，再决定实际动作。对已明确的范围直接执行；只有图号、位置或版本确实会产生不同结果时才澄清，不把下表变成逐项审批。
+
+| 用户的动作                 | 实际执行边界                                                                                  |
+| -------------------------- | --------------------------------------------------------------------------------------------- |
+| 合并相关话题、背景移到后面 | 移动完整问答/论证单元，去掉同义重复；独有证据与主持人身份另行保护，不当作默认删除授权         |
+| 删某句、去掉嘴瓢或附和     | 定位原声及所有获授权的出现位置，同步声音、字幕、画面接点；只改字幕不算删句                    |
+| 删图、换 Logo、缩短新闻    | 只改对应视觉覆盖，除非另有要求，否则保持下方对白及后文时间线                                  |
+| 先出静帧，合适再更新       | 交当前场景中的静帧合成，记录待应用；批准后才放入对应视频窗口                                  |
+| 替换所有某品牌标识         | 查该实体在标题内、角落、资料卡、teaser/正文中的全部使用，按授权统一资产，并去掉同画面多余重复 |
+| 沿用某版/某参考的一个属性  | 只继承指定的字体、底色、尺寸等属性；例如恢复底色深度不自动恢复该参考的小字号                  |
+| 全篇应用这个效果           | 迁移批准的视觉规则，保留正文/teaser 各自的人物标签和内容职责，不一键覆盖所有图层              |
+| 以后按某规则做             | 更新未来默认，不自动重导当前批准成片                                                          |
+
+一项新要求只覆盖它触及的旧值。项目记录使用 `反馈｜观看版本/原话定位｜动作层｜适用范围｜批准参考｜保留项｜交付形态｜落实状态` 即可；被否决的动画或版式标为拒绝，不因它是“最新生成文件”再次启用。用户恢复的内容进入必留覆盖表，未来压缩时先保护。
+
+批准可以属于不同层：内容/剪点、主收音/混音、图形样式、特定资产、预览或最终导出。以最近批准成片为底，合入后来批准但尚未渲染的静帧；不能选一个较旧整片作为全部基线而丢掉新修正。“回到之前那个效果”默认恢复对应视觉层，保留后续已确认的删词、纠错、名字与声音，除非用户明确要求整体回退。
+
+每轮先完成用户正在等待的产物。要完整 teaser 就交完整 teaser，不改交几个章节的风格展示；要剪辑稿先交可执行全文，不提前替换全片。内部检查可先做短样，但不拿短样冒充目标交付。当前正文、当前 teaser、待应用静帧分别标状态，最终播放器与下载链接指向同一已核验版本。
+
 ## 一份当前配置，三种证据
 
 `project-state.json` 保存版本、原声片段、反馈、验收条件、资料计划与语义审阅；`active_version` 指向本次交付的真实 MP4。姓名、handle、封面、水印、字幕样式与倍率等批准值放项目现有渲染配置，检查项引用配置或输出，不维护互相冲突的第二套文本。Cathy 新项目从[固定预设](cathy-style.md)复制数值，并记录 preset ID、批准覆盖项；渲染器和检查器共用该配置。选择新版本时重新绑定文件 SHA-256；旧版保留可回查。未变音轨可以用包数据与时间戳一致性继承证据，不能只看总时长。
@@ -22,6 +43,7 @@
 
 ```bash
 python3 scripts/interview_project.py init --video /project/final-V1.mp4 --version V1 --project Interview --out /project/project-state.json
+python3 scripts/interview_project.py init --video /project/final-V1.mp4 --version V1 --project Cathy --preset assets/cathy-interview-16x9.json --out /project/cathy-state.json
 python3 scripts/interview_project.py locate /project/project-state.json --version V1 --time 00:10
 python3 scripts/interview_project.py locate /project/project-state.json --feedback F001
 python3 scripts/interview_project.py check /project/project-state.json --stage plan --out /project/plan-check.json
@@ -30,13 +52,15 @@ python3 scripts/interview_project.py check /project/project-state.json --media -
 
 `init` 读取真实视频并建立身份，不覆盖现有记录，也不自动宣称验收完成。`locate` 要求观看版本和时间，返回源文件秒数及同一句的所有使用位置；无命中说明尚未映射，不能断言素材里没有这句话。`check` 只读取媒体，退出 0 表示已登记条件的机械检查完成；退出 2 表示错误或仍有待验收项。未加 `--media` 的媒体条件保持 pending。`review_recorded` 表示审阅记录与文件身份有效，不是脚本完成了审美或听审。
 
+`init --preset` 只从指定 JSON 的 `materials.fullscreen_max_seconds` 建立本版本资料限时，并记录 `materials_policy_source: {preset_id, preset: {path, sha256}}`。它不改变视频速度或渲染样式，不默认读取 Cathy 配置；以后改 skill 也不自动改已有项目的政策快照。新增版本时显式继承仍有效的 `materials_policy`，有项目新要求则更新并记录依据。
+
 ## 项目记录格式
 
 工具初始化 `schema_version: 1`、`project`、`active_version`、`versions` 及五个空数组。路径相对状态文件所在目录，也可用绝对路径；时间为有限的秒数，区间用 `[in, out)`，倍率记录素材实际烘焙速度。文件引用统一为 `{"path":"...","sha256":"实际64位SHA-256"}`，大文件 SHA 可用流式 `shasum -a 256` 获取。
 
 ### versions 与 spans：精确定位
 
-`versions` 以 V1/V2 等稳定版本 ID 为键，每版保存 `video` 文件引用、`duration_seconds`、数值型 `fps`。注册新版本时追加记录，并显式更新 `active_version`；保留旧版本，不将原路径指向新内容后沿用旧 SHA。
+`versions` 以 V1/V2 等稳定版本 ID 为键，每版保存 `video` 文件引用、`duration_seconds`、数值型 `fps` 或有理字符串（如 `30000/1001`）。注册新版本时追加记录，并显式更新 `active_version`；保留旧版本，不将原路径指向新内容后沿用旧 SHA。
 
 每条 `spans` 记录一个可线性映射的连续原声区间：
 
@@ -89,6 +113,16 @@ python3 scripts/interview_project.py check /project/project-state.json --media -
 
 Cathy 的资料另记 `display_mode: fullscreen/overlay`，按最终输出的帧区间检查全屏上限；时长与来源表由同一份时间线生成，不能仅把旧文档数字乘倍率后沿用。
 
+### 资料限时与时序的机械检查
+
+在对应 `versions[版本ID]` 内配置 `materials_policy: {fullscreen_max_seconds: 4}` 才会启用该上限；Cathy 新项目通过上述 preset 导入，其他项目按实际要求配置。启用 policy 后，所有已排入的资料需声明 `display_mode: fullscreen/overlay`，只有 fullscreen 受此项限制。未配置 policy 的旧记录可继续检查其他条件，报告会明确提示“没有执行全屏限时”，不能当作 4 秒已通过。
+
+每条资料保留 `output_range` 秒区间，可加 `output_frames: [in_frame, out_frame]` 表示最终半开整数帧区间，两者需在 1ms 内一致；精确最终检查优先填实际渲染帧数。仅有秒数时脚本按项目 fps 四舍五入到最近帧。上限为 `floor(limit_seconds × fps)`，因此 `30000/1001` fps、4 秒允许 119 帧，120 帧会报错；停留、滚动、淡入淡出均包含在一个显示窗口内。
+
+相邻或只隔一帧的同资产 SHA 会合并计显示长度，拆成不同 ID 不重置上限。同一原帖的不同裁图/滚动帧另用共同 `continuity_id` 标明连续展示；不同 continuity ID 不能取消同 SHA 的合并。新材料与独立展示窗口分别计算；脚本不做图像相似度识别，因此不能把未登记的相同页面伪装成不同材料来绕过限时。
+
+所有 placed 资料都检查与其关联的当前原声 `span_ids` 是否在时间上重叠，与是否启用限时无关。刻意提前或延后且完全不相交时，可记录 `timing_exception: {reason, max_offset_seconds}`；offset 是资料与最近关联原声区间之间允许的非重叠间隔，非任意平移整章的许可。只接触边界也需例外理由。此检查能发现“原话在后面、图却放前面”等映射错误，不能证明图片语义相关或观众已读清。
+
 `placed` 还需 `source_url / author / observed_at / semantic_limits / asset / source_evidence / output_range`，日期、原帖内容与实际插入窗口可互查。涉及指标时另存 `metric: {kind, display_value, source_url, observed_at, evidence}`；views 的链接必须属于当前帖，followers 使用其主页证据，不互换。这里只校验证据字段和文件，原帖真实性仍需按视觉参考核验。
 
 `check --stage plan` 允许资料待找；delivery 模式要求 `required: true` 的资料已 placed，并用 `export_check_ids` 关联实际导出窗口的 review。排入时间线不等于导出已确认。找不到则保留 pending，不能用无关素材或手动写 pass 补齐。明确取消必需资料时保留取消依据，再更新 required；排除资料需写 reason。更细的查找、核实、资产可用阶段可在行内 `research_status` 留记录；它不能替代 placed 和输出审阅。
@@ -110,5 +144,7 @@ Cathy 的资料另记 `display_mode: fullscreen/overlay`，按最终输出的帧
 纯视觉修改保护整条已批准混音，包括背景音乐，优先复制音频流并核对包数据与时间戳；不能换回较早的无配乐音轨。新增或调整配乐后不再声明与旧混音身份一致，另保留对白未变的证据与新混音检查。未变且证据仍有效的检查可复用，无需为这类修订重转写或重做全片内容审查。
 
 ## 有用的交付说明
+
+分开维护导航章节与真正的大标题显示窗口：章节开始时刻不等于标题入画时刻。用户问“标题在哪里”时，从最终渲染时间线生成 `实际文案｜入画–出画｜持续时间｜teaser/正文`；需要来源表时生成所有实际资料窗口，不只列本轮新增项。片头拼接或删除口癖后按实际帧数重算，表中的链接、时码与播放器版本一起回读。
 
 给用户实际结果：这轮改了哪些反馈、当前可打开版本、还有哪些未落实。机器日志留工作目录；不把技术检查清单变成额外审批，也不承诺以后固定几版完成。工具不会修改视频或自动上传项目数据。
