@@ -5,6 +5,8 @@ description: 把完整访谈或播客整理为 transcript-backed 长版节目与
 
 # HyperFrames Interview Longform
 
+Cathy 个人 16:9 项目使用[固定样式预设](../hyperframes-interview/references/cathy-style.md)：单行字幕、固定标题与水印、新建节目全片 1.2×、全屏资料≤4秒；teaser 无姓名条，正片介绍保留姓名条。当前要求及项目批准的局部例外优先。
+
 把长访谈剪成符合本轮目标的完整节目，不自动拆成若干短视频，不把编辑改写冒充现场原话。保留关键主持人问题、现场原声和人物语气，所有剪辑决定可回原片核查。用户要求视频时按主技能完成渲染和交付，Paper Edit 是执行依据，不是成片替代品；制作与收音读取 [播客制作参考](../hyperframes-interview/references/podcast-production.md)，画面资料读取 [视觉参考](../hyperframes-interview/references/visual-evidence.md)。
 
 以下全稿扫描、口癖统计与完整删剪清单用于首次建立节目或重新选择正文内容。已有批准全片只改封面、姓名标签、字幕样式或局部已确认原句时，复用有效的全文审阅与内容地图，仅更新受影响项目，不重启选题、全片转写或要求用户重复审批。
