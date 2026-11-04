@@ -11,6 +11,7 @@ import math
 import re
 import subprocess
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 
@@ -55,6 +56,95 @@ def number(value):
     if not math.isfinite(result):
         raise ValueError("Timestamp/rate must be finite")
     return result
+
+
+def frame_rate(value):
+    """Accept existing numeric fps and exact rates such as '30000/1001'."""
+    if isinstance(value, bool):
+        raise ValueError("Boolean is not a frame rate")
+    try:
+        result = Fraction(str(value))
+    except (ValueError, ZeroDivisionError) as error:
+        raise ValueError("Frame rate must be a positive number or rational string") from error
+    if result <= 0:
+        raise ValueError("Frame rate must be positive")
+    return result
+
+
+def fullscreen_frame_limit(policy, fps):
+    if policy is None:
+        return None
+    if not isinstance(policy, dict):
+        raise ValueError("materials_policy must be an object")
+    limit = number(policy["fullscreen_max_seconds"])
+    if limit <= 0:
+        raise ValueError("fullscreen_max_seconds must be positive")
+    frames = math.floor(Fraction(str(limit)) * fps)
+    if frames < 1:
+        raise ValueError("fullscreen_max_seconds allows no whole display frame")
+    return frames
+
+
+def material_frames(item, fps):
+    """Validate optional exact frames, otherwise quantize seconds to nearest frames."""
+    start, end = interval(item["output_range"])
+    frames = item.get("output_frames")
+    if frames is not None:
+        if (not isinstance(frames, list) or len(frames) != 2
+                or any(isinstance(v, bool) or not isinstance(v, int) for v in frames)
+                or frames[0] < 0 or frames[1] <= frames[0]):
+            raise ValueError("output_frames must be integer [in_frame, out_frame), with 0 <= in < out")
+        if any(abs(float(Fraction(f, 1) / fps) - t) > 0.001001
+               for f, t in zip(frames, (start, end))):
+            raise ValueError("output_frames and output_range disagree by more than 1 ms")
+        return tuple(frames)
+    result = tuple(math.floor(Fraction(str(t)) * fps + Fraction(1, 2)) for t in (start, end))
+    if result[1] <= result[0]:
+        raise ValueError("Material window rounds to no displayed frames")
+    return result
+
+
+def material_timing(item, spans):
+    """Check temporal association, not whether an image proves the spoken claim."""
+    start, end = interval(item["output_range"])
+    linked = [interval(spans[s]["output_range"]) for s in item["span_ids"]]
+    exception = item.get("timing_exception")
+    allowed = None
+    if exception is not None:
+        if (not isinstance(exception, dict) or not isinstance(exception.get("reason"), str)
+                or not exception["reason"].strip()):
+            raise ValueError("timing_exception needs a concrete reason")
+        allowed = number(exception["max_offset_seconds"])
+        if allowed < 0:
+            raise ValueError("timing_exception max_offset_seconds must be nonnegative")
+    if any(start < source_end and end > source_start for source_start, source_end in linked):
+        return
+    gap = min(max(source_start - end, start - source_end, 0) for source_start, source_end in linked)
+    if allowed is None or gap > allowed + 1e-9:
+        raise ValueError("Material does not overlap its linked spoken spans; record a justified timing_exception for intentional lead/lag")
+
+
+def continuous_material_errors(windows, limit_frames):
+    """Same-source continuations share a cap; a one-frame seam does not reset it."""
+    grouped = {}
+    for key, start, end, identifier in windows:
+        grouped.setdefault(key, []).append((start, end, identifier))
+    errors = []
+    for entries in grouped.values():
+        chain = None
+        for start, end, identifier in sorted(entries):
+            if chain is None:
+                chain = [start, end, [identifier]]
+            elif start <= chain[1] + 1:
+                chain[1] = max(chain[1], end)
+                chain[2].append(identifier)
+            else:
+                if len(chain[2]) > 1 and chain[1] - chain[0] > limit_frames:
+                    errors.append(f"materials {', '.join(chain[2])}: continuous fullscreen presentation exceeds {limit_frames} frames; splitting IDs does not reset the cap")
+                chain = [start, end, [identifier]]
+        if chain is not None and len(chain[2]) > 1 and chain[1] - chain[0] > limit_frames:
+            errors.append(f"materials {', '.join(chain[2])}: continuous fullscreen presentation exceeds {limit_frames} frames; splitting IDs does not reset the cap")
+    return list(dict.fromkeys(errors))
 
 
 def time_seconds(value):
@@ -158,7 +248,7 @@ def validate_mapping(span, versions):
         raise ValueError("Stale timeline binding")
     start, end = interval(span["output_range"])
     source_start, source_end = interval(span["source_range"])
-    rate, fps = number(span["rate"]), number(version["fps"])
+    rate, fps = number(span["rate"]), float(frame_rate(version["fps"]))
     if rate <= 0 or fps <= 0:
         raise ValueError("Rate/fps must be positive")
     tolerance = max(1 / fps, 0.002)
@@ -206,9 +296,12 @@ def check_state(data, base, media=False, stage="delivery"):
     try:
         artifact(base, version["video"], cache)
         duration = number(version["duration_seconds"])
-        fps = number(version["fps"])
+        exact_fps = frame_rate(version["fps"])
+        fps = float(exact_fps)
         if duration <= 0 or fps <= 0:
             raise ValueError("Duration/fps must be positive")
+        material_policy = version.get("materials_policy")
+        fullscreen_limit = fullscreen_frame_limit(material_policy, exact_fps)
     except (ValueError, KeyError, TypeError, OSError) as error:
         return {"status": "fail", "errors": [str(error)], "checks": [], "pending": [], "risks": []}
     spans = {s["id"]: s for s in data["spans"]}
@@ -340,6 +433,8 @@ def check_state(data, base, media=False, stage="delivery"):
     for span in data["spans"]:
         if span["version"] == active and span.get("semantic_review_required") and span["id"] not in semantic_by_span:
             pending.append(f"span {span['id']}: semantic review missing")
+    material_windows = []
+    placed_materials = 0
     for item in data["materials"]:
         if item.get("version") != active:
             continue
@@ -349,6 +444,7 @@ def check_state(data, base, media=False, stage="delivery"):
             if any(s not in spans or spans[s]["version"] != active for s in item["span_ids"]):
                 raise ValueError("Unknown/current-version material span")
             if item.get("status") == "placed":
+                placed_materials += 1
                 for key in ("source_url", "author", "observed_at", "semantic_limits"):
                     if not item.get(key):
                         raise ValueError(f"Placed material missing {key}")
@@ -357,6 +453,20 @@ def check_state(data, base, media=False, stage="delivery"):
                 start, end = interval(item["output_range"])
                 if end > duration:
                     raise ValueError("Material exceeds video duration")
+                mode = item.get("display_mode")
+                if (mode is not None or material_policy is not None) and mode not in {"fullscreen", "overlay"}:
+                    raise ValueError("Placed material needs display_mode fullscreen or overlay when a materials_policy is active")
+                if item.get("output_frames") is not None or (mode == "fullscreen" and fullscreen_limit is not None):
+                    start_frame, end_frame = material_frames(item, exact_fps)
+                material_timing(item, spans)
+                if "continuity_id" in item and (not isinstance(item["continuity_id"], str) or not item["continuity_id"].strip()):
+                    raise ValueError("continuity_id must be a nonempty string")
+                if mode == "fullscreen" and fullscreen_limit is not None:
+                    if end_frame - start_frame > fullscreen_limit:
+                        raise ValueError(f"Fullscreen material uses {end_frame - start_frame} frames; policy allows {fullscreen_limit}")
+                    material_windows.append((("asset", item["asset"]["sha256"]), start_frame, end_frame, item["id"]))
+                    if item.get("continuity_id"):
+                        material_windows.append((("continuity", item["continuity_id"]), start_frame, end_frame, item["id"]))
                 metric = item.get("metric")
                 if metric:
                     if not all(metric.get(k) for k in ("kind", "display_value", "source_url", "observed_at")):
@@ -377,6 +487,11 @@ def check_state(data, base, media=False, stage="delivery"):
                     pending.append(f"material {item['id']}: actual exported window review missing")
         except (ValueError, KeyError, TypeError, OSError) as error:
             errors.append(f"material {item['id']}: {error}")
+    if fullscreen_limit is not None:
+        errors.extend(continuous_material_errors(material_windows, fullscreen_limit))
+    elif placed_materials:
+        risks.append({"materials_policy_missing": True,
+                      "meaning": "No fullscreen duration cap was enforced. Set this version's materials_policy for an explicit project limit; no Cathy default is assumed."})
     errors.extend(f"check {r['id']}: {r.get('detail')}" for r in results if r["status"] == "fail")
     pending.extend(f"check {r['id']}: {r.get('detail')}" for r in results if r["status"] == "pending")
     return {"status": "fail" if errors else "pending" if pending else "checked",
@@ -394,6 +509,7 @@ def main():
     init.add_argument("--version", required=True)
     init.add_argument("--project", required=True)
     init.add_argument("--out", required=True)
+    init.add_argument("--preset", help="Copy only the fullscreen material limit from this explicit project/style preset")
     lookup = commands.add_parser("locate", help="Map watched-version time to source and every reused occurrence")
     lookup.add_argument("state")
     lookup.add_argument("--version")
@@ -417,6 +533,19 @@ def main():
             numerator, denominator = map(float, stream["avg_frame_rate"].split("/"))
             version = {"video": {"path": str(video), "sha256": sha256(video)},
                        "fps": numerator / denominator, "duration_seconds": number(info["format"]["duration"])}
+            if args.preset:
+                preset_path = Path(args.preset).resolve()
+                preset = read_json(preset_path)
+                if (not isinstance(preset, dict) or not isinstance(preset.get("id"), str)
+                        or not preset["id"].strip()):
+                    raise ValueError("Preset needs a nonempty id for provenance")
+                policy = {"fullscreen_max_seconds": number(preset["materials"]["fullscreen_max_seconds"])}
+                fullscreen_frame_limit(policy, frame_rate(version["fps"]))
+                version["materials_policy"] = policy
+                version["materials_policy_source"] = {
+                    "preset_id": preset["id"],
+                    "preset": {"path": str(preset_path), "sha256": sha256(preset_path)},
+                }
             data = {"schema_version": 1, "project": args.project, "active_version": args.version,
                     "versions": {args.version: version}, "spans": [], "checks": [], "feedback": [],
                     "materials": [], "semantic_reviews": []}
