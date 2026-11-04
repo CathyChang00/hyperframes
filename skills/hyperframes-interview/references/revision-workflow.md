@@ -4,7 +4,7 @@
 
 ## 一份当前配置，三种证据
 
-`project-state.json` 保存版本、原声片段、反馈、验收条件、资料计划与语义审阅；`active_version` 指向本次交付的真实 MP4。姓名、handle、封面、水印、字幕样式与倍率等批准值放项目现有渲染配置，检查项引用配置或输出，不维护互相冲突的第二套文本。选择新版本时重新绑定文件 SHA-256；旧版保留可回查。未变音轨可以用包数据与时间戳一致性继承证据，不能只看总时长。
+`project-state.json` 保存版本、原声片段、反馈、验收条件、资料计划与语义审阅；`active_version` 指向本次交付的真实 MP4。姓名、handle、封面、水印、字幕样式与倍率等批准值放项目现有渲染配置，检查项引用配置或输出，不维护互相冲突的第二套文本。Cathy 新项目从[固定预设](cathy-style.md)复制数值，并记录 preset ID、批准覆盖项；渲染器和检查器共用该配置。选择新版本时重新绑定文件 SHA-256；旧版保留可回查。未变音轨可以用包数据与时间戳一致性继承证据，不能只看总时长。
 
 区分以下结论：
 
@@ -86,6 +86,8 @@ python3 scripts/interview_project.py check /project/project-state.json --media -
 ### materials：先按谈话规划资料
 
 每项有 `id / version / topic / purpose / span_ids / required / status`，状态为 `planned / found / placed / excluded`。`planned` 阶段即写明具体事件、需要的图片/视频/数据、查询线索及叙事作用；它和内容选择一起形成，不等成片后补装饰。详见[画面与社媒证据](visual-evidence.md#让资料跟着谈话走)。
+
+Cathy 的资料另记 `display_mode: fullscreen/overlay`，按最终输出的帧区间检查全屏上限；时长与来源表由同一份时间线生成，不能仅把旧文档数字乘倍率后沿用。
 
 `placed` 还需 `source_url / author / observed_at / semantic_limits / asset / source_evidence / output_range`，日期、原帖内容与实际插入窗口可互查。涉及指标时另存 `metric: {kind, display_value, source_url, observed_at, evidence}`；views 的链接必须属于当前帖，followers 使用其主页证据，不互换。这里只校验证据字段和文件，原帖真实性仍需按视觉参考核验。
 
