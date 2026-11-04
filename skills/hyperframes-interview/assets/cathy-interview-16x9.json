@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "id": "cathy-interview-16x9-v1",
+  "id": "cathy-interview-16x9-v2",
   "updated": "2026-11-04",
   "scope": "Cathy personal 16:9 interview; latest user/project-approved overrides take precedence",
   "canvas": {
@@ -85,16 +85,50 @@
     "body": true,
     "text_from_project": true
   },
+  "music": {
+    "enabled_for_new_projects": true,
+    "existing_approved_mix": "preserve unless requested",
+    "vocals": false,
+    "teaser_body_relationship": "same track excerpts preferred, compatible different tracks allowed",
+    "initial_music_below_dialogue_db": {
+      "body": [18, 24],
+      "teaser": [14, 18],
+      "measurement": "RMS of separate stems over the same voiced interval",
+      "interpretation": "starting ranges, not fader settings or acceptance thresholds"
+    },
+    "duck_target": "music_only",
+    "preserve_approved_dialogue": true,
+    "timeline": "final output timeline; do not apply interview speed to music",
+    "source_and_license_record_required": true,
+    "attribution": "follow source license"
+  },
   "materials": {
     "fullscreen_max_seconds": 4,
     "cap_includes_fades": true,
+    "cap_includes_holds": true,
     "native_background_extra_padding": 0,
     "compact_backing_padding": [16, 12],
-    "persistent_main_logo_during_secondary_reveal": true
+    "persistent_main_logo_during_secondary_reveal": true,
+    "motion": {
+      "apply_to": "fullscreen static materials",
+      "direction": "content_up_for_downward_browsing",
+      "fixed_layers": ["canvas_background", "watermark", "subtitles"],
+      "short_material_initial_travel_px_at_1080p": [40, 60],
+      "initial_values_are_adjustable": true,
+      "long_screenshot": {
+        "width_priority": "at least approved comparable source width in this episode",
+        "fallback_canvas_width_fraction": 0.75,
+        "layout": "readable width first, overflow clipped in fixed viewport",
+        "native_metadata_visibility": "sequential during scroll, not necessarily every frame"
+      },
+      "protect": ["title", "important_faces", "key_text_and_data"],
+      "exclude": ["videos_with_useful_motion", "corner_logos", "chapter_titles"]
+    }
   },
   "provenance": {
     "geometry": "Approved Scott interview overlays",
     "watermark_background": "Photon background depth only; Scott approved font and size retained",
-    "new_defaults": "1.2x in teaser and body; 1640px subtitle width shared across new compositions"
+    "new_defaults": "New Cathy projects: 1.2x teaser/body, 1640px subtitle width, quiet instrumental music and scrolling fullscreen static sources; numeric mix and motion ranges are adjustable starting points",
+    "implementation_scope": "Music and material motion are planning defaults; render_cathy_overlays.py generates static overlays only"
   }
 }
