@@ -183,6 +183,125 @@ class ProjectChecks(unittest.TestCase):
         with self.assertRaises(ValueError):
             project.load_state(path)
 
+    def material(self, identifier="M1", window=None, mode="fullscreen", **kwargs):
+        return {"id": identifier, "version": "V2", "topic": "specific source",
+                "purpose": "show source during its discussion", "span_ids": ["body"],
+                "required": False, "status": "placed", "source_url": "https://example.test/post/A",
+                "author": "Example", "observed_at": "2026-11-04", "semantic_limits": "this source only",
+                "asset": self.ref("frame.png"), "source_evidence": self.ref("frame.png"),
+                "display_mode": mode, "output_range": window or [10, 14], **kwargs}
+
+    def set_material_policy(self, limit=4, fps=30):
+        self.data["versions"]["V2"].update(fps=fps, materials_policy={"fullscreen_max_seconds": limit})
+
+    def test_fullscreen_119_frames_pass_but_120_fail_at_2997(self):
+        self.set_material_policy(fps="30000/1001")
+        for count, expected in ((119, "checked"), (120, "fail")):
+            with self.subTest(frames=count):
+                self.data["materials"] = [self.material(
+                    window=[300 * 1001 / 30000, (300 + count) * 1001 / 30000],
+                    output_frames=[300, 300 + count])]
+                self.assertEqual(self.report(stage="plan")["status"], expected)
+
+    def test_second_windows_are_quantized_to_project_frames(self):
+        self.set_material_policy(fps=29.97)
+        self.data["materials"] = [self.material(window=[10.01, 13.981])]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+        self.data["materials"][0]["output_range"] = [10.01, 14.014]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_overlay_is_not_subject_to_fullscreen_cap(self):
+        self.set_material_policy()
+        self.data["materials"] = [self.material(window=[10, 18], mode="overlay")]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+
+    def test_other_project_can_explicitly_allow_five_seconds(self):
+        self.set_material_policy(limit=5)
+        self.data["materials"] = [self.material(window=[10, 15])]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+        self.data["materials"][0]["output_range"] = [10, 15.1]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_no_policy_does_not_invent_a_cathy_cap(self):
+        self.data["materials"] = [self.material(window=[10, 18])]
+        del self.data["materials"][0]["display_mode"]
+        report = self.report(stage="plan")
+        self.assertEqual(report["status"], "checked")
+        self.assertTrue(any(r.get("materials_policy_missing") for r in report["risks"]))
+
+    def test_active_policy_requires_valid_display_mode(self):
+        self.set_material_policy()
+        for mode in (None, "full-screen", ""):
+            with self.subTest(mode=mode):
+                self.data["materials"] = [self.material(mode=mode)]
+                self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_explicit_frames_must_match_seconds_and_be_integer(self):
+        self.set_material_policy()
+        for frames in ([300, 421], [True, 420], [420, 300], [300, 420.0]):
+            with self.subTest(frames=frames):
+                self.data["materials"] = [self.material(output_frames=frames)]
+                self.assertEqual(self.report(stage="plan")["status"], "fail")
+        self.data["materials"] = [self.material(output_frames=[300, 420])]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+
+    def test_material_must_overlap_current_linked_speech(self):
+        self.data["materials"] = [self.material(window=[0, 4])]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+        self.data["materials"][0]["span_ids"] = ["hook"]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+        self.data["materials"][0]["span_ids"] = ["unknown"]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_intentional_material_lead_needs_reason_and_bounded_offset(self):
+        self.data["materials"] = [self.material(window=[6, 9], timing_exception={
+            "reason": "Introduce the source before the guest names it", "max_offset_seconds": 1})]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+        for exception in ({"reason": "Intro", "max_offset_seconds": 0.5},
+                          {"reason": "", "max_offset_seconds": 1},
+                          {"reason": None, "max_offset_seconds": 1},
+                          {"reason": "Intro", "max_offset_seconds": -1}):
+            with self.subTest(exception=exception):
+                self.data["materials"][0]["timing_exception"] = exception
+                self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_touching_half_open_window_needs_explicit_timing_exception(self):
+        self.data["materials"] = [self.material(window=[6, 10])]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+        self.data["materials"][0]["timing_exception"] = {"reason": "Source pre-roll ends at answer start", "max_offset_seconds": 0}
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+
+    def test_splitting_same_image_does_not_reset_fullscreen_cap(self):
+        self.set_material_policy()
+        self.data["materials"] = [self.material("M1", [10, 12.5]), self.material("M2", [12.5, 15])]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+        self.data["materials"][0]["continuity_id"] = "attempt-a"
+        self.data["materials"][1]["continuity_id"] = "attempt-b"
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_one_frame_seam_does_not_reset_same_image_cap(self):
+        self.set_material_policy()
+        self.data["materials"] = [self.material("M1", [10, 12.5]), self.material("M2", [376 / 30, 451 / 30])]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_distinct_images_get_separate_caps_unless_declared_continuation(self):
+        self.set_material_policy()
+        (self.root / "other.png").write_bytes(b"a distinct supporting image")
+        self.data["materials"] = [self.material("M1", [10, 12.5]), self.material("M2", [12.5, 15], asset=self.ref("other.png"))]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+        for item in self.data["materials"]:
+            item["continuity_id"] = "same-long-post-different-crops"
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_nonadjacent_intentional_reuse_keeps_separate_caps(self):
+        self.set_material_policy()
+        self.data["materials"] = [self.material("M1", [0, 3], span_ids=["hook"]), self.material("M2", [10, 13])]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+
+    def test_material_window_must_stay_in_final_video(self):
+        self.data["materials"] = [self.material(window=[10, 21], mode="overlay")]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
     def test_media_checks_are_pending_without_flag(self):
         self.data["checks"] = [self.check("duration", "media_duration", expected_seconds=20)]
         self.assertEqual(self.report()["status"], "pending")
@@ -202,6 +321,8 @@ class RealMediaChecks(unittest.TestCase):
             subprocess.run([sys_executable(), str(Path(project.__file__)), "init", "--video", str(copy_path),
                             "--version", "V1", "--project", "test", "--out", str(state)], check=True, capture_output=True)
             data = project.load_state(state)
+            self.assertNotIn("materials_policy", data["versions"]["V1"])
+            self.assertNotIn("materials_policy_source", data["versions"]["V1"])
             video_hash = data["versions"]["V1"]["video"]["sha256"]
             common = {"version": "V1", "video_sha256": video_hash, "scope": "actual media"}
             data["checks"] = [
@@ -212,6 +333,43 @@ class RealMediaChecks(unittest.TestCase):
             data["checks"][0]["expected_seconds"] = 2.0
             self.assertEqual(project.check_state(data, root, media=True)["status"], "fail")
             self.assertEqual(project.check_state(data, root, media=False)["status"], "pending")
+
+    def test_init_with_explicit_preset_imports_only_material_policy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source, preset_path, state = root / "source.mp4", root / "preset.json", root / "state.json"
+            subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=c=black:s=64x64:r=30:d=1",
+                            "-c:v", "libx264", str(source)], check=True)
+            before = project.sha256(source)
+            project.write_json(preset_path, {"id": "custom-five-second-project", "materials": {"fullscreen_max_seconds": 5},
+                                            "playback": {"body_source_rate": 9}, "canvas": {"width": 9000}})
+            subprocess.run([sys_executable(), str(Path(project.__file__)), "init", "--video", str(source),
+                            "--version", "V1", "--project", "custom", "--out", str(state),
+                            "--preset", str(preset_path)], check=True, capture_output=True)
+            version = project.load_state(state)["versions"]["V1"]
+            self.assertEqual(version["materials_policy"], {"fullscreen_max_seconds": 5})
+            self.assertEqual(version["materials_policy_source"], {
+                "preset_id": "custom-five-second-project",
+                "preset": {"path": str(preset_path.resolve()), "sha256": project.sha256(preset_path)}})
+            self.assertNotIn("playback", version)
+            self.assertNotIn("canvas", version)
+            self.assertEqual(project.sha256(source), before)
+
+    def test_init_rejects_invalid_preset_caps_without_creating_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source, preset_path = root / "source.mp4", root / "preset.json"
+            subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=c=black:s=64x64:r=30:d=1",
+                            "-c:v", "libx264", str(source)], check=True)
+            for i, cap in enumerate((0, -1, True, "invalid", 0.001)):
+                with self.subTest(cap=cap):
+                    state = root / f"state-{i}.json"
+                    project.write_json(preset_path, {"id": "invalid-project", "materials": {"fullscreen_max_seconds": cap}})
+                    result = subprocess.run([sys_executable(), str(Path(project.__file__)), "init", "--video", str(source),
+                                             "--version", "V1", "--project", "invalid", "--out", str(state),
+                                             "--preset", str(preset_path)], capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 2)
+                    self.assertFalse(state.exists())
 
 
 def sys_executable():
