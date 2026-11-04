@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "cathy-interview-16x9-v1",
+  "updated": "2026-11-04",
+  "scope": "Cathy personal 16:9 interview; latest user/project-approved overrides take precedence",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "playback": {
+    "teaser_source_rate": 1.2,
+    "body_source_rate": 1.2,
+    "preserve_pitch": true,
+    "player_rate": 1.0,
+    "apply_to": "new_projects_only",
+    "existing_approved_speed": "preserve unless explicitly asked to retime this video"
+  },
+  "watermark": {
+    "text": "Twitter @CathyChang00",
+    "asset": "cathy-twitter-watermark-1080p.png",
+    "sha256": "5d1f679f3ed557dd2f1431d87f9efcd21b63d9f4ca96dcd132dba00798c3f5d7",
+    "x": 1422,
+    "y": 54,
+    "width": 402,
+    "height": 60,
+    "right_margin": 96,
+    "background_rgba": [12, 25, 21, 184],
+    "text_rgba": [248, 246, 239, 255],
+    "font_family": "Helvetica Neue",
+    "font_style": "Regular",
+    "effective_font_size": 34.5,
+    "source_font_size": 23,
+    "source_scale": 1.5,
+    "full_duration": true,
+    "above_fullscreen_materials": true
+  },
+  "chapter": {
+    "font_path": "/System/Library/Fonts/Optima.ttc",
+    "font_index": 1,
+    "font_family": "Optima",
+    "font_style": "Bold",
+    "font_size": 124,
+    "color": "#FCF8F0",
+    "stroke_width": 2,
+    "anchor": "lt",
+    "position": [126, 135],
+    "line_step": 146,
+    "max_lines": 2,
+    "eyebrow": false,
+    "backing": {
+      "color": [0, 0, 0],
+      "alpha": 65,
+      "padding_x": 35,
+      "padding_y": 25,
+      "radius": 28,
+      "blur": 36
+    },
+    "shadow": {
+      "rgba": [0, 0, 0, 185],
+      "offset_y": 3,
+      "stroke_width": 3,
+      "blur": 3
+    }
+  },
+  "subtitle": {
+    "font_path": "/System/Library/Fonts/Supplemental/Arial.ttf",
+    "font_index": 0,
+    "font_family": "Arial",
+    "font_style": "Regular",
+    "font_size": 50,
+    "max_lines": 1,
+    "color": "#FFFFFF",
+    "stroke_width": 0,
+    "anchor": "mt",
+    "position": [960, 920],
+    "background_rgba": [0, 0, 0, 170],
+    "padding_x": 32,
+    "max_card_width": 1640,
+    "box_top": 911,
+    "box_bottom_inclusive": 995,
+    "reserved_top": 900
+  },
+  "name_cards": {
+    "teaser": false,
+    "body": true,
+    "text_from_project": true
+  },
+  "materials": {
+    "fullscreen_max_seconds": 4,
+    "cap_includes_fades": true,
+    "native_background_extra_padding": 0,
+    "compact_backing_padding": [16, 12],
+    "persistent_main_logo_during_secondary_reveal": true
+  },
+  "provenance": {
+    "geometry": "Approved Scott interview overlays",
+    "watermark_background": "Photon background depth only; Scott approved font and size retained",
+    "new_defaults": "1.2x in teaser and body; 1640px subtitle width shared across new compositions"
+  }
+}
