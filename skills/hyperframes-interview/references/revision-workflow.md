@@ -52,7 +52,7 @@ python3 scripts/interview_project.py check /project/project-state.json --media -
 
 `init` 读取真实视频并建立身份，不覆盖现有记录，也不自动宣称验收完成。`locate` 要求观看版本和时间，返回源文件秒数及同一句的所有使用位置；无命中说明尚未映射，不能断言素材里没有这句话。`check` 只读取媒体，退出 0 表示已登记条件的机械检查完成；退出 2 表示错误或仍有待验收项。未加 `--media` 的媒体条件保持 pending。`review_recorded` 表示审阅记录与文件身份有效，不是脚本完成了审美或听审。
 
-`init --preset` 只从指定 JSON 的 `materials.fullscreen_max_seconds` 建立本版本资料限时，并记录 `materials_policy_source: {preset_id, preset: {path, sha256}}`。它不改变视频速度或渲染样式，不默认读取 Cathy 配置；以后改 skill 也不自动改已有项目的政策快照。新增版本时显式继承仍有效的 `materials_policy`，有项目新要求则更新并记录依据。
+`init --preset` 从指定 JSON 的 `materials` 导入限时字段，并记录 `materials_policy_source: {preset_id, preset: {path, sha256}}`。新 Cathy 预设用 `static_fullscreen_max_seconds / video_max_seconds`；旧预设的 `fullscreen_max_seconds` 仍按旧意读取。它不改变视频速度或渲染样式，不默认读取 Cathy 配置；以后改 skill 也不自动改已有项目的政策快照。新增版本时显式继承仍有效的 `materials_policy`，有项目新要求则更新并记录依据。
 
 ## 项目记录格式
 
@@ -111,15 +111,17 @@ python3 scripts/interview_project.py check /project/project-state.json --media -
 
 每项有 `id / version / topic / purpose / span_ids / required / status`，状态为 `planned / found / placed / excluded`。`planned` 阶段即写明具体事件、需要的图片/视频/数据、查询线索及叙事作用；它和内容选择一起形成，不等成片后补装饰。详见[画面与社媒证据](visual-evidence.md#让资料跟着谈话走)。
 
-Cathy 的资料另记 `display_mode: fullscreen/overlay`，按最终输出的帧区间检查全屏上限；时长与来源表由同一份时间线生成，不能仅把旧文档数字乘倍率后沿用。
+Cathy 的资料另记 `display_mode: fullscreen/overlay` 和 `asset_type: static/video`，按内容分类，滚动截图导出 MP4 后仍是 static。按最终输出帧区间检查对应上限；时长与来源表由同一份时间线生成，不能仅把旧文档数字乘倍率后沿用。视频的源段、静音、独立倍率与派生映射见[视频 B-roll](video-broll.md#原片派生文件成片三层可回查)。
 
 ### 资料限时与时序的机械检查
 
-在对应 `versions[版本ID]` 内配置 `materials_policy: {fullscreen_max_seconds: 4}` 才会启用该上限；Cathy 新项目通过上述 preset 导入，其他项目按实际要求配置。启用 policy 后，所有已排入的资料需声明 `display_mode: fullscreen/overlay`，只有 fullscreen 受此项限制。未配置 policy 的旧记录可继续检查其他条件，报告会明确提示“没有执行全屏限时”，不能当作 4 秒已通过。
+在对应 `versions[版本ID]` 内配置 `materials_policy: {static_fullscreen_max_seconds: 4, video_max_seconds: 15}`，Cathy 新项目通过上述 preset 导入，其他项目按实际要求配置。typed policy 下所有已 placed 资料需声明 `display_mode: fullscreen/overlay` 与 `asset_type: static/video`：static 仅全屏受 4 秒限制，video 的全屏与画中画均受 15 秒限制。两个限值都必须有效；缺失/未知类型不能自动享受更长时限，脚本不根据文件后缀猜分类。
 
-每条资料保留 `output_range` 秒区间，可加 `output_frames: [in_frame, out_frame]` 表示最终半开整数帧区间，两者需在 1ms 内一致；精确最终检查优先填实际渲染帧数。仅有秒数时脚本按项目 fps 四舍五入到最近帧。上限为 `floor(limit_seconds × fps)`，因此 `30000/1001` fps、4 秒允许 119 帧，120 帧会报错；停留、滚动、淡入淡出均包含在一个显示窗口内。
+旧 `materials_policy: {fullscreen_max_seconds: 4}` 继续表示所有 fullscreen 资料都按一个上限处理，不自动迁移旧项目；typed 与旧字段不能同时配置。需要采用新规则时，显式更换该版本 policy 并给已 placed 资料补类型，留下本轮授权依据。未配置 policy 的旧记录可继续检查其他条件，报告会提示没有执行限时，不能当作 4 秒／15 秒已通过。
 
-相邻或只隔一帧的同资产 SHA 会合并计显示长度，拆成不同 ID 不重置上限。同一原帖的不同裁图/滚动帧另用共同 `continuity_id` 标明连续展示；不同 continuity ID 不能取消同 SHA 的合并。新材料与独立展示窗口分别计算；脚本不做图像相似度识别，因此不能把未登记的相同页面伪装成不同材料来绕过限时。
+每条资料保留 `output_range` 秒区间，可加 `output_frames: [in_frame, out_frame]` 表示最终半开整数帧区间，两者需在 1ms 内一致；精确最终检查优先填实际渲染帧数。仅有秒数时脚本按项目 fps 四舍五入到最近帧。上限为 `floor(limit_seconds × fps)`，因此 `30000/1001` fps 下静态全屏 4 秒允许 119 帧、视频 15 秒允许 449 帧；120／450 帧分别超限。停留、滚动、淡入淡出都计入一个显示窗口，程序只核对限时，不判断选段是否完整。
+
+相邻或只隔一帧的同资产 SHA 会按适用类型合并计显示长度，拆成不同 ID 不重置上限。同一原帖的不同裁图/滚动帧另用共同 `continuity_id` 标明连续展示；不同 continuity ID 不能取消同 SHA 的合并，同资产或 continuity_id 也不能声明矛盾类型绕过限时。新材料与独立展示窗口分别计算；脚本不做图像相似度识别，因此不能把未登记的相同页面伪装成不同材料来绕过限时。
 
 所有 placed 资料都检查与其关联的当前原声 `span_ids` 是否在时间上重叠，与是否启用限时无关。刻意提前或延后且完全不相交时，可记录 `timing_exception: {reason, max_offset_seconds}`；offset 是资料与最近关联原声区间之间允许的非重叠间隔，非任意平移整章的许可。只接触边界也需例外理由。此检查能发现“原话在后面、图却放前面”等映射错误，不能证明图片语义相关或观众已读清。
 
@@ -139,7 +141,7 @@ Cathy 的资料另记 `display_mode: fullscreen/overlay`，按最终输出的帧
 
 更新实际渲染源、视窗参数与完整的有效资料清单，不能只改预览图。合并局部修订时保留未改的动画窗口，新增海报、原帖和音乐来源同步进入最终时间线的来源表；不能拿仅含本次差异的列表覆盖全片清单。
 
-边界有争议时按解码帧序号和 `[in, out)` 核查，用已知帧起点的逐帧选择取得窗口前、首、中、末和后一帧；快速 `-ss` seek 可能返回邻帧，不能单凭它认定越界。检查滚动宽度、路径与固定图层分开进行；首尾 hold 可以有重复帧。说明查看了哪些窗口，不把边界抽样写成全片逐帧看过。
+边界有争议时按解码帧序号和 `[in, out)` 核查，用已知帧起点的逐帧选择取得窗口前、首、中、末和后一帧；视频内部跨段拼接与源场景出点另查接缝，快速 `-ss` seek 可能返回邻帧，不能单凭它认定越界。检查滚动宽度、路径与固定图层分开进行；首尾 hold 可以有重复帧。说明查看了哪些窗口，不把边界抽样写成全片逐帧看过。
 
 纯视觉修改保护整条已批准混音，包括背景音乐，优先复制音频流并核对包数据与时间戳；不能换回较早的无配乐音轨。新增或调整配乐后不再声明与旧混音身份一致，另保留对白未变的证据与新混音检查。未变且证据仍有效的检查可复用，无需为这类修订重转写或重做全片内容审查。
 
