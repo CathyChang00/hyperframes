@@ -194,6 +194,10 @@ class ProjectChecks(unittest.TestCase):
     def set_material_policy(self, limit=4, fps=30):
         self.data["versions"]["V2"].update(fps=fps, materials_policy={"fullscreen_max_seconds": limit})
 
+    def set_typed_material_policy(self, static=4, video=15, fps="30000/1001"):
+        self.data["versions"]["V2"].update(fps=fps, materials_policy={
+            "static_fullscreen_max_seconds": static, "video_max_seconds": video})
+
     def test_fullscreen_119_frames_pass_but_120_fail_at_2997(self):
         self.set_material_policy(fps="30000/1001")
         for count, expected in ((119, "checked"), (120, "fail")):
@@ -228,6 +232,129 @@ class ProjectChecks(unittest.TestCase):
         report = self.report(stage="plan")
         self.assertEqual(report["status"], "checked")
         self.assertTrue(any(r.get("materials_policy_missing") for r in report["risks"]))
+
+    def test_typed_static_119_frames_pass_but_120_fail_at_2997(self):
+        self.set_typed_material_policy()
+        for count, expected in ((119, "checked"), (120, "fail")):
+            with self.subTest(frames=count):
+                self.data["materials"] = [self.material(asset_type="static",
+                    window=[300 * 1001 / 30000, (300 + count) * 1001 / 30000],
+                    output_frames=[300, 300 + count])]
+                self.assertEqual(self.report(stage="plan")["status"], expected)
+
+    def test_typed_video_449_frames_pass_but_450_fail_at_2997(self):
+        self.set_typed_material_policy()
+        for count, expected in ((449, "checked"), (450, "fail")):
+            with self.subTest(frames=count):
+                self.data["materials"] = [self.material(asset_type="video",
+                    window=[0, count * 1001 / 30000], output_frames=[0, count])]
+                self.assertEqual(self.report(stage="plan")["status"], expected)
+
+    def test_typed_video_can_show_complete_nine_second_action(self):
+        self.set_typed_material_policy()
+        self.data["materials"] = [self.material(asset_type="video", window=[10, 19.4])]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+
+    def test_typed_video_overlay_obeys_video_cap(self):
+        self.set_typed_material_policy(fps=30)
+        for duration, expected in ((9.4, "checked"), (15, "checked"), (15.1, "fail")):
+            with self.subTest(duration=duration):
+                self.data["materials"] = [self.material(asset_type="video", mode="overlay",
+                    window=[0, duration], span_ids=["hook"])]
+                self.assertEqual(self.report(stage="plan")["status"], expected)
+
+    def test_typed_static_overlay_is_not_subject_to_fullscreen_cap(self):
+        self.set_typed_material_policy()
+        self.data["materials"] = [self.material(asset_type="static", mode="overlay", window=[0, 20])]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+
+    def test_typed_policy_needs_valid_content_category_for_all_placed_items(self):
+        self.set_typed_material_policy()
+        for mode in ("fullscreen", "overlay"):
+            for kind in (None, "", "animation", "image", "mp4", True):
+                with self.subTest(mode=mode, kind=kind):
+                    item = self.material(mode=mode)
+                    if kind is not None:
+                        item["asset_type"] = kind
+                    self.data["materials"] = [item]
+                    self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_scrolling_still_video_file_stays_under_static_cap(self):
+        self.set_typed_material_policy()
+        self.data["materials"] = [self.material(asset_type="static", window=[10, 15],
+                                               asset=self.ref("source.mp4"))]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_legacy_policy_still_caps_video_as_fullscreen_at_four_seconds(self):
+        self.set_material_policy()
+        self.data["materials"] = [self.material(asset_type="video", window=[10, 19.4])]
+        original = copy.deepcopy(self.data)
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+        self.assertEqual(self.data, original)
+
+    def test_typed_policy_rejects_missing_mixed_and_invalid_limits(self):
+        policies = [{}, {"static_fullscreen_max_seconds": 4}, {"video_max_seconds": 15},
+                    {"fullscreen_max_seconds": 4, "static_fullscreen_max_seconds": 4},
+                    {"fullscreen_max_seconds": 4, "video_max_seconds": 15}]
+        for key in ("static_fullscreen_max_seconds", "video_max_seconds"):
+            for value in (0, -1, True, "invalid", None, float("nan"), float("inf"), 0.001):
+                policies.append({"static_fullscreen_max_seconds": 4, "video_max_seconds": 15, key: value})
+        for policy in policies:
+            with self.subTest(policy=policy):
+                self.data["versions"]["V2"]["materials_policy"] = policy
+                self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_typed_continuous_video_cannot_reset_cap_by_id_or_display_mode(self):
+        self.set_typed_material_policy(fps=30)
+        self.data["materials"] = [
+            self.material("M1", [0, 8], asset_type="video", span_ids=["hook"]),
+            self.material("M2", [8, 16], asset_type="video", mode="overlay")]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+        self.data["materials"][0]["continuity_id"] = "first-name"
+        self.data["materials"][1]["continuity_id"] = "second-name"
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_typed_video_one_frame_seam_does_not_reset_cap(self):
+        self.set_typed_material_policy(fps=30)
+        self.data["materials"] = [
+            self.material("M1", [0, 8], asset_type="video", span_ids=["hook"]),
+            self.material("M2", [241 / 30, 481 / 30], asset_type="video")]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_typed_static_split_still_uses_four_second_cap(self):
+        self.set_typed_material_policy(fps=30)
+        self.data["materials"] = [self.material("M1", [10, 12.5], asset_type="static"),
+                                  self.material("M2", [12.5, 15], asset_type="static")]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_typed_derived_assets_share_declared_continuity_cap(self):
+        self.set_typed_material_policy(fps=30)
+        self.data["materials"] = [
+            self.material("M1", [0, 8], asset_type="video", span_ids=["hook"],
+                          continuity_id="one-product-demonstration"),
+            self.material("M2", [8, 16], asset_type="video", asset=self.ref("source.mp4"),
+                          continuity_id="one-product-demonstration")]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+        del self.data["materials"][1]["continuity_id"]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
+
+    def test_typed_same_asset_or_continuity_cannot_switch_category(self):
+        self.set_typed_material_policy(fps=30)
+        self.data["materials"] = [
+            self.material("M1", [10, 12], asset_type="static"),
+            self.material("M2", [12, 15], asset_type="video")]
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+        self.data["materials"][1]["asset"] = self.ref("source.mp4")
+        for item in self.data["materials"]:
+            item["continuity_id"] = "same-source-presentation"
+        self.assertEqual(self.report(stage="plan")["status"], "fail")
+
+    def test_typed_static_and_video_caps_apply_independently(self):
+        self.set_typed_material_policy(fps=30)
+        self.data["materials"] = [
+            self.material("M1", [0, 4], asset_type="static", span_ids=["hook"]),
+            self.material("M2", [4, 19], asset_type="video", asset=self.ref("source.mp4"))]
+        self.assertEqual(self.report(stage="plan")["status"], "checked")
 
     def test_active_policy_requires_valid_display_mode(self):
         self.set_material_policy()
@@ -365,6 +492,54 @@ class RealMediaChecks(unittest.TestCase):
                 with self.subTest(cap=cap):
                     state = root / f"state-{i}.json"
                     project.write_json(preset_path, {"id": "invalid-project", "materials": {"fullscreen_max_seconds": cap}})
+                    result = subprocess.run([sys_executable(), str(Path(project.__file__)), "init", "--video", str(source),
+                                             "--version", "V1", "--project", "invalid", "--out", str(state),
+                                             "--preset", str(preset_path)], capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 2)
+                    self.assertFalse(state.exists())
+
+    def test_init_typed_preset_keeps_rational_fps_and_never_overwrites_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source, preset_path, state = root / "source.mp4", root / "preset.json", root / "state.json"
+            subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i",
+                            "color=c=black:s=64x64:r=30000/1001:d=1", "-c:v", "libx264", str(source)], check=True)
+            source_hash = project.sha256(source)
+            policy = {"static_fullscreen_max_seconds": 4, "video_max_seconds": 15}
+            project.write_json(preset_path, {"id": "typed-cathy-project", "materials": {
+                **policy, "cap_includes_fades": True, "motion": {"direction": "content_up"}},
+                "playback": {"body_source_rate": 1.2}, "canvas": {"width": 1920}})
+            command = [sys_executable(), str(Path(project.__file__)), "init", "--video", str(source),
+                       "--version", "V1", "--project", "typed", "--out", str(state), "--preset", str(preset_path)]
+            subprocess.run(command, check=True, capture_output=True)
+            version = project.load_state(state)["versions"]["V1"]
+            self.assertEqual(version["fps"], "30000/1001")
+            self.assertEqual(version["materials_policy"], policy)
+            self.assertEqual(version["materials_policy_source"], {
+                "preset_id": "typed-cathy-project",
+                "preset": {"path": str(preset_path.resolve()), "sha256": project.sha256(preset_path)}})
+            self.assertNotIn("playback", version)
+            self.assertNotIn("canvas", version)
+            state_before = state.read_bytes()
+            result = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("State already exists", result.stderr)
+            self.assertEqual(state.read_bytes(), state_before)
+            self.assertEqual(project.sha256(source), source_hash)
+
+    def test_init_rejects_mixed_or_partial_typed_preset_without_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source, preset_path = root / "source.mp4", root / "preset.json"
+            subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=c=black:s=64x64:r=30:d=1",
+                            "-c:v", "libx264", str(source)], check=True)
+            for i, policy in enumerate(({"static_fullscreen_max_seconds": 4},
+                                         {"video_max_seconds": 15},
+                                         {"fullscreen_max_seconds": 4, "static_fullscreen_max_seconds": 4,
+                                          "video_max_seconds": 15})):
+                with self.subTest(policy=policy):
+                    state = root / f"state-{i}.json"
+                    project.write_json(preset_path, {"id": "invalid-typed-project", "materials": policy})
                     result = subprocess.run([sys_executable(), str(Path(project.__file__)), "init", "--video", str(source),
                                              "--version", "V1", "--project", "invalid", "--out", str(state),
                                              "--preset", str(preset_path)], capture_output=True, text=True)
