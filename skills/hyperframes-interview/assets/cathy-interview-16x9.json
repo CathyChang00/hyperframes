@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "id": "cathy-interview-16x9-v2",
+  "id": "cathy-interview-16x9-v3",
   "updated": "2026-11-04",
   "scope": "Cathy personal 16:9 interview; latest user/project-approved overrides take precedence",
   "canvas": {
@@ -103,7 +103,6 @@
     "attribution": "follow source license"
   },
   "materials": {
-    "fullscreen_max_seconds": 4,
     "cap_includes_fades": true,
     "cap_includes_holds": true,
     "native_background_extra_padding": 0,
@@ -123,12 +122,23 @@
       },
       "protect": ["title", "important_faces", "key_text_and_data"],
       "exclude": ["videos_with_useful_motion", "corner_logos", "chapter_titles"]
+    },
+    "static_fullscreen_max_seconds": 4,
+    "video_max_seconds": 15,
+    "classification": "content-based; scrolling or zooming a still image remains static even if encoded as video",
+    "video": {
+      "scope": "Cathy supplied or designated video B-roll; explicit project overrides take precedence",
+      "source_playback_rate": 1.0,
+      "source_audio": "discard all source audio unless explicitly requested",
+      "preserve_approved_interview_mix": true,
+      "duration_selection": "complete action, interaction or scene; 15 seconds is a ceiling, not a target",
+      "extra_scroll": false
     }
   },
   "provenance": {
     "geometry": "Approved Scott interview overlays",
     "watermark_background": "Photon background depth only; Scott approved font and size retained",
-    "new_defaults": "New Cathy projects: 1.2x teaser/body, 1640px subtitle width, quiet instrumental music and scrolling fullscreen static sources; numeric mix and motion ranges are adjustable starting points",
+    "new_defaults": "New Cathy projects: 1.2x teaser/body, fixed single-line captions and watermark, quiet instrumental music, scrolling static fullscreen sources up to4 seconds, supplied/designated dynamic B-roll up to15 seconds at independent source rate; mix and motion ranges are adjustable starting points",
     "implementation_scope": "Music and material motion are planning defaults; render_cathy_overlays.py generates static overlays only"
   }
 }
