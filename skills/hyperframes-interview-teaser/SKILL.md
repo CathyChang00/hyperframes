@@ -5,7 +5,7 @@ description: 从访谈原声选择和剪辑强开场：区分服务长片的 col
 
 # HyperFrames Interview Teaser
 
-Cathy 个人 16:9 项目使用[固定样式预设](../hyperframes-interview/references/cathy-style.md)：单行字幕、固定标题与水印、新建节目全片 1.2×、全屏资料≤4秒；teaser 无姓名条，正片介绍保留姓名条。当前要求及项目批准的局部例外优先。
+Cathy 个人 16:9 项目使用[固定样式预设](../hyperframes-interview/references/cathy-style.md)：单行字幕、固定标题与水印、新建节目全片 1.2×、全屏静态资料≤4秒、用户提供或指定的视频素材≤15秒；teaser 无姓名条，正片介绍保留姓名条。视频素材上限不替代 teaser 的总时长与节奏要求，选段见[视频 B-roll](../hyperframes-interview/references/video-broll.md)。当前要求及项目批准的局部例外优先。
 
 先区分两种产物：长片 cold open 用一个强主张引入节目，独立 teaser 则必须自身可理解、有完整落点。都从用户选定 topic 的原声中剪，不把跨主题强句拼成一个新判断。
 
