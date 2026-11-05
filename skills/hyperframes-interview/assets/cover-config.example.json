@@ -1,0 +1,36 @@
+{
+  "photo": "graded/photo_a.jpg",
+  "crop": [0, 160, 1440],
+  "max_upscale": 2.0,
+  "gradient": { "start": 0.4, "strength": 0.92, "power": 1.25, "rgb": [14, 11, 8] },
+  "lockup": {
+    "logo": { "path": "brand/guest-company-logo-white.png", "wordmark_from_x": 0.3 },
+    "text": ["Interview", "Guest Full Name"],
+    "color": "#1B1713",
+    "logo_height": 72,
+    "xy": [88, 29],
+    "font_size": 60,
+    "halo": { "peak": 230, "spread": 12, "blur": 18 }
+  },
+  "title": {
+    "lines": ["This {project} Maintainer", "Is Buying a University"],
+    "accent": ["University"],
+    "font_size": 124,
+    "x": 88,
+    "tops": [752, 897],
+    "color": "#FCF8F0",
+    "accent_color": "#FF4900"
+  },
+  "inline_logos": {
+    "project": {
+      "path": "brand/project-logo-transparent.png",
+      "word_height": 100,
+      "gap": 34,
+      "halo": { "peak": 200, "spread": 12, "blur": 22 }
+    }
+  },
+  "protect": [
+    [420, 280, 620, 520],
+    [1400, 120, 1600, 360]
+  ]
+}
