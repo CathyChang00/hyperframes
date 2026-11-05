@@ -54,6 +54,8 @@ Cathy 个人 16:9 项目使用[固定样式预设](../hyperframes-interview/refe
 
 ### 3. 逐人建立口癖清单
 
+Cathy 的主持段按[个人口癖精剪规则](../hyperframes-interview/references/cathy-style.md#cathy-的口癖与提问精剪)重点复核连续及填充性的 `like`，连同其他实际出现的习惯一起精简；该偏好适用于 teaser 和正文，不因“个人风格”默认保留无信息口癖。
+
 必须根据这一次原始 transcript 统计每位 speaker 的真实口癖，不只套通用词表。候选通常包括：
 
 - 中文填充词：`嗯`、`啊`、`呃`、`然后`、`就是`、`其实`、`对`、`那个`、`怎么说`。
