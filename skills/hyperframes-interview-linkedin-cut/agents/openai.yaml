@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinkedIn 15 分钟版"
+  short_description: "完整版定稿后，整段删减到 15:00 以内，剪口经 ASR 核对"
+  default_prompt: "Use $hyperframes-interview-linkedin-cut to cut the approved full interview down to a LinkedIn version under 15 minutes, keeping the approved look, rate and music."
