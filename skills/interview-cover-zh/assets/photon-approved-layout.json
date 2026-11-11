@@ -1,0 +1,172 @@
+{
+  "scope": "Photon layout parameters only; future font preference is recorded separately in font_preference",
+  "approval": {
+    "status": "accepted_v10",
+    "evidence": [
+      "3. 紧凑科技 很好",
+      "80px很好",
+      "Julie 往中间偏一偏，然后我的胳膊肘只要能不出这个画面就可以",
+      "ok,你帮我重新优化一下 skill 吧。"
+    ]
+  },
+  "canvas": [1500, 2000],
+  "copy": ["硅谷 AI Startup", "都该向 Web 3 学习 GTM"],
+  "colors": {
+    "cream": "#FCF8F0",
+    "accent": "#FF4900"
+  },
+  "font_selection": "03_紧凑科技",
+  "fonts": {
+    "cn": {
+      "local_path": "/System/Library/Fonts/Hiragino Sans GB.ttc",
+      "index": 2,
+      "family": "Hiragino Sans GB",
+      "subfamily": "W6",
+      "bundled": false
+    },
+    "en": {
+      "local_path": "/System/Library/Fonts/Supplemental/DIN Condensed Bold.ttf",
+      "index": 0,
+      "family": "DIN Condensed",
+      "subfamily": "Bold",
+      "bundled": false
+    }
+  },
+  "text_rows": [
+    {
+      "text": "硅谷 AI Startup",
+      "x": 84,
+      "top": 1490,
+      "baseline": 1637,
+      "width": 984.0,
+      "bottom": 1679,
+      "cn_size": 162,
+      "en_size": 204
+    },
+    {
+      "text": "都该向 Web 3 学习 GTM",
+      "x": 84,
+      "top": 1740,
+      "baseline": 1862,
+      "width": 1307.953125,
+      "bottom": 1875,
+      "cn_size": 134,
+      "en_size": 169
+    }
+  ],
+  "header": {
+    "asset_width": 1314,
+    "series_target_width_ratio": 0.876,
+    "translate": [84, 72]
+  },
+  "person_layer_order": ["Cathy", "Julie"],
+  "transforms": {
+    "Cathy": {
+      "scale": 0.968,
+      "translate": [-109, 268]
+    },
+    "Julie": {
+      "scale": 1.332,
+      "translate": [-949, 229]
+    }
+  },
+  "reference_scale_history": {
+    "Cathy": {
+      "v3_scale": 1.1,
+      "reduction": 0.12
+    },
+    "Julie": {
+      "v3_scale": 1.48,
+      "reduction": 0.1
+    }
+  },
+  "height_choice": {
+    "Cathy_up_from_v7_px": 80,
+    "fraction_of_canvas_height": 0.04
+  },
+  "last_change": {
+    "Cathy_left_px": 40,
+    "Julie_left_px": 40
+  },
+  "geometry_qa": {
+    "visible_alpha_threshold": 16,
+    "occlusion_alpha_threshold": 64,
+    "comparison": ">",
+    "Cathy_left_margin_px": 11,
+    "laptop_occluded_pixels": 0,
+    "laptop_source_polygon": [
+      [413, 888],
+      [906, 824],
+      [828, 963],
+      [387, 1035]
+    ]
+  },
+  "fade": {
+    "Cathy_original_alpha_fade_source_y": [925, 1044],
+    "Cathy_final_alpha_fade_source_y": [980, 1048],
+    "background_shade_output_y": [900, 1380],
+    "background_shade_max_opacity": 0.9,
+    "foreground_shade_output_y": [1090, 1530],
+    "foreground_shade_max_opacity": 0.98,
+    "shade_color_rgb": [31, 36, 33],
+    "laptop_protection_strength": 0.78,
+    "laptop_protection_blur_px": 22,
+    "interpretation": "Restore real trousers and body support; no generated leg extension."
+  },
+  "case_local_trace_only": {
+    "project_root": "/Users/shangxi/Documents/Codex/2026-11-01/https-www-linkedin-com-in-scott",
+    "assets": {
+      "Cathy": {
+        "project_relative_path": "work/photon_cover_zh_20261111/Cathy_natural_lap_v9_rgba.png",
+        "sha256": "304ae78ce342d6ac7ed7125c3aed3cd39d2ab6dfa6b8c0ed7f3205e41cee8290"
+      },
+      "Julie": {
+        "project_relative_path": "work/photon_cover_zh_20261111/matting/julie_contour_final/Julie_J1_rgba_full.png",
+        "sha256": "1ea2632b3073172e827047b17ca627b11bb5d65755d277893bec6cf811a22f18"
+      },
+      "title": {
+        "project_relative_path": "work/photon_cover_zh_20261111/font_variants_v7/03_紧凑科技.png",
+        "sha256": "f5923ae2398999fd3847d19adda6dbed0e5929d2519670966d1c7d8c4660df57"
+      },
+      "header": {
+        "project_relative_path": "work/photon_cover_zh_20261110/approved_header_transparent.png",
+        "sha256": "bc1eec69d6431a8f9652beb7e2bae5eaffeae4f53fad66feb2084c062a7a87ec"
+      },
+      "Cathy_clean_rgb": {
+        "project_relative_path": "work/photon_cover_zh_20261111/Cathy_source_clean_v7_final.png",
+        "sha256": "1e51e3ba3d971156c5e729d0b8d1abd3c20a27f17027d965bcc7ddfcd1c4c048"
+      },
+      "Cathy_unfaded_alpha_source": {
+        "project_relative_path": "work/photon_cover_zh_20261111/matting/cathy_clean/rgba_full.png",
+        "sha256": "1339d59cf4e8f57ee88754da81ec83727c9d9fbeefa038ccd6cbf2b94cda9e2d"
+      }
+    },
+    "render_script": "work/photon_cover_zh_20261111/render_v10_centered.py",
+    "source_library": "outputs/Julie_原帧与精细抠图素材_20261111",
+    "final": {
+      "project_relative_path": "outputs/Photon_紧凑科技封面_Julie向中间_v10/Photon_紧凑科技_Julie向中间_左肘完整_v10.png",
+      "sha256": "51d55a0ea3262063f483325a106b93ef53907640220aaa4b0efdfcb9bd0b10ce"
+    }
+  },
+  "reference_preview": {
+    "skill_relative_path": "assets/photon-approved-reference.jpg",
+    "size": [750, 1000],
+    "derived_from_sha256": "51d55a0ea3262063f483325a106b93ef53907640220aaa4b0efdfcb9bd0b10ce",
+    "sha256": "2fa3765594ca238bf0426dccf9ef23645835ac78df8f137b9bd92083128a4961"
+  },
+  "portability": "Local source paths trace this case only. System fonts are the preferred starting point when available, must be checked, and are not redistributed with the skill. Participant photos are not required for new covers.",
+  "font_preference": {
+    "scope": "future_chinese_and_mixed_language_interview_covers",
+    "priority": "preferred_starting_point",
+    "direction": "紧凑科技",
+    "chinese": "Hiragino Sans GB W6",
+    "english": "DIN Condensed Bold",
+    "overridden_by": [
+      "current explicit style request",
+      "already approved typography",
+      "specific brand requirements"
+    ],
+    "user_evidence": "我觉得就是这个紧凑科技风的这个字体我还挺喜欢的，你就记住吧，之后可能我会比较倾向于用这个。",
+    "does_not_generalize": ["font sizes", "line count", "positions", "person layout"]
+  }
+}

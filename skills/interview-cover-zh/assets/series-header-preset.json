@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "scope": "Cathy Chinese-led 3:4 portrait interview cover series",
+  "basis": "2026-11-10 user requested matching the full Photon / Julie header width and fixing it as a reusable rule",
+  "group": "Official brand lockup + Interview | guest name",
+  "target_visible_width_ratio": 0.876,
+  "width_ratio_tolerance": 0.005,
+  "bounds_alpha_threshold": 16,
+  "measure": "Union of the full group ink bounds, including internal spacing; exclude external transparent padding, screenshot margins, glow and shadow",
+  "resize": "Uniform scale of the whole group; preserve logo proportions and internal type relationships",
+  "height": "Derived from group aspect ratio; no fixed font size or header height",
+  "placement": {
+    "existing_cover": "Preserve the approved top-left anchor unless the user also requests moving it",
+    "new_cover_left_ratio": 0.056,
+    "new_cover_top_ratio": 0.036
+  },
+  "reference_canvas": [1500, 2000],
+  "reference_target_width_px": 1314,
+  "reference_photon": {
+    "asset_size": [1314, 81],
+    "asset_position": [84, 72],
+    "visible_width_at_alpha_16_px": 1312
+  },
+  "exclude": "Do not automatically apply this portrait-series width preset to English landscape covers or other named templates"
+}
