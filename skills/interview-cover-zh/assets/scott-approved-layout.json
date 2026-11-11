@@ -1,0 +1,54 @@
+{
+  "scope": "Scott Fan episode only; approved example, not global defaults",
+  "approved_quote": "算了，还是这个版本吧",
+  "approved_on": "2026-11-10",
+  "selected_filename": "Scott_Fan_双人封面_站酷快乐体_活泼字形.png",
+  "source_sha256": "92cd13cde3af7178952a9f068a806a5f250e45cb0f02d5a7c38db64c1450474b",
+  "reference_preview": "scott-approved-reference.jpg",
+  "preview_size": [750, 1000],
+  "canvas": [1500, 2000],
+  "ratio": "3:4",
+  "copy": ["核心开发者：", "硅谷创业，收购了一所大学"],
+  "font": {
+    "path": "fonts/ZCOOLKuaiLe-Regular.ttf",
+    "name": "ZCOOL KuaiLe Regular",
+    "source": "https://github.com/google/fonts/tree/main/ofl/zcoolkuaile",
+    "license": "fonts/ZCOOLKuaiLe-OFL.txt",
+    "main_size": 175,
+    "support_size": 116
+  },
+  "letter_ink_height": 150,
+  "alpha_threshold": 128,
+  "full_logo_visible_height": 222,
+  "visible_gaps": [56, 56],
+  "core_box": [89, 1565, 941, 1716],
+  "support_box": [89, 1772, 1367, 1881],
+  "logo_box": [85, 1287, 1180, 1509],
+  "colors": {
+    "base_text": "#FCF8F0",
+    "accent": "#FF4900",
+    "accent_words": ["收购", "大学"]
+  },
+  "background": {
+    "method": "continuous logistic light-to-dark gradient with original blurred photo texture",
+    "top_fade_y": [1180, 1410],
+    "curve_midpoint_y": 1530,
+    "curve_spread": 78,
+    "light_range": [238, 38],
+    "texture_strength": 0.06
+  },
+  "subject_transforms_case_only": {
+    "Cathy": {
+      "scale": 1.45,
+      "translate": [-605, -39],
+      "layer": 1
+    },
+    "Scott": {
+      "scale": 1.7,
+      "translate": [-221, -168],
+      "layer": 2
+    }
+  },
+  "approval_precedence": "Selected KuaiLe file overrides later-generated Yuanti and intermediate criticism.",
+  "layout_bounds_alpha_threshold": 16
+}
