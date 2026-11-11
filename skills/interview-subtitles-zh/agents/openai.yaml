@@ -1,0 +1,4 @@
+interface:
+  display_name: "访谈中文字幕与转画幅"
+  short_description: "为英文访谈添加中文双语字幕，固定英文上中文下、单行和转画幅位置"
+  default_prompt: "用 $interview-subtitles-zh 给这版访谈添加中文字幕，沿用已批准画幅与音轨，英文在上、中文在下，各一行。"
