@@ -1,0 +1,54 @@
+{
+  "preset_id": "cathy-bilingual-en-zh-landscape-4x3-v1",
+  "scope": "Cathy English interviews; 16:9 source to landscape 4:3; latest approved project overrides take precedence",
+  "canvas": {
+    "width": 1920,
+    "height": 1440,
+    "display_aspect_ratio": "4:3",
+    "sample_aspect_ratio": "1:1",
+    "background_rgba": [0, 0, 0, 255]
+  },
+  "source": {
+    "display_width": 1920,
+    "display_height": 1080,
+    "fit": "contain",
+    "crop": false,
+    "placement": { "x": 0, "y": 180, "width": 1920, "height": 1080 }
+  },
+  "languages": ["en", "zh-Hans"],
+  "max_lines_per_language": 1,
+  "english": {
+    "mode": "preserve_burned_in",
+    "box_source_y": [911, 995],
+    "box_output_y": [1091, 1175],
+    "bounds_status": "Scott observed bounds; remeasure for each new video"
+  },
+  "chinese": {
+    "font_family": "Heiti SC",
+    "font_file_macos": "/System/Library/Fonts/STHeiti Medium.ttc",
+    "font_index": 0,
+    "font_size_px": 48,
+    "color_rgba": [255, 255, 255, 255],
+    "box_top_px": 1184,
+    "box_height_px": 74,
+    "gap_below_english_px": 9,
+    "max_card_width_px": 1640,
+    "padding_x_px": 28,
+    "text_top_in_strip_px": 12,
+    "background_rgba": [0, 0, 0, 170],
+    "corner_radius_px": 0,
+    "alignment": "center",
+    "position_rule": "mapped English bottom plus gap; fixed for all cues"
+  },
+  "scale_rule": "For the same aspect/layout, scale style values by output width/1920 and remeasure text. For another aspect ratio, recompute foreground and subtitle anchors.",
+  "protected": [
+    "source edit",
+    "audio",
+    "speed",
+    "existing English",
+    "names",
+    "chapter titles",
+    "source attribution"
+  ],
+  "case_note": "Chinese bottom 1258 is within source picture ending at1260; it is not in the added bottom bar. No generic +1 second timing offset."
+}
