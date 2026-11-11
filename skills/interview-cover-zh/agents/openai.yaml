@@ -1,0 +1,4 @@
+interface:
+  display_name: "中文真人访谈封面"
+  short_description: "制作中文及中英混排真人访谈封面，处理字体、双人构图与可复用的批准版本"
+  default_prompt: "用 $interview-cover-zh 制作中文真人访谈封面，沿用已批准人物和文案，并检查字标与汉字的字高、渐变及缩略图。"
