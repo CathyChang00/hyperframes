@@ -1,6 +1,6 @@
 ---
 name: hyperframes-interview
-description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿，处理多机位、收音、字幕和社媒资料；也用于从访谈原片选封面人物帧、把用户给的现场照片全局调亮后做封面、合成双人封面、设计英文标题（可内嵌官方 logo）与姓名标签、设置默认封面并交付本地视频，完整版定稿后另出 15 分钟以内的 LinkedIn 版，以及访谈在 X/Twitter、LinkedIn 发布时的 caption、主帖、观点预告、人物/合作方 @ 引用与时间戳回复。
+description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿，处理多机位、收音、字幕和社媒资料；也用于从访谈原片选封面人物帧、把用户给的现场照片全局调亮后做封面、合成双人封面、设计英文标题（可内嵌官方 logo）与姓名标签、设置默认封面并交付本地视频；中文或中英字标混排封面使用 interview-cover-zh，英文成片加中文字幕及双语转画幅使用 interview-subtitles-zh，完整版定稿后另出 15 分钟以内的 LinkedIn 版，以及访谈在 X/Twitter、LinkedIn 发布时的 caption、主帖、观点预告、人物/合作方 @ 引用与时间戳回复。
 ---
 
 # HyperFrames Interview
@@ -19,7 +19,7 @@ description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿
 
 用户说“先给候选／先 preview、不要剪”时，只提供原话、原片定位及其要求的隔离预览，不替换主片。授权“直接剪好”后继续常规剪辑、渲染和修错；只有缺少会改变结果的关键信息或新增范围时才追问。不得把默认流程、内部样片或脚本检查变成额外审批。
 
-Cathy 个人 16:9 访谈从[Cathy 固定样式](references/cathy-style.md)及其数值预设初始化：固定标题、水印、单行字幕，新建节目的 teaser 和正文默认均为原速的 1.2×；全屏静态资料每段不超过 4 秒，用户提供或指定的视频素材每段可至 15 秒。按内容分类，滚动截图导成 MP4 仍是静态资料；上限不是必须凑满的长度。已有项目保留批准的局部例外。此偏好不自动套给其他用户或公司项目；本轮明确要求优先。
+Cathy 个人 16:9 访谈从[Cathy 固定样式](references/cathy-style.md)及其数值预设初始化：固定标题、水印、单行字幕（双语时每种语言各一行、英文在上中文在下），新建节目的 teaser 和正文默认均为原速的 1.2×；全屏静态资料每段不超过 4 秒，用户提供或指定的视频素材每段可至 15 秒。按内容分类，滚动截图导成 MP4 仍是静态资料；上限不是必须凑满的长度。已有项目保留批准的局部例外。此偏好不自动套给其他用户或公司项目；本轮明确要求优先。
 
 Cathy 新节目默认配低音量、无歌词的背景音乐，teaser 可用同曲较有起伏的节选；全屏静态资料带轻微滚动，长截图优先保可读宽度再用视窗浏览。具体方法按下表读取；更新默认规则不自动重导已有成片。
 
@@ -40,7 +40,9 @@ Cathy 新节目默认配低音量、无歌词的背景音乐，teaser 可用同�
 | 全屏资料滚动、长推文宽度、原生截图视窗                                | [资料滚动与长截图视窗](references/visual-evidence.md#资料滚动与长截图视窗)                                |
 | 关系动效、组合 Logo、标题内字标、黑白文字的局部背衬                   | [图形关系与品牌构图](references/graphic-composition.md)                                                   |
 | 访谈发 X/Twitter 或 LinkedIn、仿参考帖、We got into、@ 引用、章节回复 | [社媒发布文案与引用](references/social-publishing.md)；主帖与最终成片时间戳分开                           |
-| 选微笑帧、现场照片调色、双人构图、英文标题/内嵌 Logo、默认封面        | [封面工作流](references/cover-workflow.md)；`scripts/grade_cover_photo.py`、`scripts/make_cover.py`       |
+| 英文主导封面、选微笑帧、现场照片调色、双人构图、内嵌 Logo、默认封面   | [封面工作流](references/cover-workflow.md)；`scripts/grade_cover_photo.py`、`scripts/make_cover.py`       |
+| 中文主导封面、把英文封面另做中文版、汉字与字标同高、中文字体比较      | [中文真人访谈封面](../interview-cover-zh/SKILL.md)；语言与画幅分别判断，独立保存批准版                    |
+| 英文成片加中文字幕、中英双语、16:9转横版4:3或竖版3:4                  | [中文字幕与转画幅](../interview-subtitles-zh/SKILL.md)；英文上中文下，每种语言各一行，保留现有音轨与速度  |
 | 指定飞书、Notion、Google Doc 交付或同步修改                           | [在线文档交付](references/document-delivery.md)；只读请求不授权写入                                       |
 | Cathy 个人访谈字体、字号、水印底色、单行字幕、1.2倍速与资料限时       | [Cathy 固定样式](references/cathy-style.md)；数值 JSON 与透明水印资产为复用基线                           |
 | 需要区分 Cathy 已确认偏好与 Photon 单期参数                           | [Photon 复盘案例](references/photon-case.md)；案例不替代本轮要求                                          |
