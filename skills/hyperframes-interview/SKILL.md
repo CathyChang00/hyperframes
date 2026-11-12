@@ -1,13 +1,21 @@
 ---
 name: hyperframes-interview
-description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿，处理多机位、收音、字幕和社媒资料；也用于从访谈原片选封面人物帧、把用户给的现场照片全局调亮后做封面、合成双人封面、设计英文标题（可内嵌官方 logo）与姓名标签、设置默认封面并交付本地视频；中文或中英字标混排封面使用 interview-cover-zh，英文成片加中文字幕及双语转画幅使用 interview-subtitles-zh，完整版定稿后另出 15 分钟以内的 LinkedIn 版，以及访谈在 X/Twitter、LinkedIn 发布时的 caption、主帖、观点预告、人物/合作方 @ 引用与时间戳回复。
+description: 制作或修订真人访谈播客、cold open、teaser 与剪辑稿，处理多机位、收音、字幕和社媒资料；也用于从访谈原片选封面人物帧、把用户给的现场照片全局调亮后做封面、合成双人封面、设计英文标题（可内嵌官方 logo）与姓名标签、设置默认封面并交付本地视频；中文或中英字标混排封面使用 interview-cover-zh，英文成片加中文字幕及双语转画幅使用 interview-subtitles-zh，完整版定稿后另出 15 分钟以内的 LinkedIn 版，以及访谈在小红书、X/Twitter、LinkedIn 的内容发布：标题、正文、标签、人物/公司 @、原生章节与时间戳回复。
 ---
 
 # HyperFrames Interview
 
 把访谈从原始素材整理成有完整问答和可核查原声的节目。用户要求成片时，完成剪辑、预览、检查与本地导出，不以摘要或 Paper Edit 代替视频。转写按需使用 `hyperframes-media`；实际使用 HyperFrames 时读取当前可用的 `hyperframes` 与相应音频、CLI 技能，复用项目已有运行时，不为修订盲目升级。
 
-只要访谈发布文案时，复用当前成片、已核对逐字稿和资料索引，直接读取[社媒发布文案与引用](references/social-publishing.md)，不启动下面的剪辑执行流程。仅在缺少可靠内容依据时按需补转写；写稿不代表发布授权。
+## 内容发布
+
+只要标题、正文、标签或平台章节时，复用当前成片、已核对逐字稿和资料索引，不启动剪辑流程。先分清封面、帖子标题、正文和导航各自提供的信息；用户定稿保留原文、换行、账号提及和标签。
+
+小红书按[小红书内容发布](references/rednote-publishing.md)处理：封面主副标题与发布标题一起设计，让钩子、解答线索和补充信息各有分工；正文用短句预告值得看的问题，标签少而相关；原生章节默认不超过 6 个，正文不重复时间轴。X/Twitter、LinkedIn 的主帖与章节回复按[社媒发布文案与引用](references/social-publishing.md)处理，不把英文 thread 模板套到小红书。
+
+Cathy 的视频封面是第一钩子。英文封面已定且要求中文直译时，锁定它的主题与承诺，再从最终成片中自动补一个与封面自问自答、对比或互补的发布标题；默认交一个推荐版，不把想角度的工作退回用户。“口播／访谈视频的封面title和正文title”指两类视频的包装，不是口播表达研究，也不是要改description。
+
+仅在缺少可靠内容依据时按需补转写。写稿、填发布页、保存章节与正式发布分别判断，沿用用户已给的授权范围；更新 skill 本身不授权改帖或发帖。
 
 ## 本轮约束与批准状态
 
@@ -40,6 +48,7 @@ Cathy 新节目默认配低音量、无歌词的背景音乐，teaser 可用同�
 | 全屏资料滚动、长推文宽度、原生截图视窗                                | [资料滚动与长截图视窗](references/visual-evidence.md#资料滚动与长截图视窗)                                |
 | 关系动效、组合 Logo、标题内字标、黑白文字的局部背衬                   | [图形关系与品牌构图](references/graphic-composition.md)                                                   |
 | 访谈发 X/Twitter 或 LinkedIn、仿参考帖、We got into、@ 引用、章节回复 | [社媒发布文案与引用](references/social-publishing.md)；主帖与最终成片时间戳分开                           |
+| 小红书访谈标题、短正文、话题标签、原生章节、发布页填写                | [小红书内容发布](references/rednote-publishing.md)；四个板块分工，章节不在正文重复                        |
 | 英文主导封面、选微笑帧、现场照片调色、双人构图、内嵌 Logo、默认封面   | [封面工作流](references/cover-workflow.md)；`scripts/grade_cover_photo.py`、`scripts/make_cover.py`       |
 | 中文主导封面、把英文封面另做中文版、汉字与字标同高、中文字体比较      | [中文真人访谈封面](../interview-cover-zh/SKILL.md)；语言与画幅分别判断，独立保存批准版                    |
 | 英文成片加中文字幕、中英双语、16:9转横版4:3或竖版3:4                  | [中文字幕与转画幅](../interview-subtitles-zh/SKILL.md)；英文上中文下，每种语言各一行，保留现有音轨与速度  |
