@@ -1,72 +1,109 @@
 {
-  "scope": "Scott Fan episode example; header width follows the reusable Cathy Chinese portrait series preset",
-  "approved_quote": "算了，还是这个版本吧",
-  "approved_on": "2026-11-10",
-  "selected_filename": "Scott_Fan_双人封面_顶部占宽统一.png",
-  "source_sha256": "a50adb817ead37d25296f319db676cad2bfeaa33716b742403ba6459b19b5a3c",
-  "reference_preview": "scott-approved-reference.jpg",
-  "preview_size": [750, 1000],
-  "canvas": [1500, 2000],
-  "ratio": "3:4",
-  "copy": ["核心开发者：", "硅谷创业，收购了一所大学"],
+  "schema_version": 3,
+  "scope": "Scott local publication revision V9; case-specific, not a generic template",
+  "approval": {
+    "status": "latest_requested_v9_rendered_not_separately_confirmed",
+    "font_status": "Explicitly chose attached ZCOOL KuaiLe version; later layout/copy edits retain that typeface",
+    "evidence": [
+      "只换回附图字体，保留标题在上",
+      "小龙虾核心开发者，小龙虾换成红色",
+      "核心开发者的字的大小可以和底下硅谷创业收购一所大学一样"
+    ],
+    "latest_copy_directive": "Explicit later user request replaced 小龙虾核心开发者 with 小龙虾官方开发者; modification record and current JPG confirm the requested render, not separate approval of the complete V9 image."
+  },
+  "canvas": [1438, 2000],
+  "canvas_note": "Original1500x2000 with62px removed at left per requested composition; NOT mathematically3:4. Future crops need aspect/UI verification.",
+  "mode": "title_top_natural_photo_bottom_signature",
+  "copy": ["OpenClaw logo", "小龙虾官方开发者", "硅谷创业，收购了一所大学"],
   "font": {
-    "path": "fonts/ZCOOLKuaiLe-Regular.ttf",
-    "name": "ZCOOL KuaiLe Regular",
-    "source": "https://github.com/google/fonts/tree/main/ofl/zcoolkuaile",
-    "license": "fonts/ZCOOLKuaiLe-OFL.txt",
-    "main_size": 175,
-    "support_size": 116
+    "family": "ZCOOL KuaiLe",
+    "style": "Regular",
+    "skill_relative_path": "assets/fonts/ZCOOLKuaiLe-Regular.ttf",
+    "license": "OFL"
   },
-  "letter_ink_height": 150,
-  "alpha_threshold": 128,
-  "full_logo_visible_height": 222,
-  "visible_gaps": [56, 56],
-  "core_box": [89, 1565, 941, 1716],
-  "support_box": [89, 1772, 1367, 1881],
-  "logo_box": [85, 1287, 1180, 1509],
-  "colors": {
-    "base_text": "#FCF8F0",
-    "accent": "#FF4900",
-    "accent_words": ["收购", "大学"]
-  },
-  "background": {
-    "method": "continuous logistic light-to-dark gradient with original blurred photo texture",
-    "top_fade_y": [1180, 1410],
-    "curve_midpoint_y": 1530,
-    "curve_spread": 78,
-    "light_range": [238, 38],
-    "texture_strength": 0.06
-  },
-  "subject_transforms_case_only": {
-    "Cathy": {
-      "scale": 1.45,
-      "translate": [-605, -39],
-      "layer": 1
+  "title": {
+    "original_cn_size_main": 116,
+    "original_cn_size_support": 116,
+    "group_scale_from_previous": 0.95,
+    "main_bbox": [69, 358, 872, 453],
+    "main_runs": [
+      {
+        "text": "小龙虾",
+        "color": "#F8000C"
+      },
+      {
+        "text": "官方开发者",
+        "color": "#242421"
+      }
+    ],
+    "support_accents": ["收购", "大学"],
+    "support_accent_color": "#FF4900",
+    "two_visible_gaps_approx_px": [77, 78],
+    "main_bbox_measurement": {
+      "alpha_threshold": 16,
+      "comparison": ">=",
+      "layer_visible_bbox_xyxy_exclusive": [0, 0, 803, 95],
+      "layer_position_from_v9_record": [69, 358],
+      "measured_from": "V9 中文主标题透明层.png; measured again, not copied from the V8 bbox"
     },
-    "Scott": {
-      "scale": 1.7,
-      "translate": [-221, -168],
-      "layer": 2
-    }
+    "two_visible_gaps_evidence": "Approximate V8 layout values retained as historical geometry; V9 measured title bounds are unchanged. The V9 record reports unchanged prefix/suffix and all other artwork; full-image pixel equality was not rechecked from the JPEG."
   },
-  "approval_precedence": "Original explicit choice selects KuaiLe; the later explicit request updates only the full header width to match Photon. Other approved components remain fixed.",
-  "layout_bounds_alpha_threshold": 16,
-  "base_approved_file": {
-    "filename": "Scott_Fan_双人封面_站酷快乐体_活泼字形.png",
-    "sha256": "92cd13cde3af7178952a9f068a806a5f250e45cb0f02d5a7c38db64c1450474b",
-    "approved_quote": "算了，还是这个版本吧"
+  "signature": {
+    "text": "Paradigm Interview | Scott Fan",
+    "bbox": [228, 1700, 1360, 1796],
+    "bottom_ratio": 0.898,
+    "height": 96,
+    "color": "#FCF8F0",
+    "geometry_evidence": "Prior layout bounds; V9 modification record reports all artwork outside the replaced glyphs unchanged. Not an alpha measurement from the current JPEG."
   },
-  "header_revision": {
-    "status": "user_requested_revision_rendered",
-    "request": "顶部整组占封面宽度与Julie版一致，并固定到skill",
-    "preset": "series-header-preset.json",
-    "target_width_ratio": 0.876,
-    "actual_visible_width": 1314,
-    "actual_width_ratio": 0.876,
-    "visible_bbox": [80, 60, 1394, 172],
-    "anchor": [80, 60],
-    "alpha_threshold": 16,
-    "protected_rows_start": 300,
-    "protected_pixel_difference": 0
+  "background": "Natural blinds/photo; left brown strip removed, Cathy-side right curtain retained; lower photo softened; no mock UI",
+  "historical_bottom_title_variant": {
+    "status": "Historical adopted branch, not current publication layout",
+    "Chinese_visible_height_px": 150,
+    "OpenClaw_letter_height_px": 150,
+    "row_gaps_px": [56, 56],
+    "gradient": "Continuous light-to-dark backing where dark logo/pale text required it",
+    "not_reapplied_to_current_light_top_title": true
+  },
+  "case_local_trace_only": {
+    "project_root": "<interview-project-root>",
+    "available_final": {
+      "project_relative_path": "outputs/Scott_Fan_发布海报_小龙虾官方开发者_v9_20261111/封面-Paradigm_小龙虾官方开发者.jpg",
+      "sha256": "99ee8526903589fa76b7276cfadbe2c5ee190a85cec161c1efb1f53cd187d8db",
+      "format": "JPEG"
+    },
+    "recorded_original_png": {
+      "project_relative_path": "outputs/Scott_Fan_发布海报_小龙虾官方开发者_v9_20261111/封面-Paradigm_小龙虾官方开发者.png",
+      "sha256_from_modification_record": "0a02a83268fcd746a3666286bafda3a39dcc5acfcddb54963c407ee9c93d4cdf",
+      "verification": "Not present at the recorded project path during this update; hash retained as recorded evidence only."
+    },
+    "modification_record": "outputs/Scott_Fan_发布海报_小龙虾官方开发者_v9_20261111/修改记录.json",
+    "modification_record_sha256": "53a0314138a22fa0dbd4df9d8e09ecd9ac2ebd7600b15677d2015802df2a9cee",
+    "main_title_layer": {
+      "project_relative_path": "outputs/Scott_Fan_发布海报_小龙虾官方开发者_v9_20261111/中文主标题透明层.png",
+      "sha256": "f5b491294686932226b6702e7baae3ec8b0b1486b37bc852bc347a2223c6c11d",
+      "size": [803, 95]
+    },
+    "prior_v8_layout_parameters": "outputs/Scott_Fan_发布海报_中文两行同字号_v8_20261111/发布版本与参数.json"
+  },
+  "reference_preview": {
+    "skill_relative_path": "assets/scott-approved-reference.jpg",
+    "size": [719, 1000],
+    "derived_from_sha256": "99ee8526903589fa76b7276cfadbe2c5ee190a85cec161c1efb1f53cd187d8db",
+    "derived_from_format": "Available V9 JPEG",
+    "resize": "Pillow LANCZOS; JPEG quality 94, subsampling 0",
+    "sha256": "52303e1ff4ad7df2199389763b1ecf6dede612a18aad27f82825a8926239da7d"
+  },
+  "portability": "Case-only trace paths; do not reuse participant identities or claims for new guests.",
+  "copy_revision": {
+    "before": "小龙虾核心开发者",
+    "after": "小龙虾官方开发者",
+    "evidence": "V9 modification record and available final JPG; full-image QA below is recorded evidence, not a new JPEG pixel-equality test.",
+    "recorded_baseline_source_sha256": "c49f271a4538839f6f54157860e2d57eef8304f6e19190c295e0098516ef88e5",
+    "recorded_changed_pixels": 10770,
+    "recorded_changed_bbox": [370, 359, 571, 453],
+    "recorded_baseline_reconstruction_pixel_exact": true,
+    "recorded_only_replaced_glyphs_changed": true,
+    "recorded_prefix_suffix_and_other_artwork_pixel_identical": true
   }
 }

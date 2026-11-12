@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "scope": "Cathy Chinese portrait interview covers; new-layout starting point, not a universal fixed template",
+  "mode": "title_top_people_middle_lower_signature_bottom_natural_photo",
+  "overridden_by": [
+    "current explicit instructions",
+    "already adopted layout or typography",
+    "named template",
+    "actual target UI mapping"
+  ],
+  "reference_canvas": [1500, 2000],
+  "title": {
+    "left_anchor_ratio": 0.056,
+    "first_visible_top_ratio": 0.055,
+    "right_clearance_start_ratio": 0.056,
+    "visible_gap_start_ratio_h": 0.03,
+    "suggested_levels": ["viewpoint", "topic expansion", "specific number or takeaway if supplied"],
+    "starting_ink_height_ratios_h": [0.095, 0.067, 0.0475],
+    "measure_alpha_threshold": 16,
+    "move_as_group": true
+  },
+  "font_preference": {
+    "cn": "Hiragino Sans GB W6",
+    "cn_ttc_index": 2,
+    "en": "DIN Condensed Bold",
+    "fonts_bundled": false,
+    "use_visible_glyph_height_not_same_font_size": true
+  },
+  "palette": {
+    "dark": "#242421",
+    "accent_start": "#FF4900",
+    "light": "#FCF8F0",
+    "accent_scope": "Only selected words or user-approved recolored symbols"
+  },
+  "photo": {
+    "natural_background_to_bottom": true,
+    "no_flat_footer_panel": true,
+    "optional_bottom_defocus": "Retain body/chair volume and protected laptop/hands",
+    "generated_repairs": "Only explicitly requested local regions; preserve identity and protected original pixels"
+  },
+  "signature_start": {
+    "left_ratio": 0.19333333333333333,
+    "width_ratio": 0.7546666666666667,
+    "bottom_ratio": 0.898,
+    "lock_after_UI_check": true,
+    "height": "Derived from group aspect ratio; align visible bottom across series",
+    "requires_target_UI_verification": true
+  },
+  "ui_rules": {
+    "reference_is_not_universal_platform_spec": true,
+    "check_two_dimensional_overlap": true,
+    "publication_has_no_mock_UI": true
+  },
+  "case_reference": "photon-approved-layout.json"
+}

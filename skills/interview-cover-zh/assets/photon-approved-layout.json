@@ -1,21 +1,23 @@
 {
-  "scope": "Photon layout parameters only; future font preference is recorded separately in font_preference",
+  "schema_version": 2,
+  "scope": "Photon V18 color-only revision from user-selected V15; generated and verified, no new whole-image confirmation; wording, sizes, coordinates and people are not universal defaults",
   "approval": {
-    "status": "accepted_v10",
-    "evidence": [
-      "3. 紧凑科技 很好",
-      "80px很好",
-      "Julie 往中间偏一偏，然后我的胳膊肘只要能不出这个画面就可以",
-      "ok,你帮我重新优化一下 skill 吧。"
-    ]
+    "status": "generated_v18_from_user_selected_v15_pending_whole_image_confirmation",
+    "baseline_selection": "Current user explicitly selected the V15 PNG, overriding the newer V17 title-position branch.",
+    "requested_changes": [
+      "100M views to #FF4900",
+      "official X logo to #FF4900",
+      "Go Viral to existing dark #242421"
+    ],
+    "protected": "V15 wording, plural views, punctuation, fonts, sizes, title positions, people, background and signature",
+    "new_whole_image_confirmation_recorded": false,
+    "historical_v17": "Previously accepted branch with titles 40px lower than V15; retained as history, not the baseline for this revision.",
+    "historical_v10": "Earlier adopted layout, superseded by later title-top, photo and safe-footer revisions"
   },
   "canvas": [1500, 2000],
-  "copy": ["硅谷 AI Startup", "都该向 Web 3 学习 GTM"],
-  "colors": {
-    "cream": "#FCF8F0",
-    "accent": "#FF4900"
-  },
-  "font_selection": "03_紧凑科技",
+  "mode": "title_top_people_middle_lower_signature_bottom_natural_photo",
+  "copy": ["硅谷 AI Startup", "都该向 Web 3 学习 GTM", "100M views，如何在 X 上 Go Viral"],
+  "font_selection": "紧凑科技",
   "fonts": {
     "cn": {
       "local_path": "/System/Library/Fonts/Hiragino Sans GB.ttc",
@@ -32,141 +34,235 @@
       "bundled": false
     }
   },
+  "colors": {
+    "dark": "#242421",
+    "accent": "#FF4900",
+    "accent_components": ["Web 3", "GTM", "100M views", "X"],
+    "Go Viral": "#242421"
+  },
   "text_rows": [
     {
       "text": "硅谷 AI Startup",
-      "x": 84,
-      "top": 1490,
-      "baseline": 1637,
-      "width": 984.0,
-      "bottom": 1679,
+      "bbox_alpha16": [88, 70, 1059, 259],
       "cn_size": 162,
-      "en_size": 204
+      "en_size": 204,
+      "baseline_y": 217
     },
     {
       "text": "都该向 Web 3 学习 GTM",
-      "x": 84,
-      "top": 1740,
-      "baseline": 1862,
-      "width": 1307.953125,
-      "bottom": 1875,
+      "bbox_alpha16": [86, 320, 1384, 454],
       "cn_size": 134,
-      "en_size": 169
+      "en_size": 169,
+      "baseline_y": 442
+    },
+    {
+      "text": "100M views，如何在 X 上 Go Viral",
+      "bbox_alpha16": [90, 515, 1394, 610],
+      "cn_size": 90,
+      "en_size": 114,
+      "baseline_y": 598
     }
   ],
-  "header": {
-    "asset_width": 1314,
-    "series_target_width_ratio": 0.876,
-    "translate": [84, 72]
+  "visible_row_gaps_px": [61, 61],
+  "title_group_shift_from_v15_px": 0,
+  "X_symbol": {
+    "bbox": [888, 515, 969, 598],
+    "size": [81, 83],
+    "color": "#FF4900",
+    "source_page": "https://about.x.com/en/who-we-are/brand-toolkit",
+    "user_requested_recolor": true,
+    "not_official_default_color": true
   },
-  "person_layer_order": ["Cathy", "Julie"],
+  "signature": {
+    "text": "Photon Interview | Julie Chen",
+    "bbox": [290, 1730, 1422, 1796],
+    "width_ratio": 0.7546666666666667,
+    "bottom_ratio": 0.898,
+    "colors": {
+      "Logo + Photon": "#FCF8F0",
+      "Interview | Julie Chen": "#242421"
+    },
+    "split_at_word_gap_x": 617,
+    "no_plate": true
+  },
   "transforms": {
     "Cathy": {
-      "scale": 0.968,
-      "translate": [-109, 268]
+      "scale": 0.98736,
+      "translate": [-110, 736]
     },
     "Julie": {
-      "scale": 1.332,
-      "translate": [-949, 229]
+      "scale": 1.4822496,
+      "translate": [-1183, 605]
     }
   },
-  "reference_scale_history": {
-    "Cathy": {
-      "v3_scale": 1.1,
-      "reduction": 0.12
+  "portrait_geometry": {
+    "source_canvas": [1920, 1080],
+    "Cathy_upward_layout_parameter_px": 10,
+    "actual_source_alpha_head_top_difference_px": 32,
+    "layout_parameter_is_not_head_top_difference": true,
+    "title_to_highest_source_head_px": 210,
+    "Cathy_elbow_left_margin_px": 12,
+    "laptop_occlusion_after_foreground_restore_px": 0,
+    "coordinate_space": "final_canvas_1500x2000; source_canvas describes input assets only",
+    "source_alpha_head_top_y_canvas": {
+      "Cathy": 820,
+      "Julie": 852
     },
-    "Julie": {
-      "v3_scale": 1.48,
-      "reduction": 0.1
+    "laptop_polygon_canvas": [
+      [298, 1613],
+      [785, 1550],
+      [708, 1687],
+      [272, 1758]
+    ],
+    "composition_metrics_note": "This case JSON is layout_guard input, not composition_metrics input. Its laptop polygon is in final canvas coordinates; inverse-transform it to the relevant source image before using composition_metrics."
+  },
+  "local_generated_repairs": {
+    "authorization": "User requested natural trouser legs and outer hair; approved OpenAI image API for that scope",
+    "regions": ["Cathy missing clothed legs", "Julie outer hair strands"],
+    "faces": "Original photographic pixels retained",
+    "edge_processing": "Local registration, matte-hole cleanup, seam repair, copied mask for Poisson blending",
+    "defocus": "Progressive lower-frame blur retaining body volume",
+    "generation_is_not_blanket_future_authorization": true
+  },
+  "ui_reference": {
+    "canvas": [580, 772],
+    "zones": [
+      {
+        "id": "avatar",
+        "bbox": [27, 682, 92, 747]
+      },
+      {
+        "id": "account",
+        "bbox": [112, 700, 365, 731]
+      },
+      {
+        "id": "heart",
+        "bbox": [408, 696, 452, 734]
+      },
+      {
+        "id": "likes",
+        "bbox": [462, 703, 550, 728]
+      },
+      {
+        "id": "play",
+        "bbox": [493, 19, 554, 80]
+      }
+    ],
+    "basis": "User screenshot; mock account/likes illustrative; no general platform guarantee"
+  },
+  "elements": [
+    {
+      "id": "title1",
+      "role": "title",
+      "bbox": [88, 70, 1059, 259]
+    },
+    {
+      "id": "title2",
+      "role": "title",
+      "bbox": [86, 320, 1384, 454]
+    },
+    {
+      "id": "title3",
+      "role": "title",
+      "bbox": [90, 515, 1394, 610]
+    },
+    {
+      "id": "signature",
+      "role": "signature",
+      "bbox": [290, 1730, 1422, 1796]
     }
-  },
-  "height_choice": {
-    "Cathy_up_from_v7_px": 80,
-    "fraction_of_canvas_height": 0.04
-  },
-  "last_change": {
-    "Cathy_left_px": 40,
-    "Julie_left_px": 40
-  },
-  "geometry_qa": {
-    "visible_alpha_threshold": 16,
-    "occlusion_alpha_threshold": 64,
-    "comparison": ">",
-    "Cathy_left_margin_px": 11,
-    "laptop_occluded_pixels": 0,
-    "laptop_source_polygon": [
-      [413, 888],
-      [906, 824],
-      [828, 963],
-      [387, 1035]
-    ]
-  },
-  "fade": {
-    "Cathy_original_alpha_fade_source_y": [925, 1044],
-    "Cathy_final_alpha_fade_source_y": [980, 1048],
-    "background_shade_output_y": [900, 1380],
-    "background_shade_max_opacity": 0.9,
-    "foreground_shade_output_y": [1090, 1530],
-    "foreground_shade_max_opacity": 0.98,
-    "shade_color_rgb": [31, 36, 33],
-    "laptop_protection_strength": 0.78,
-    "laptop_protection_blur_px": 22,
-    "interpretation": "Restore real trousers and body support; no generated leg extension."
+  ],
+  "constraints": {
+    "equal_title_gaps_tolerance_px": 2,
+    "signature_bottom_ratio": 0.898,
+    "signature_bottom_tolerance_px": 2
   },
   "case_local_trace_only": {
-    "project_root": "/Users/shangxi/Documents/Codex/2026-11-01/https-www-linkedin-com-in-scott",
-    "assets": {
-      "Cathy": {
-        "project_relative_path": "work/photon_cover_zh_20261111/Cathy_natural_lap_v9_rgba.png",
-        "sha256": "304ae78ce342d6ac7ed7125c3aed3cd39d2ab6dfa6b8c0ed7f3205e41cee8290"
-      },
-      "Julie": {
-        "project_relative_path": "work/photon_cover_zh_20261111/matting/julie_contour_final/Julie_J1_rgba_full.png",
-        "sha256": "1ea2632b3073172e827047b17ca627b11bb5d65755d277893bec6cf811a22f18"
-      },
-      "title": {
-        "project_relative_path": "work/photon_cover_zh_20261111/font_variants_v7/03_紧凑科技.png",
-        "sha256": "f5923ae2398999fd3847d19adda6dbed0e5929d2519670966d1c7d8c4660df57"
-      },
-      "header": {
-        "project_relative_path": "work/photon_cover_zh_20261110/approved_header_transparent.png",
-        "sha256": "bc1eec69d6431a8f9652beb7e2bae5eaffeae4f53fad66feb2084c062a7a87ec"
-      },
-      "Cathy_clean_rgb": {
-        "project_relative_path": "work/photon_cover_zh_20261111/Cathy_source_clean_v7_final.png",
-        "sha256": "1e51e3ba3d971156c5e729d0b8d1abd3c20a27f17027d965bcc7ddfcd1c4c048"
-      },
-      "Cathy_unfaded_alpha_source": {
-        "project_relative_path": "work/photon_cover_zh_20261111/matting/cathy_clean/rgba_full.png",
-        "sha256": "1339d59cf4e8f57ee88754da81ec83727c9d9fbeefa038ccd6cbf2b94cda9e2d"
-      }
+    "project_root": "<interview-project-root>",
+    "available_final": {
+      "project_relative_path": "outputs/Photon_中文发布海报_100M与X橘色_GoViral黑色_v18_20261111/Photon_中文封面_100M与X橘色_GoViral黑色_发布版.png",
+      "sha256": "02bac04ad91b037cf18a87498b236e2ecc8219864de1f60dccf49d33f90a8a70"
     },
-    "render_script": "work/photon_cover_zh_20261111/render_v10_centered.py",
-    "source_library": "outputs/Julie_原帧与精细抠图素材_20261111",
-    "final": {
-      "project_relative_path": "outputs/Photon_紧凑科技封面_Julie向中间_v10/Photon_紧凑科技_Julie向中间_左肘完整_v10.png",
-      "sha256": "51d55a0ea3262063f483325a106b93ef53907640220aaa4b0efdfcb9bd0b10ce"
-    }
+    "parameters": "outputs/Photon_中文发布海报_100M与X橘色_GoViral黑色_v18_20261111/发布版本与参数.json",
+    "clean_photo": "outputs/Photon_中文发布海报_自然腿部发丝_v13_20261111/无字照片底图.png",
+    "generation_prompt": "outputs/Photon_中文发布海报_自然腿部发丝_v13_20261111/局部生成提示词.txt",
+    "title_renderer": "work/photon_cover_zh_20261111/export_v18_colors_from_v15.py",
+    "baseline": {
+      "version": "V15 explicitly selected in the current request",
+      "project_relative_path": "outputs/Photon_中文发布海报_GTM橘色_新增GoViral_v15_20261111/Photon_中文封面_GTM橘色_100Mviews_GoViral_发布版.png",
+      "sha256": "a66dcb380ae8d305c0ab995675443d24535930e120c3d1fed48339cb10c8768b"
+    },
+    "available_jpg": {
+      "project_relative_path": "outputs/Photon_中文发布海报_100M与X橘色_GoViral黑色_v18_20261111/Photon_中文封面_100M与X橘色_GoViral黑色_发布版.jpg",
+      "sha256": "3ddd173252a2a56061fa5693ee5345956b33d091f3ff7922a723fb3e034bbeff"
+    },
+    "original_v15_title_layer": "outputs/Photon_中文发布海报_GTM橘色_新增GoViral_v15_20261111/新增第三行_透明层.png"
   },
   "reference_preview": {
     "skill_relative_path": "assets/photon-approved-reference.jpg",
     "size": [750, 1000],
-    "derived_from_sha256": "51d55a0ea3262063f483325a106b93ef53907640220aaa4b0efdfcb9bd0b10ce",
-    "sha256": "2fa3765594ca238bf0426dccf9ef23645835ac78df8f137b9bd92083128a4961"
+    "derived_from_sha256": "02bac04ad91b037cf18a87498b236e2ecc8219864de1f60dccf49d33f90a8a70",
+    "sha256": "6b9f873d90c0c89d6230119cf3ddaa35a955d7a17f13a8a0a55b7122e6dbcfd0"
   },
-  "portability": "Local source paths trace this case only. System fonts are the preferred starting point when available, must be checked, and are not redistributed with the skill. Participant photos are not required for new covers.",
-  "font_preference": {
-    "scope": "future_chinese_and_mixed_language_interview_covers",
-    "priority": "preferred_starting_point",
-    "direction": "紧凑科技",
-    "chinese": "Hiragino Sans GB W6",
-    "english": "DIN Condensed Bold",
-    "overridden_by": [
-      "current explicit style request",
-      "already approved typography",
-      "specific brand requirements"
+  "portability": "Project-relative paths trace this case only; resolve them under <interview-project-root>. New covers use new subjects and actual available fonts; preview images are not cutout masters.",
+  "color_revision": {
+    "geometry_source": "V15; no title movement from that baseline",
+    "changed_regions": [
+      {
+        "text": "100M views",
+        "from_color": "#242421",
+        "to_color": "#FF4900",
+        "run_box_ltrb": [84, 515, 498, 599],
+        "exact_alpha_bbox_ltrb": [90, 515, 495, 599],
+        "alpha_coverage_pixels": 15512,
+        "alpha_preserved": true,
+        "geometry_preserved": true,
+        "actual_changed_pixels": 15512
+      },
+      {
+        "text": "X",
+        "from_color": "#000000",
+        "to_color": "#FF4900",
+        "run_box_ltrb": [888, 515, 969, 598],
+        "exact_alpha_bbox_ltrb": [888, 515, 969, 598],
+        "alpha_coverage_pixels": 2573,
+        "alpha_preserved": true,
+        "geometry_preserved": true,
+        "actual_changed_pixels": 2573
+      },
+      {
+        "text": "Go Viral",
+        "from_color": "#FF4900",
+        "to_color": "#242421",
+        "run_box_ltrb": [1119, 515, 1394, 599],
+        "exact_alpha_bbox_ltrb": [1124, 515, 1394, 599],
+        "alpha_coverage_pixels": 9822,
+        "alpha_preserved": true,
+        "geometry_preserved": true,
+        "actual_changed_pixels": 9822
+      }
     ],
-    "user_evidence": "我觉得就是这个紧凑科技风的这个字体我还挺喜欢的，你就记住吧，之后可能我会比较倾向于用这个。",
-    "does_not_generalize": ["font sizes", "line count", "positions", "person layout"]
+    "method": "Recolor the RGB of existing V15 glyph/logo alpha masks; composite over the exact original clean photo. No rerasterization, resizing, translation, or generated imagery.",
+    "QA": {
+      "zero_change_reconstruction_pixel_identical": true,
+      "title_layer_alpha_pixel_identical": true,
+      "actual_changed_pixels": 27907,
+      "requested_alpha_coverage_pixels": 27907,
+      "outside_three_glyph_masks_changed_pixels": 0,
+      "protected_region_pixels": 2972093,
+      "protected_region_changed_pixels": 0,
+      "entire_image_below_y650_pixel_identical": true,
+      "png_roundtrip_pixel_identical": true,
+      "jpg_note": "Lossy delivery copy; pixel protection is verified against the PNG master.",
+      "visual_review": {
+        "status": "passed",
+        "reviewed_surfaces": [
+          "375x500 whole-poster thumbnail",
+          "2x nearest-neighbor title-edge crop"
+        ],
+        "observed": "100M views and official X logo are orange; Go Viral uses the existing dark; plural views and Chinese comma retained; title positions remain V15; no old-color fringe or background seam visible.",
+        "approval_status": "Generated and checked; not a new user approval record."
+      }
+    }
   }
 }
