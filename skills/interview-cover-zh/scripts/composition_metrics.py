@@ -5,6 +5,7 @@ Usage: python3 composition_metrics.py CONFIG.json [--output REPORT.json]
 Layers are back-to-front, with uniform scale and integer translation. Polygon
 coordinates belong to the unscaled source image. This is a geometric aid, not
 a visual-quality judgement. Dependencies: Pillow and numpy.
+The report output must not alias the input configuration or a source image.
 """
 
 import argparse
@@ -184,6 +185,26 @@ def measure(config, base):
             "layers": results, "protected_regions": region_results, "violations": violations}
 
 
+class OutputPathError(ValueError):
+    """An output path cannot safely be separated from a protected input."""
+
+
+def guard_report_output(output, source):
+    if output is None:
+        return
+    try:
+        matches = output.resolve() == source.resolve()
+        if not matches:
+            try:
+                matches = output.samefile(source)
+            except FileNotFoundError:
+                matches = False
+    except (OSError, RuntimeError) as error:
+        raise OutputPathError(f"Cannot verify report destination: {error}") from error
+    if matches:
+        raise OutputPathError(f"Report path must differ from the input configuration and source images: {source}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("config", type=Path)
@@ -191,8 +212,18 @@ def main():
     args = parser.parse_args()
     try:
         config = args.config.resolve()
-        result = measure(json.loads(config.read_text()), config.parent)
+        guard_report_output(args.output, config)
+        data = json.loads(config.read_text())
+        definitions = data.get("layers", []) if isinstance(data, dict) else []
+        if isinstance(definitions, list):
+            for item in definitions:
+                if isinstance(item, dict) and isinstance(item.get("image"), str):
+                    guard_report_output(args.output, config.parent / item["image"])
+        result = measure(data, config.parent)
         status = 0 if result["ok"] else 1
+    except OutputPathError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
     except (ValueError, OSError, TypeError, KeyError) as error:
         result, status = {"ok": False, "error": str(error)}, 2
     text = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
