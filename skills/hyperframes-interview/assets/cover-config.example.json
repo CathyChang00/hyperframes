@@ -1,4 +1,5 @@
 {
+  "size": [2560, 1440],
   "photo": "graded/photo_a.jpg",
   "crop": [0, 160, 1440],
   "max_upscale": 2.0,
