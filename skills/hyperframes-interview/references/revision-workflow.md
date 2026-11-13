@@ -1,152 +1,139 @@
 # 反馈定位、当前配置与可检查的交付
 
-用于多轮修订：用户报成片时码、同句在片头与正文复用、已经确认样式需要保护，或需要检查这轮是否真正改到成片。简单修改只登记相关字段，不为一处改字重建全项目；新建完整剪辑时随 EDL 一起维护。项目记录放工作目录，不写回通用 skill，也不把私人素材、听审记录或工程配置默认上传 GitHub。
+多轮修订时维护版本、原片映射和验收状态；小改只登记相关字段。记录留在项目目录，不随通用skill上传私人素材。
 
 ## 反馈动作与批准继承
 
-先把每条反馈绑定到当前可回查的内容单元或图层，再决定实际动作。对已明确的范围直接执行；只有图号、位置或版本确实会产生不同结果时才澄清，不把下表变成逐项审批。
+| 反馈                   | 执行边界                                           |
+| ---------------------- | -------------------------------------------------- |
+| 合并话题、背景后移     | 移动完整问答，删同义重复，保护独有证据与主持人介绍 |
+| 删句、嘴瓢、附和       | 同步修改原声、字幕和画面接点                       |
+| 删图、换Logo、缩短资料 | 只改覆盖层，保留下方对白和后文时间线               |
+| 先静帧，合适再应用     | 标记待应用，确认后放入视频                         |
+| 替换某品牌全部标识     | 查标题、角落、资料卡及teaser／正文中的全部使用     |
+| 沿用参考某一属性       | 只继承指定字体、底色或尺寸                         |
+| 全篇应用效果           | 迁移视觉规则，保留teaser／正文各自的姓名标签       |
+| 以后按新规则做         | 更新默认，不重导已采用成片                         |
 
-| 用户的动作                 | 实际执行边界                                                                                  |
-| -------------------------- | --------------------------------------------------------------------------------------------- |
-| 合并相关话题、背景移到后面 | 移动完整问答/论证单元，去掉同义重复；独有证据与主持人身份另行保护，不当作默认删除授权         |
-| 删某句、去掉嘴瓢或附和     | 定位原声及所有获授权的出现位置，同步声音、字幕、画面接点；只改字幕不算删句                    |
-| 删图、换 Logo、缩短新闻    | 只改对应视觉覆盖，除非另有要求，否则保持下方对白及后文时间线                                  |
-| 先出静帧，合适再更新       | 交当前场景中的静帧合成，记录待应用；批准后才放入对应视频窗口                                  |
-| 替换所有某品牌标识         | 查该实体在标题内、角落、资料卡、teaser/正文中的全部使用，按授权统一资产，并去掉同画面多余重复 |
-| 沿用某版/某参考的一个属性  | 只继承指定的字体、底色、尺寸等属性；例如恢复底色深度不自动恢复该参考的小字号                  |
-| 全篇应用这个效果           | 迁移批准的视觉规则，保留正文/teaser 各自的人物标签和内容职责，不一键覆盖所有图层              |
-| 以后按某规则做             | 更新未来默认，不自动重导当前批准成片                                                          |
+项目记录用`反馈｜观看版本/原话｜修改层｜范围｜采用参考｜保留项｜交付物｜状态`。以最近采用成片合入后来批准的静帧；回退某个视觉效果时，保留后续删词、纠错和声音。用户恢复的内容列为必留，被否决稿不作新基线。
 
-一项新要求只覆盖它触及的旧值。项目记录使用 `反馈｜观看版本/原话定位｜动作层｜适用范围｜批准参考｜保留项｜交付形态｜落实状态` 即可；被否决的动画或版式标为拒绝，不因它是“最新生成文件”再次启用。用户恢复的内容进入必留覆盖表，未来压缩时先保护。
-
-批准可以属于不同层：内容/剪点、主收音/混音、图形样式、特定资产、预览或最终导出。以最近批准成片为底，合入后来批准但尚未渲染的静帧；不能选一个较旧整片作为全部基线而丢掉新修正。“回到之前那个效果”默认恢复对应视觉层，保留后续已确认的删词、纠错、名字与声音，除非用户明确要求整体回退。
-
-每轮先完成用户正在等待的产物。要完整 teaser 就交完整 teaser，不改交几个章节的风格展示；要剪辑稿先交可执行全文，不提前替换全片。内部检查可先做短样，但不拿短样冒充目标交付。当前正文、当前 teaser、待应用静帧分别标状态，最终播放器与下载链接指向同一已核验版本。
+先交用户正在等待的完整产物，内部短样不能代替完整teaser或成片。正文、teaser与待应用静帧分别标状态，播放器和下载指向同一交付版本。
 
 ## 一份当前配置，三种证据
 
-`project-state.json` 保存版本、原声片段、反馈、验收条件、资料计划与语义审阅；`active_version` 指向本次交付的真实 MP4。姓名、handle、封面、水印、字幕样式与倍率等批准值放项目现有渲染配置，检查项引用配置或输出，不维护互相冲突的第二套文本。Cathy 新项目从[固定预设](cathy-style.md)复制数值，并记录 preset ID、批准覆盖项；渲染器和检查器共用该配置。选择新版本时重新绑定文件 SHA-256；旧版保留可回查。未变音轨可以用包数据与时间戳一致性继承证据，不能只看总时长。
+`project-state.json`记录版本、spans、反馈、checks、materials和semantic_reviews；`active_version`指向真实MP4。姓名、水印、字幕和倍率沿用现有渲染配置，避免两套值。新Cathy项目从[固定样式](cathy-style.md)初始化并记录覆盖项；新版本绑定新SHA-256。
 
-区分以下结论：
+| 证据       | 有效范围                                             |
+| ---------- | ---------------------------------------------------- |
+| 文字／配置 | 源文件含指定文字或数值，不证明已烧入视频             |
+| 媒体       | 文件身份、容器时长、音轨包和时间戳，不证明听感或语义 |
+| review     | 指定版本、方法和范围的实际审阅；记录不是自动听审     |
 
-| 证据           | 能证明什么                                          | 不能证明什么                               |
-| -------------- | --------------------------------------------------- | ------------------------------------------ |
-| 文字或配置检查 | SRT/标签源/渲染配置有精确文字或值                   | 最终画面已烧入，水印每帧可见               |
-| 媒体检查       | 文件身份、容器时长、指定音轨包与时间戳一致          | 听起来舒服、裁剪好看、语义保真             |
-| 实际审阅记录   | 指定人或 agent 用指定方法检查了绑定版本，证据可打开 | 不能把填写记录当工具亲自听审或全片人工通过 |
-
-先从项目现有 EDL 导出映射，避免手工再抄一套。一次改变先记基线文件、允许修改层及受影响检查；配置通过后仍检查真实导出画面。自动检查只覆盖明确登记的条件，空清单不能通过。被用户明确撤销的要求标 `superseded` 并留原因，不偷偷删除历史。
+映射优先由现有EDL导出。空验收清单不通过，撤销要求标`superseded`并留原因。
 
 ## 可运行工具
 
-路径相对于本 skill。Python 3 标准库；`init` 和 `check --media` 需要可执行的 ffprobe。
+Python3标准库；`init`及`check --media`需要ffprobe。路径相对本skill：
 
 ```bash
-python3 scripts/interview_project.py init --video /project/final-V1.mp4 --version V1 --project Interview --out /project/project-state.json
-python3 scripts/interview_project.py init --video /project/final-V1.mp4 --version V1 --project Cathy --preset assets/cathy-interview-16x9.json --out /project/cathy-state.json
+python3 scripts/interview_project.py init --video /project/final-V1.mp4 --version V1 --project Cathy --preset assets/cathy-interview-16x9.json --out /project/project-state.json
 python3 scripts/interview_project.py locate /project/project-state.json --version V1 --time 00:10
 python3 scripts/interview_project.py locate /project/project-state.json --feedback F001
 python3 scripts/interview_project.py check /project/project-state.json --stage plan --out /project/plan-check.json
 python3 scripts/interview_project.py check /project/project-state.json --media --out /project/delivery-check.json
 ```
 
-`init` 读取真实视频并建立身份，不覆盖现有记录，也不自动宣称验收完成。`locate` 要求观看版本和时间，返回源文件秒数及同一句的所有使用位置；无命中说明尚未映射，不能断言素材里没有这句话。`check` 只读取媒体，退出 0 表示已登记条件的机械检查完成；退出 2 表示错误或仍有待验收项。未加 `--media` 的媒体条件保持 pending。`review_recorded` 表示审阅记录与文件身份有效，不是脚本完成了审美或听审。
+`init`不覆盖已有记录；非Cathy项目可不传preset。`locate`返回源时码及同句所有位置，无命中可能只是缺映射。`check`退出0表示登记条件的机械检查完成，2表示错误或待验收；不加`--media`时媒体条件pending。`review_recorded`仅表示记录与文件身份有效。
 
-`init --preset` 从指定 JSON 的 `materials` 导入限时字段，并记录 `materials_policy_source: {preset_id, preset: {path, sha256}}`。新 Cathy 预设用 `static_fullscreen_max_seconds / video_max_seconds`；旧预设的 `fullscreen_max_seconds` 仍按旧意读取。它不改变视频速度或渲染样式，不默认读取 Cathy 配置；以后改 skill 也不自动改已有项目的政策快照。新增版本时显式继承仍有效的 `materials_policy`，有项目新要求则更新并记录依据。
+`init --preset`复制materials限时并保存`materials_policy_source: {preset_id, preset: {path, sha256}}`，不改变速度或渲染样式。新增版本显式继承有效policy；更新通用skill不改旧项目快照。
 
 ## 项目记录格式
 
-工具初始化 `schema_version: 1`、`project`、`active_version`、`versions` 及五个空数组。路径相对状态文件所在目录，也可用绝对路径；时间为有限的秒数，区间用 `[in, out)`，倍率记录素材实际烘焙速度。文件引用统一为 `{"path":"...","sha256":"实际64位SHA-256"}`，大文件 SHA 可用流式 `shasum -a 256` 获取。
+`schema_version: 1`；路径相对状态文件或用绝对路径。时间是有限秒数，区间`[in,out)`；文件引用为`{"path":"...","sha256":"实际64位SHA-256"}`。
 
 ### versions 与 spans：精确定位
 
-`versions` 以 V1/V2 等稳定版本 ID 为键，每版保存 `video` 文件引用、`duration_seconds`、数值型 `fps` 或有理字符串（如 `30000/1001`）。注册新版本时追加记录，并显式更新 `active_version`；保留旧版本，不将原路径指向新内容后沿用旧 SHA。
+`versions[V1]`含`video`引用、`duration_seconds`和数值或有理字符串`fps`。新增版本追加记录并更新active_version，不覆盖旧内容后沿用旧SHA。
 
-每条 `spans` 记录一个可线性映射的连续原声区间：
+一个span对应连续、可线性映射的原声：
 
 ```json
 {
-  "id": "V2-coldopen-crypto-01",
-  "utterance_id": "source-crypto-01",
+  "id": "V2-coldopen-01",
+  "utterance_id": "source-01",
   "version": "V2",
-  "video_sha256": "本版真实视频SHA-256",
-  "speaker": "已确认的姓名",
-  "source": { "path": "source.mp4", "sha256": "原文件SHA-256" },
+  "video_sha256": "本版视频SHA-256",
+  "speaker": "已确认姓名",
+  "source": { "path": "source.mp4", "sha256": "原片SHA-256" },
   "source_range": [120, 126.5],
   "output_range": [0, 5],
   "rate": 1.3,
-  "text": "对应连续原话",
+  "text": "连续原话",
   "semantic_review_required": true
 }
 ```
 
-这段示例将原片 6.5 秒按 1.3 倍变成成片 5 秒。句内删除或不同倍率必须拆成多个 span，不拿整句平均倍率估算。正文重复引用保留相同 `utterance_id`、不同 `id` 和输出位置。用户说第 10 秒时先确认当前页面实际版本，不把新版本的第 10 秒套回旧版。
+句内删除或倍率变化拆成多个span；复用原句保留utterance_id、另设id和输出位置。反馈时码始终绑定用户观看版本。
 
 ### feedback：定位、修改、验收
 
-每项保留 `id / request / observed_version / at / span_ids / status`。`at` 是用户看见的版本时间；`span_ids` 绑定已定位的原反馈片段。用 `change_type` 可选标记 `new_direction / aesthetic_selection / correction`，分别统计新增方向、审美选择、本可避免的修复，不能把版本数都算成失败。
+必填`id / request / observed_version / at / span_ids / status`；可用`change_type: new_direction/aesthetic_selection/correction`区分新方向、审美选择和修复。
 
-状态为 `open → located → applied → verified`；明确撤销时用 `superseded + reason`。`applied` 只代表修改做了，不能冒充成片已验收。`verified` 还需要 `resolved_version` 和 `check_ids`；这些检查必须指向本次真实文件并成功。`acceptance` 默认 `rendered`，必须包含实际输出的 review，文字/配置检查不能单独关闭成片反馈；只要求稿件或配置本身时才显式设 `artifact`。旧版 verified 到新版本先继承或重新核对相关证据，不因 status 字符串还在就自动通过。
+状态`open → located → applied → verified`；撤销为`superseded + reason`。verified需`resolved_version / check_ids`指向真实新版本并通过。默认`acceptance: rendered`要求实际输出review；只验稿件或配置时用artifact。旧verified跨版本需继承有效证据或复查。
 
-一项涉及重复原句的反馈，使用 `locate` 的 `all_occurrences` 找片头、正文等位置，再按本轮范围登记各处修复和对应检查。若用户只指定某一次出现，保留其范围，不机械改全部。
+同句反馈用locate的`all_occurrences`定位，再按用户指定范围修改，不机械改所有出现。
 
 ### checks：已确认要求的自动检查
 
-每项有 `id / version / video_sha256 / kind / scope`；scope 写实际范围，例如“字幕文件”“两处姓名卡实际帧”“整轨包与时间戳”。检查只针对绑定版本。
+每项含`id / version / video_sha256 / kind / scope`，scope说明实际检查范围。
 
-| kind             | 必填内容                                             | 用法                                                                               |
-| ---------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `file_sha256`    | `artifact`                                           | 批准封面文件或已验证交付身份未变                                                   |
-| `text`           | `artifact`，非空 `contains` 或 `excludes` 字符串数组 | 精确姓名、handle；限定文稿中排除旧标签。匹配区分大小写                             |
-| `json_value`     | `artifact / pointer / equals`                        | 用 JSON Pointer 核对渲染参数，例如 `/watermark/text`；仅证明配置                   |
-| `media_duration` | `expected_seconds`，可选 `tolerance_seconds`         | 实际视频容器时长；默认允许 0.05 秒差异                                             |
-| `audio_identity` | `baseline` 文件引用                                  | 当前第一个音轨与批准基线的音频包、编解码信息、时间戳完全一致；不同则不能继承此证据 |
-| `review`         | 下述 `review` 对象                                   | 实际画面、听感、字幕词尾或平台 poster 的审阅证据                                   |
+| kind           | 必填／作用                                          |
+| -------------- | --------------------------------------------------- |
+| file_sha256    | artifact；核对文件身份                              |
+| text           | artifact＋非空contains或excludes数组；大小写敏感    |
+| json_value     | artifact / pointer / equals；JSON Pointer定位配置   |
+| media_duration | expected_seconds；可选tolerance_seconds，默认0.05秒 |
+| audio_identity | baseline引用；比较首音轨包、编码信息和时间戳        |
+| review         | 实际审阅对象                                        |
 
-比如姓名卡的文字源检查与最终导出画面审阅分别登记；水印配置正确与实际覆盖也分别登记。不要把 `text` 检查标成“视频里无该词”，不要用自动时长检查替代词尾听审。
-
-`review` 对象含 `video_sha256`、`reviewer: {kind: user/human/agent, name: 实际身份}`、`observed_at`、`method`、`verdict: accepted/uncertain/rejected`、`evidence` 文件引用数组。方法准确写明“用户亲听原片确认”“查看两处导出帧”或“局部试听”；不具备听审能力的 agent 不填写“听过”。证据可以是实际截图、对照片段或用户确认的文字记录，声明检查范围；工具核对记录，不认证其结论。
+review含`video_sha256 / reviewer:{kind:user/human/agent,name} / observed_at / method / verdict:accepted/uncertain/rejected / evidence:[文件引用]`。准确记录局部试听、导出帧或用户亲听的范围；没有听审就不填“听过”。
 
 ### materials：先按谈话规划资料
 
-每项有 `id / version / topic / purpose / span_ids / required / status`，状态为 `planned / found / placed / excluded`。`planned` 阶段即写明具体事件、需要的图片/视频/数据、查询线索及叙事作用；它和内容选择一起形成，不等成片后补装饰。详见[画面与社媒证据](visual-evidence.md#让资料跟着谈话走)。
+必填`id / version / topic / purpose / span_ids / required / status`，状态`planned/found/placed/excluded`。内容剪辑时写明事件、素材需求、查询线索及作用，按[资料计划](visual-evidence.md#让资料跟着谈话走)查找。
 
-Cathy 的资料另记 `display_mode: fullscreen/overlay` 和 `asset_type: static/video`，按内容分类，滚动截图导出 MP4 后仍是 static。按最终输出帧区间检查对应上限；时长与来源表由同一份时间线生成，不能仅把旧文档数字乘倍率后沿用。视频的源段、静音、独立倍率与派生映射见[视频 B-roll](video-broll.md#原片派生文件成片三层可回查)。
+placed还需`source_url / author / observed_at / semantic_limits / asset / source_evidence / output_range`。指标另存`metric:{kind,display_value,source_url,observed_at,evidence}`；views对应当前帖，followers对应主页。视频派生映射见[视频B-roll](video-broll.md#原片派生文件成片三层可回查)。
+
+`check --stage plan`允许待找资料；delivery要求required资料placed并以`export_check_ids`关联实际导出review。找不到就pending，取消必需资料保留依据，excluded写reason。research_status可细记查找过程，不能代替placed。
 
 ### 资料限时与时序的机械检查
 
-在对应 `versions[版本ID]` 内配置 `materials_policy: {static_fullscreen_max_seconds: 4, video_max_seconds: 15}`，Cathy 新项目通过上述 preset 导入，其他项目按实际要求配置。typed policy 下所有已 placed 资料需声明 `display_mode: fullscreen/overlay` 与 `asset_type: static/video`：static 仅全屏受 4 秒限制，video 的全屏与画中画均受 15 秒限制。两个限值都必须有效；缺失/未知类型不能自动享受更长时限，脚本不根据文件后缀猜分类。
+在`versions[ID]`配置`materials_policy:{static_fullscreen_max_seconds:4,video_max_seconds:15}`。placed资料声明`display_mode:fullscreen/overlay`、`asset_type:static/video`：静态仅全屏限4秒，视频两种展示均限15秒；滚动截图导成MP4仍属static，不能按后缀分类。
 
-旧 `materials_policy: {fullscreen_max_seconds: 4}` 继续表示所有 fullscreen 资料都按一个上限处理，不自动迁移旧项目；typed 与旧字段不能同时配置。需要采用新规则时，显式更换该版本 policy 并给已 placed 资料补类型，留下本轮授权依据。未配置 policy 的旧记录可继续检查其他条件，报告会提示没有执行限时，不能当作 4 秒／15 秒已通过。
+旧`{fullscreen_max_seconds:4}`表示所有全屏资料统一限时，与typed字段不能混用。迁移需显式更新policy和资料类型；无policy时报告未检查限时。两项typed限值都需有效，缺类型不能享受更长上限。
 
-每条资料保留 `output_range` 秒区间，可加 `output_frames: [in_frame, out_frame]` 表示最终半开整数帧区间，两者需在 1ms 内一致；精确最终检查优先填实际渲染帧数。仅有秒数时脚本按项目 fps 四舍五入到最近帧。上限为 `floor(limit_seconds × fps)`，因此 `30000/1001` fps 下静态全屏 4 秒允许 119 帧、视频 15 秒允许 449 帧；120／450 帧分别超限。停留、滚动、淡入淡出都计入一个显示窗口，程序只核对限时，不判断选段是否完整。
+`output_range`为秒；可加最终半开整数帧区间`output_frames`，两者差≤1ms。仅秒数时按fps四舍五入到最近帧，上限`floor(limit_seconds×fps)`；30000/1001fps下4秒最多119帧、15秒449帧。hold、滚动和淡入淡出均计入显示窗口。
 
-相邻或只隔一帧的同资产 SHA 会按适用类型合并计显示长度，拆成不同 ID 不重置上限。同一原帖的不同裁图/滚动帧另用共同 `continuity_id` 标明连续展示；不同 continuity ID 不能取消同 SHA 的合并，同资产或 continuity_id 也不能声明矛盾类型绕过限时。新材料与独立展示窗口分别计算；脚本不做图像相似度识别，因此不能把未登记的相同页面伪装成不同材料来绕过限时。
+相邻或只隔1帧的同SHA资料合并计时；同帖不同裁图用共同`continuity_id`。换ID不重置时长，同资产或continuity_id不能标矛盾类型。脚本不自动识别相似图片。
 
-所有 placed 资料都检查与其关联的当前原声 `span_ids` 是否在时间上重叠，与是否启用限时无关。刻意提前或延后且完全不相交时，可记录 `timing_exception: {reason, max_offset_seconds}`；offset 是资料与最近关联原声区间之间允许的非重叠间隔，非任意平移整章的许可。只接触边界也需例外理由。此检查能发现“原话在后面、图却放前面”等映射错误，不能证明图片语义相关或观众已读清。
-
-`placed` 还需 `source_url / author / observed_at / semantic_limits / asset / source_evidence / output_range`，日期、原帖内容与实际插入窗口可互查。涉及指标时另存 `metric: {kind, display_value, source_url, observed_at, evidence}`；views 的链接必须属于当前帖，followers 使用其主页证据，不互换。这里只校验证据字段和文件，原帖真实性仍需按视觉参考核验。
-
-`check --stage plan` 允许资料待找；delivery 模式要求 `required: true` 的资料已 placed，并用 `export_check_ids` 关联实际导出窗口的 review。排入时间线不等于导出已确认。找不到则保留 pending，不能用无关素材或手动写 pass 补齐。明确取消必需资料时保留取消依据，再更新 required；排除资料需写 reason。更细的查找、核实、资产可用阶段可在行内 `research_status` 留记录；它不能替代 placed 和输出审阅。
+所有placed资料须与关联的当前span有时间重叠；完全提前／延后或只碰边界时记`timing_exception:{reason,max_offset_seconds}`，offset是距最近关联span允许的空隙。该检查核对时序，不判断素材语义。
 
 ### semantic_reviews：关键剪口保义
 
-高风险 span 标 `semantic_review_required: true`。每条语义记录有 `id / version / span_ids / before / after / dimensions / review`；before 是可回源的完整上下文，after 是剪后实际保留原词，不是润色总结。
+高风险span标`semantic_review_required:true`。记录`id / version / span_ids / before / after / dimensions / review`；before含可回源上下文，after为实播原词。
 
-`dimensions` 必须分别记录 `subject / scope / negation / causality / reference`。每项有 `verdict: preserved/changed_with_authorization/uncertain` 与具体 `note`；有意改变原意必须另记 `authorization`，不能由 agent 自己填“允许”。记录用户批准编辑决定不等于允许伪造嘉宾原话。
-
-工具对英文敏感词的删减给出初筛风险，并检查逐项审阅证据；没有风险标记不证明语义不变，中文、代词、上下文和讽刺仍需实际审阅。发现问题回原片恢复限定或完整句，不靠字幕改写掩盖。方法见[关键剪口语义审查](podcast-production.md)。
+dimensions逐项记`subject / scope / negation / causality / reference`，各含`verdict:preserved/changed_with_authorization/uncertain`及note。changed另附实际authorization，不把编辑同意当作伪造原话许可。英文删词初筛不能替代上下文判断；有问题恢复原声限定，不用改字幕掩盖。见[语义检查](podcast-production.md#关键剪口语义检查)。
 
 ## 滚动与配乐修订的证据
 
-更新实际渲染源、视窗参数与完整的有效资料清单，不能只改预览图。合并局部修订时保留未改的动画窗口，新增海报、原帖和音乐来源同步进入最终时间线的来源表；不能拿仅含本次差异的列表覆盖全片清单。
+更新实际渲染源和完整有效资料清单，合并差异时保留其他窗口。新增素材、音乐来源及展示时码进入最终来源表。
 
-边界有争议时按解码帧序号和 `[in, out)` 核查，用已知帧起点的逐帧选择取得窗口前、首、中、末和后一帧；视频内部跨段拼接与源场景出点另查接缝，快速 `-ss` seek 可能返回邻帧，不能单凭它认定越界。检查滚动宽度、路径与固定图层分开进行；首尾 hold 可以有重复帧。说明查看了哪些窗口，不把边界抽样写成全片逐帧看过。
+窗口检查前、首、中、末、后一帧；内部跨源接缝另查。边界争议从已知起点解码后按精确帧号取图，快速seek可能给邻帧。滚动宽度、路径及固定图层分别看，hold内重复帧正常。
 
-纯视觉修改保护整条已批准混音，包括背景音乐，优先复制音频流并核对包数据与时间戳；不能换回较早的无配乐音轨。新增或调整配乐后不再声明与旧混音身份一致，另保留对白未变的证据与新混音检查。未变且证据仍有效的检查可复用，无需为这类修订重转写或重做全片内容审查。
+纯视觉修改复制已采用的完整混音（含配乐），核对音轨包和时间戳。改配乐后另验对白保护及新混音，不再声称整轨与旧版一致；未变且证据有效的部分可复用。
 
 ## 有用的交付说明
 
-分开维护导航章节与真正的大标题显示窗口：章节开始时刻不等于标题入画时刻。用户问“标题在哪里”时，从最终渲染时间线生成 `实际文案｜入画–出画｜持续时间｜teaser/正文`；需要来源表时生成所有实际资料窗口，不只列本轮新增项。片头拼接或删除口癖后按实际帧数重算，表中的链接、时码与播放器版本一起回读。
+导航章节与大标题入画窗口分别维护。标题表输出`实际文案｜入画–出画｜时长｜teaser/正文`；来源表覆盖全片实际资料。片头或删词改变时间线后，从最终帧数重新生成。
 
-给用户实际结果：这轮改了哪些反馈、当前可打开版本、还有哪些未落实。机器日志留工作目录；不把技术检查清单变成额外审批，也不承诺以后固定几版完成。工具不会修改视频或自动上传项目数据。
+交付只说明已改反馈、当前可打开版本和未落实项；检查日志留项目目录。
