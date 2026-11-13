@@ -25,7 +25,16 @@ DEFAULT_FONTS = {
 class Cover:
     def __init__(self, cfg, root):
         self.cfg, self.root = cfg, root
-        self.size = tuple(cfg.get("size", [2560, 1440]))
+        size = cfg.get("size", [2560, 1440])
+        if (not isinstance(size, (list, tuple)) or len(size) != 2
+                or any(type(value) is not int or value <= 0 for value in size)
+                or size[0] * 9 != size[1] * 16):
+            raise ValueError(
+                "size must contain two positive integers in exact landscape 16:9. "
+                "This renderer supports English landscape 16:9 covers only; "
+                "Chinese 3:4 and 4:3 covers require separate layouts."
+            )
+        self.size = tuple(size)
         self.s = self.size[0] / LOGICAL[0]
 
     def px(self, v):

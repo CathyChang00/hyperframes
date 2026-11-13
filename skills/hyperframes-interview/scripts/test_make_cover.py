@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -12,6 +13,33 @@ import grade_cover_photo as grade
 import make_cover
 
 FONTS = all(Path(f["path"]).exists() for f in make_cover.DEFAULT_FONTS.values())
+
+
+class CoverSizeChecks(unittest.TestCase):
+    def test_defaults_and_explicit_landscape_sizes(self):
+        self.assertEqual(make_cover.Cover({}, Path(".")).size, (2560, 1440))
+        for size in ([1920, 1080], [2560, 1440], [3840, 2160], (1600, 900)):
+            with self.subTest(size=size):
+                self.assertEqual(make_cover.Cover({"size": size}, Path(".")).size, tuple(size))
+
+    def test_rejects_wrong_aspect_ratios_before_opening_photo(self):
+        for size in ([1080, 1920], [1500, 2000], [1500, 1125], [2560, 1441]):
+            with self.subTest(size=size), mock.patch.object(make_cover.Image, "open") as open_image:
+                with self.assertRaisesRegex(ValueError, "English landscape 16:9.*Chinese 3:4 and 4:3"):
+                    make_cover.Cover({"size": size, "photo": "missing.jpg"}, Path(".")).render()
+                open_image.assert_not_called()
+
+    def test_rejects_invalid_dimension_types_and_values(self):
+        invalid = [
+            None, True, 2560, "2560x1440", {}, [], [2560], [2560, 1440, 1],
+            [0, 0], [0, 900], [1600, 0], [-1600, -900],
+            [1600.0, 900.0], [1600, 900.0], [True, 9], [16, True],
+            ["1600", 900], [float("nan"), 900], [float("inf"), 900],
+        ]
+        for size in invalid:
+            with self.subTest(size=size):
+                with self.assertRaisesRegex(ValueError, "two positive integers.*landscape 16:9"):
+                    make_cover.Cover({"size": size}, Path("."))
 
 
 @unittest.skipUnless(FONTS, "macOS cover fonts not installed")
