@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "scope": "Cathy Chinese portrait interview covers; new-layout starting point, not a universal fixed template",
   "mode": "title_top_people_middle_lower_signature_bottom_natural_photo",
   "overridden_by": [
@@ -17,7 +17,8 @@
     "suggested_levels": ["viewpoint", "topic expansion", "specific number or takeaway if supplied"],
     "starting_ink_height_ratios_h": [0.095, 0.067, 0.0475],
     "measure_alpha_threshold": 16,
-    "move_as_group": true
+    "move_as_group": true,
+    "alignment": "left_visible_ink"
   },
   "font_preference": {
     "cn": "Hiragino Sans GB W6",
@@ -51,5 +52,9 @@
     "check_two_dimensional_overlap": true,
     "publication_has_no_mock_UI": true
   },
-  "case_reference": "photon-approved-layout.json"
+  "case_reference": "photon-approved-layout.json",
+  "applies_to_variant": "zh_3x4",
+  "aspect_ratio": [3, 4],
+  "orientation": "portrait",
+  "other_variants_reference": "../references/three-format-delivery.md"
 }

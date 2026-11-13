@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "scope": "Scott adopted landscape branch; case geometry is not a universal template",
+  "canvas": [1500, 1125],
+  "aspect_ratio": [4, 3],
+  "orientation": "landscape",
+  "copy": ["OpenClaw 官方开发者", "硅谷创业，收购了一所大学"],
+  "font": "ZCOOL KuaiLe Regular",
+  "title_alignment": "left_visible_ink",
+  "positions": {
+    "logo": [67, 44, 693, 171],
+    "identity": [735, 72, 1158, 153],
+    "support": [67, 211, 1095, 300],
+    "signature": [180, 1002, 1320, 1099]
+  },
+  "face_bboxes": {
+    "Scott": [328, 394, 705, 739],
+    "Cathy": [918, 328, 1181, 719]
+  },
+  "row_visible_gap_px": 40,
+  "Scott_final_up_px": 79.88652482269504,
+  "Cathy_face_changed_pixels": 0,
+  "source_final": {
+    "project_relative_path": "outputs/Scott_Fan_视频号封面_横版4比3_发布版_20261112/Scott_Fan_视频号封面_横版4比3.png",
+    "sha256": "1599204efda93a3205c9a5856fcf5a66a229b25bf6a4b298e166e343289ae09a"
+  },
+  "reference_preview": {
+    "path": "assets/scott-landscape-reference.jpg",
+    "size": [900, 675],
+    "sha256": "f376cc169f566a59378286e467cd94d679726f3507a601644115734230ce2b57"
+  },
+  "approval": "User reshared the final horizontal image on2026-11-12 as one of the three cover styles to retain",
+  "portrait_reference": "scott-approved-layout.json"
+}

@@ -1,0 +1,37 @@
+{
+  "covers": [
+    {
+      "id": "en_16x9",
+      "files": [
+        {
+          "path": "outputs/Guest_en_16x9.png"
+        },
+        {
+          "path": "outputs/Guest_en_16x9.jpg"
+        }
+      ]
+    },
+    {
+      "id": "zh_3x4",
+      "files": [
+        {
+          "path": "outputs/Guest_zh_3x4.png"
+        },
+        {
+          "path": "outputs/Guest_zh_3x4.jpg"
+        }
+      ]
+    },
+    {
+      "id": "zh_4x3",
+      "files": [
+        {
+          "path": "outputs/Guest_zh_4x3.png"
+        },
+        {
+          "path": "outputs/Guest_zh_4x3.jpg"
+        }
+      ]
+    }
+  ]
+}

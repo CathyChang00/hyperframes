@@ -1,15 +1,16 @@
 {
-  "schema_version": 3,
-  "scope": "Scott local publication revision V9; case-specific, not a generic template",
+  "schema_version": 4,
+  "scope": "Scott portrait style branch, shown again by user on 2026-11-12; historical1438x2000 is not a strict3:4 export",
   "approval": {
-    "status": "latest_requested_v9_rendered_not_separately_confirmed",
+    "status": "user_reshared_as_portrait_style_reference_2026_11_12",
     "font_status": "Explicitly chose attached ZCOOL KuaiLe version; later layout/copy edits retain that typeface",
     "evidence": [
       "只换回附图字体，保留标题在上",
       "小龙虾核心开发者，小龙虾换成红色",
       "核心开发者的字的大小可以和底下硅谷创业收购一所大学一样"
     ],
-    "latest_copy_directive": "Explicit later user request replaced 小龙虾核心开发者 with 小龙虾官方开发者; modification record and current JPG confirm the requested render, not separate approval of the complete V9 image."
+    "latest_copy_directive": "Explicit later user request replaced 小龙虾核心开发者 with 小龙虾官方开发者; modification record and current JPG confirm the requested render, not separate approval of the complete V9 image.",
+    "latest_confirmation": "User attached this portrait together with the horizontal cover and asked to codify a default three-cover set; use it as the portrait style reference, not as proof of a strict3:4 pixel ratio."
   },
   "canvas": [1438, 2000],
   "canvas_note": "Original1500x2000 with62px removed at left per requested composition; NOT mathematically3:4. Future crops need aspect/UI verification.",
@@ -105,5 +106,6 @@
     "recorded_baseline_reconstruction_pixel_exact": true,
     "recorded_only_replaced_glyphs_changed": true,
     "recorded_prefix_suffix_and_other_artwork_pixel_identical": true
-  }
+  },
+  "landscape_branch_reference": "scott-landscape-layout.json"
 }
